@@ -117,6 +117,60 @@ BO_ 835 VCRIGHT_status: 8 VEH
  SG_ VCRIGHT_footwellLightCurrent : 40|12@1- (0.1,0) [-204.8|204.7] "mA" X
  SG_ VCRIGHT_pcbaTemperature : 52|11@1+ (0.125,-40) [-40|150] "degC" gtw
 
+BO_ 2047 GTW_carConfig: 8 VEH
+ SG_ GTW_airSuspension m1: 8|1@1+ (1,0) [0|1] "" das
+ SG_ GTW_CabinBlowerCtrlType m2: 30|1@1+ (1,0) [0|1] "" X
+ SG_ GTW_xcpIbst m2: 15|1@1+ (1,0) [0|1] "" X
+ SG_ GTW_auxParkLamps m2: 26|2@1+ (1,0) [0|2] "" vcfront
+ SG_ GTW_drivetrainType m1: 10|1@1+ (1,0) [0|1] "" bms
+ SG_ GTW_ibstWakeType m2: 24|1@1+ (1,0) [0|1] "" vcfront
+ SG_ GTW_airbagCutoffSwitch m2: 35|1@1+ (1,0) [0|1] "" X
+ SG_ GTW_vdcType m2: 14|1@1+ (1,0) [0|1] "" di
+ SG_ GTW_activeHighBeam m2: 34|1@1+ (1,0) [0|1] "" vcfront
+ SG_ GTW_rearFogLamps m2: 39|1@1+ (1,0) [0|1] "" vcright
+ SG_ GTW_audioType m2: 22|1@1+ (1,0) [0|1] "" X
+ SG_ GTW_frontSeatHeaters m2: 9|1@1+ (1,0) [0|1] "" vcleft
+ SG_ GTW_interiorLighting m2: 19|1@1+ (1,0) [0|1] "" X
+ SG_ GTW_lumbarECUType m2: 23|1@1+ (1,0) [0|1] "" X
+ SG_ GTW_wheelType m2: 46|2@1+ (1,0) [0|3] "" X
+ SG_ GTW_rearSeatHeaters m2: 10|1@1+ (1,0) [0|1] "" vcleft
+ SG_ GTW_numberHVILNodes m2: 51|3@1+ (1,0) [0|5] "" bms
+ SG_ GTW_windshieldType m2: 33|1@1+ (1,0) [0|1] "" X
+ SG_ GTW_heatedWipers m2: 8|1@1+ (1,0) [0|1] "" X
+ SG_ GTW_packEnergy m2: 11|2@1+ (1,0) [0|2] "" bms
+ SG_ GTW_eBuckConfig m2: 32|1@1+ (1,0) [0|1] "" X
+ SG_ GTW_carConfigMultiplexer M: 0|8@1+ (1,0) [0|255] "" X
+ SG_ GTW_xcpESP m2: 16|1@1+ (1,0) [0|1] "" X
+ SG_ GTW_eCallEnabled m2: 63|1@1+ (1,0) [0|1] "" X
+ SG_ GTW_hvacQuietSnorkelType m2: 28|1@1+ (1,0) [0|1] "" vcright
+ SG_ GTW_rearLightType m3: 16|1@1+ (1,0) [0|1] "" X
+ SG_ GTW_homelinkType m2: 13|1@1+ (1,0) [0|1] "" X
+ SG_ GTW_exteriorColor m2: 48|3@1+ (1,0) [0|6] "" X
+ SG_ GTW_epasType m1: 9|1@1+ (1,0) [0|0] "" das
+ SG_ GTW_rightHandDrive m1: 11|1@1+ (1,0) [0|1] "" das
+ SG_ GTW_mapRegion m3: 8|4@1+ (1,0) [0|8] "" X
+ SG_ GTW_frontFogLamps m2: 20|1@1+ (1,0) [0|1] "" vcfront
+ SG_ GTW_roofType m2: 40|2@1+ (1,0) [0|2] "" X
+ SG_ GTW_powerSteeringColumn m2: 18|1@1+ (1,0) [0|1] "" X
+ SG_ GTW_autopilot m2: 42|2@1+ (1,0) [0|3] "" das
+ SG_ GTW_intrusionSensorType m2: 36|1@1+ (1,0) [0|1] "" vcfront
+ SG_ GTW_dasHw m1: 40|3@1+ (1,0) [3|4] "" X
+ SG_ GTW_roofGlassType m2: 61|1@1+ (1,0) [0|1] "" X
+ SG_ GTW_rearGlassType m2: 38|1@1+ (1,0) [0|1] "" X
+ SG_ GTW_trackModePackage m2: 62|1@1+ (1,0) [0|1] "" X
+ SG_ GTW_pedestrianWarningSound m2: 54|1@1+ (1,0) [0|1] "" X
+ SG_ GTW_hvacPanelVaneType m2: 29|1@1+ (1,0) [0|1] "" vcright
+ SG_ GTW_spoilerType m2: 37|1@1+ (1,0) [0|1] "" X
+ SG_ GTW_memoryMirrors m2: 17|1@1+ (1,0) [0|1] "" das
+ SG_ GTW_headlamps m2: 21|1@1+ (1,0) [0|1] "" X
+ SG_ GTW_brakeHWType m2: 55|1@1+ (1,0) [0|1] "" di
+ SG_ GTW_country m1: 16|16@1+ (1,0) [0|65535] "" das
+ SG_ GTW_restraintsHardwareType m2: 56|5@1+ (1,0) [21|23] "" X
+ SG_ GTW_tireType m1: 32|3@1+ (1,0) [0|5] "" X
+ SG_ GTW_superchargingAccess m2: 44|2@1+ (1,0) [0|2] "" bms
+ SG_ GTW_performancePackage m2: 31|1@1+ (1,0) [0|1] "" di
+ SG_ GTW_frontSeatType m2: 25|1@1+ (1,0) [0|1] "" vcleft
+
 BO_ 553 SCCM_rightStalk: 3 VEH
  SG_ SCCM_rightStalkCounter : 8|4@1+ (1,0) [0|15] "" X
  SG_ SCCM_rightStalkCrc : 0|8@1+ (1,0) [0|255] "" X
@@ -327,6 +381,56 @@ VAL_ 280 DI_brakePedalState 2 "INVALID" 0 "OFF" 1 "ON";
 VAL_ 835 VCRIGHT_rearDefrostState 2 "HEATER_STATE_OFF" 4 "HEATER_STATE_FAULT" 1 "HEATER_STATE_ON" 0 "HEATER_STATE_SNA" 3 "HEATER_STATE_OFF_UNAVAILABLE";
 VAL_ 835 VCRIGHT_vehiclePowerStateDBG 3 "VEHICLE_POWER_STATE_DRIVE" 1 "VEHICLE_POWER_STATE_CONDITIONING" 2 "VEHICLE_POWER_STATE_ACCESSORY" 0 "VEHICLE_POWER_STATE_OFF";
 VAL_ 835 VCRIGHT_mirrorHeatState 2 "HEATER_STATE_OFF" 4 "HEATER_STATE_FAULT" 1 "HEATER_STATE_ON" 0 "HEATER_STATE_SNA" 3 "HEATER_STATE_OFF_UNAVAILABLE";
+VAL_ 2047 GTW_airSuspension 0 "NONE" 1 "TESLA_STANDARD";
+VAL_ 2047 GTW_CabinBlowerCtrlType 1 "TMS320F28027F" 0 "LV8907";
+VAL_ 2047 GTW_xcpIbst 0 "FALSE" 1 "TRUE";
+VAL_ 2047 GTW_auxParkLamps 0 "NA_BASE" 2 "EU" 1 "NA_PREMIUM";
+VAL_ 2047 GTW_drivetrainType 1 "AWD" 0 "RWD";
+VAL_ 2047 GTW_ibstWakeType 0 "NONE" 1 "WAKE_PIN_20";
+VAL_ 2047 GTW_airbagCutoffSwitch 0 "CUTOFF_SWITCH_DISABLED" 1 "CUTOFF_SWITCH_ENABLED";
+VAL_ 2047 GTW_vdcType 1 "TESLA_VDC" 0 "BOSCH_VDC";
+VAL_ 2047 GTW_activeHighBeam 0 "NOT_ACTIVE" 1 "ACTIVE";
+VAL_ 2047 GTW_rearFogLamps 0 "NOT_INSTALLED" 1 "INSTALLED";
+VAL_ 2047 GTW_audioType 0 "BASE" 1 "PREMIUM";
+VAL_ 2047 GTW_frontSeatHeaters 0 "NONE" 1 "KONGSBERG_LOW_POWER";
+VAL_ 2047 GTW_interiorLighting 0 "BASE" 1 "PREMIUM";
+VAL_ 2047 GTW_lumbarECUType 0 "NONE" 1 "ALFMEIER";
+VAL_ 2047 GTW_wheelType 2 "STILETTO_20" 1 "STILETTO_19" 0 "PINWHEEL_18" 3 "STILETTO_20_STAGGERED";
+VAL_ 2047 GTW_rearSeatHeaters 0 "NONE" 1 "KONGSBERG_LOW_POWER";
+VAL_ 2047 GTW_numberHVILNodes 0 "HVIL_NODES_0" 1 "HVIL_NODES_1" 4 "HVIL_NODES_4" 2 "HVIL_NODES_2" 5 "HVIL_NODES_5" 3 "HVIL_NODES_3";
+VAL_ 2047 GTW_windshieldType 0 "SEKISUI_ACOUSTIC" 1 "EASTMAN_ACOUSTIC";
+VAL_ 2047 GTW_heatedWipers 0 "FALSE" 1 "TRUE";
+VAL_ 2047 GTW_packEnergy 0 "PACK_50_KWH" 1 "PACK_74_KWH" 2 "PACK_62_KWH";
+VAL_ 2047 GTW_eBuckConfig 0 "NONE" 1 "DEV_BUCK";
+VAL_ 2047 GTW_xcpESP 0 "FALSE" 1 "TRUE";
+VAL_ 2047 GTW_eCallEnabled 1 "ENABLED" 0 "DISABLED";
+VAL_ 2047 GTW_hvacQuietSnorkelType 0 "DEFAULT" 1 "QUIET_V1";
+VAL_ 2047 GTW_rearLightType 0 "NA" 1 "EU_CN";
+VAL_ 2047 GTW_homelinkType 0 "NONE" 1 "HOMELINK_V_OPT_2";
+VAL_ 2047 GTW_exteriorColor 2 "SILVER_METALLIC" 3 "MIDNIGHT_SILVER" 0 "RED_MULTICOAT" 6 "PEARL_WHITE" 1 "SOLID_BLACK" 5 "DEEP_BLUE";
+VAL_ 2047 GTW_epasType 0 "MANDO_VGR69_GEN3";
+VAL_ 2047 GTW_rightHandDrive 0 "LEFT" 1 "RIGHT";
+VAL_ 2047 GTW_mapRegion 4 "AU" 2 "NONE" 5 "JP" 8 "ME" 0 "US" 7 "KR" 3 "CN" 1 "EU" 6 "TW";
+VAL_ 2047 GTW_frontFogLamps 0 "NOT_INSTALLED" 1 "INSTALLED";
+VAL_ 2047 GTW_roofType 0 "METAL" 2 "PANORAMIC" 1 "FIXED_GLASS";
+VAL_ 2047 GTW_powerSteeringColumn 1 "TK" 0 "NOT_INSTALLED";
+VAL_ 2047 GTW_autopilot 0 "NONE" 3 "SELF_DRIVING" 2 "ENHANCED" 1 "HIGHWAY";
+VAL_ 2047 GTW_intrusionSensorType 1 "VODAFONE" 0 "NOT_INSTALLED";
+VAL_ 2047 GTW_dasHw 3 "PARKER_PASCAL_2_5" 4 "TESLA_AP3";
+VAL_ 2047 GTW_roofGlassType 1 "TSA5_NOPET" 0 "TSA3_PET";
+VAL_ 2047 GTW_rearGlassType 1 "TSA5_NOPET" 0 "NX";
+VAL_ 2047 GTW_trackModePackage 0 "NONE" 1 "PERFORMANCE";
+VAL_ 2047 GTW_pedestrianWarningSound 0 "NONE" 1 "SPEAKER";
+VAL_ 2047 GTW_hvacPanelVaneType 0 "PARALLEL_V1" 1 "CONVERGENT_V1";
+VAL_ 2047 GTW_spoilerType 1 "PASSIVE" 0 "NOT_INSTALLED";
+VAL_ 2047 GTW_memoryMirrors 1 "SMR" 0 "NOT_INSTALLED";
+VAL_ 2047 GTW_headlamps 0 "BASE" 1 "PREMIUM";
+VAL_ 2047 GTW_brakeHWType 1 "BREMBO_P42_BREMBO_44MOC" 0 "BREMBO_P42_MANDO_43MOC";
+VAL_ 2047 GTW_restraintsHardwareType 23 "M3_EUROW_NO_ECALL" 22 "M3_EUROW_ECALL" 21 "M3_NA";
+VAL_ 2047 GTW_tireType 4 "CONTI_ALL_SEASON_19" 5 "MICHELIN_SUMMER_20" 0 "UNKNOWN" 1 "MICHELIN_ALL_SEASON_18" 3 "HANKOOK_SUMMER_19" 2 "MICHELIN_SUMMER_18";
+VAL_ 2047 GTW_superchargingAccess 2 "PAY_AS_YOU_GO" 0 "NOT_ALLOWED" 1 "ALLOWED";
+VAL_ 2047 GTW_performancePackage 0 "BASE" 1 "PERFORMANCE";
+VAL_ 2047 GTW_frontSeatType 0 "TESLA_BASE" 1 "TESLA_PREMIUM";
 VAL_ 553 SCCM_parkButtonStatus 3 "SNA" 0 "NOT_PRESSED" 2 "INIT" 1 "PRESSED";
 VAL_ 553 SCCM_rightStalkStatus 3 "DOWN_1" 6 "SNA" 0 "IDLE" 5 "INIT" 1 "UP_1" 4 "DOWN_2" 2 "UP_2";
 VAL_ 297 SCCM_steeringAngleValidity 3 "SNA" 2 "INIT" 0 "INVALID" 1 "VALID";

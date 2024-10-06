@@ -61,6 +61,7 @@ class TeslaCAN:
     ]}
 
     values["DAS_activationRequest"] = 1 if enabled else 0
+    values["DAS_lssState"] = 2 if enabled else 0
     values["DAS_status2Counter"] = counter
     data = self.packer.make_can_msg("DAS_status2", CANBUS.party, values)[1]
     values["DAS_status2Checksum"] = self.checksum(0x389, data[:7])

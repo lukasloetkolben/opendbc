@@ -14,7 +14,6 @@ class CarState(CarStateBase):
     self.can_define = CANDefine(DBC[CP.carFingerprint]['pt'])
 
     self.hands_on_level = 0
-    self.steer_warning = None
     self.das_control = None
 
   def update(self, cp, cp_cam, *_) -> structs.CarState:
@@ -37,15 +36,13 @@ class CarState(CarStateBase):
     # Steering wheel
     epas_status = cp.vl["EPAS3S_sysStatus"]
     self.hands_on_level = epas_status["EPAS3S_handsOnLevel"]
-    self.steer_warning = self.can_define.dv["EPAS3S_sysStatus"]["EPAS3S_eacErrorCode"].get(int(epas_status["EPAS3S_eacErrorCode"]), None)
     ret.steeringAngleDeg = -epas_status["EPAS3S_internalSAS"]
     ret.steeringRateDeg = -cp_cam.vl["SCCM_steeringAngleSensor"]["SCCM_steeringAngleSpeed"]
     ret.steeringTorque = -epas_status["EPAS3S_torsionBarTorque"]
 
     ret.steeringPressed = self.hands_on_level > 0
-    eac_status = self.can_define.dv["EPAS3S_sysStatus"]["EPAS3S_eacStatus"].get(int(epas_status["EPAS3S_eacStatus"]), None)
-    ret.steerFaultPermanent = eac_status in ["EAC_FAULT"]
-    ret.steerFaultTemporary = self.steer_warning not in ["EAC_ERROR_IDLE", "EAC_ERROR_HANDS_ON"] and eac_status not in ["EAC_ACTIVE", "EAC_AVAILABLE"]
+    ret.steerFaultPermanent = epas_status["EPAS3S_steeringFault"] != 0
+    ret.steerFaultTemporary = epas_status["EPAS3S_eacStatus"] == 3  # "EAC_FAULT"
 
     # Cruise state
     cruise_state = self.can_define.dv["DI_state"]["DI_cruiseState"].get(int(cp.vl["DI_state"]["DI_cruiseState"]), None)

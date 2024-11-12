@@ -35,7 +35,7 @@ def create_longitudinal(packer, frame, accel, enabled):
   values["ACM_longitudinalRequest_Checksum"] = checksum(data[1:], 0x1D, 0x12)
   return packer.make_can_msg("ACM_longitudinalRequest", 0, values)
 
-def create_acm_lka_hba_cmd(packer, acm_lka_hba_cmd, speed):
+def create_acm_lka_hba_cmd(packer, acm_lka_hba_cmd, cntr, bus):
   values = {s: acm_lka_hba_cmd[s] for s in [
     "ACM_lkaHbaCmd_Counter",
     "ACM_lkaHbaCmd_Checksum",
@@ -59,14 +59,14 @@ def create_acm_lka_hba_cmd(packer, acm_lka_hba_cmd, speed):
     "ACM_unkown4"
   ]}
 
-  if speed > 15.65:
-    values["ACM_lkaActToi"] = 0
-    values["ACM_lkaSymbolState"] = 3
-    values["ACM_lkaLaneRecogState"] = 3
+  values["ACM_lkaHbaCmd_Counter"] = cntr
+  values["ACM_lkaActToi"] = 0
+  values["ACM_lkaSymbolState"] = 3
+  values["ACM_lkaLaneRecogState"] = 3
 
-  data = packer.make_can_msg("ACM_lkaHbaCmd", 0, values)[1]
+  data = packer.make_can_msg("ACM_lkaHbaCmd", bus, values)[1]
   values["ACM_lkaHbaCmd_Checksum"] = checksum(data[1:], 0x1D, 0x63)
-  return packer.make_can_msg("ACM_lkaHbaCmd", 0, values)
+  return packer.make_can_msg("ACM_lkaHbaCmd", bus, values)
 
 def create_vdm_adas_status(packer, vdm_adas_status, acc_on):
   values = {s: vdm_adas_status[s] for s in [

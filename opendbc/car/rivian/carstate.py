@@ -11,7 +11,7 @@ class CarState(CarStateBase):
     # Needed by carcontroller
     self.steering_control_counter = 0
     self.longitudinal_request_counter = 0
-    self.acc_on = False
+    self.longitudinal_request = None
 
   def update(self, cp, cp_cam, cp_adas, *_) -> structs.CarState:
     ret = structs.CarState()
@@ -41,8 +41,7 @@ class CarState(CarStateBase):
     ret.steerFaultTemporary = False # "EPAS_Angle_Control_Cntr_Err", EPAS_Angle_Control_Crc_Err
 
     # Cruise state
-    self.acc_on = cp_cam.vl["ACM_Status"]["ACM_FeatureStatus"] == 1
-    ret.cruiseState.enabled = cp_cam.vl["ACM_Status"]["ACM_FeatureStatus"] == 2
+    ret.cruiseState.enabled = cp_cam.vl["ACM_Status"]["ACM_FeatureStatus"] in (1, 2)
     ret.cruiseState.speed = 15 #cp.vl["ESPiB1"]["ESPiB1_VehicleSpeed"] # todo
     ret.cruiseState.available = True # cp.vl["VDM_AdasSts"]["VDM_AdasInterfaceStatus"] == 1
     ret.cruiseState.standstill = False  # This needs to be false, since we can resume from stop without sending anything special
@@ -70,6 +69,7 @@ class CarState(CarStateBase):
     # Messages needed by carcontroller
     self.steering_control_counter = cp_cam.vl["ACM_SteeringControl"]["ACM_SteeringControl_Counter"]
     self.longitudinal_request_counter = cp_cam.vl["ACM_longitudinalRequest"]["ACM_longitudinalRequest_Counter"]
+    self.longitudinal_request = copy.copy(cp_cam.vl["ACM_longitudinalRequest"])
     self.vdm_adas_status = copy.copy(cp.vl["VDM_AdasSts"])
 
     return ret

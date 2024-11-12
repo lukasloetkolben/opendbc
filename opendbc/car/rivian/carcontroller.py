@@ -13,6 +13,7 @@ class CarController(CarControllerBase):
     self.frame = 0
     self.apply_angle_last = 0
     self.packer = CANPacker(dbc_name)
+    self.engaged = False
 
   def update(self, CC, CS, now_nanos):
 
@@ -32,9 +33,16 @@ class CarController(CarControllerBase):
 
     # Longitudinal control
     if self.CP.openpilotLongitudinalControl:
-      can_sends.append(create_longitudinal(self.packer, (CS.longitudinal_request_counter + 1) % 15, actuators.accel, CC.longActive))
+      accel = CS.longitudinal_request["ACM_AccelerationRequest"]
 
-    # can_sends.append(create_vdm_adas_status(self.packer, CS.vdm_adas_status, CS.acc_on))
+      if CC.longActive:
+        self.engaged = True
+
+      if CS.out.brakePressed:
+        self.engaged = False
+
+      can_sends.append(create_longitudinal(self.packer, (CS.longitudinal_request_counter + 1) % 15, accel, self.engaged))
+
 
     new_actuators = copy.copy(actuators)
     new_actuators.steeringAngleDeg = self.apply_angle_last

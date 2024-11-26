@@ -49,7 +49,11 @@ class CarController(CarControllerBase):
       cntr = (CS.das_control["DAS_controlCounter"] + 1) % 8
       can_sends.append(self.tesla_can.create_longitudinal_command(13, 0,  cntr, False))
 
-    # TODO: HUD control
+    if self.frame % 50 == 0:
+      das_status_counter = (self.frame // 50) % 16
+      can_sends.append(self.tesla_can.create_das_status(CS.das_status, das_status_counter, CC.latActive))
+
+
     new_actuators = actuators.as_builder()
     new_actuators.steeringAngleDeg = self.apply_angle_last
 

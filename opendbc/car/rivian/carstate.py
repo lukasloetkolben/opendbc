@@ -10,6 +10,7 @@ class CarState(CarStateBase):
 
     # Needed by carcontroller
     self.steering_control_counter = 0
+    self.steering_control = None
     self.longitudinal_request_counter = 0
     self.longitudinal_request = None
     self.vdm_adas_status = None
@@ -71,6 +72,7 @@ class CarState(CarStateBase):
 
     # Messages needed by carcontroller
     self.steering_control_counter = cp_cam.vl["ACM_SteeringControl"]["ACM_SteeringControl_Counter"]
+    self.steering_control = copy.copy(cp_cam.vl["ACM_SteeringControl"])
     self.longitudinal_request_counter = cp_cam.vl["ACM_longitudinalRequest"]["ACM_longitudinalRequest_Counter"]
     self.longitudinal_request = copy.copy(cp_cam.vl["ACM_longitudinalRequest"])
     self.vdm_adas_status = copy.copy(cp.vl["VDM_AdasSts"])

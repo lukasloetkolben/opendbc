@@ -10,12 +10,12 @@ def checksum(data, poly, xor_output):
       crc &= 0xFF
   return crc ^ xor_output
 
-def create_steering(msg, packer, frame, apply_steer, lkas):
+def create_steering(packer, frame, apply_steer, lkas):
   values = {
     "ACM_SteeringControl_Counter": frame % 15,
     "ACM_EacEnabled": 1 if lkas else 0,
     "ACM_HapticRequired": 0,
-    "ACM_SteeringAngleRequest": msg["ACM_SteeringAngleRequest"],
+    "ACM_SteeringAngleRequest": apply_steer,
   }
 
   data = packer.make_can_msg("ACM_SteeringControl", 0, values)[1]

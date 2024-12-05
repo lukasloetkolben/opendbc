@@ -45,8 +45,8 @@ GEAR_MAP = [
 ]
 
 class CarControllerParams:
-  ANGLE_RATE_LIMIT_UP = AngleRateLimit(speed_bp=[0., 5., 15.], angle_v=[5., .8, .15])
-  ANGLE_RATE_LIMIT_DOWN = AngleRateLimit(speed_bp=[0., 5., 15.], angle_v=[5., 3.5, 0.4])
+  ANGLE_RATE_LIMIT_UP = AngleRateLimit(speed_bp=[0., 15.], angle_v=[.4, .4])
+  ANGLE_RATE_LIMIT_DOWN = AngleRateLimit(speed_bp=[0., 15.], angle_v=[.4, .4])
   ACCEL_MIN = -3.48  # m/s^2
   ACCEL_MAX = 2.0    # m/s^2
   JERK_LIMIT_MAX = 5

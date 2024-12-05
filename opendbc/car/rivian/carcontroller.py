@@ -23,7 +23,7 @@ class CarController(CarControllerBase):
 
     if CC.latActive:
       apply_angle = apply_std_steer_angle_limits(actuators.steeringAngleDeg, self.apply_angle_last, CS.out.vEgo, CarControllerParams)
-      apply_angle = clip(apply_angle, CS.out.steeringAngleDeg - 20, CS.out.steeringAngleDeg + 20)
+      apply_angle = clip(apply_angle, -90, 90)
     else:
       apply_angle = CS.out.steeringAngleDeg
 

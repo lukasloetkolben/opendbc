@@ -20,9 +20,13 @@ class CarController(CarControllerBase):
     # pcm_cancel_cmd = CC.cruiseControl.cancel
 
     can_sends = []
+    if CC.latActive:
+      apply_angle = actuators.steeringAngleDeg
+      apply_angle = clip(apply_angle, -90, 90)
+    else:
+      apply_angle = CS.steering_control["ACM_SteeringAngleRequest"]
 
-    apply_angle = apply_std_steer_angle_limits(actuators.steeringAngleDeg, self.apply_angle_last, CS.out.vEgo, CarControllerParams)
-    apply_angle = clip(apply_angle, -90, 90)
+    apply_angle = apply_std_steer_angle_limits(apply_angle, self.apply_angle_last, CS.out.vEgo, CarControllerParams)
     self.apply_angle_last = apply_angle
     can_sends.append(create_steering(self.packer, (CS.steering_control_counter + 1) % 15, apply_angle, CC.latActive))
 

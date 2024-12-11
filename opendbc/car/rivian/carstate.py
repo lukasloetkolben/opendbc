@@ -16,6 +16,7 @@ class CarState(CarStateBase):
     self.vdm_adas_status = None
     self.acm_lka_hba_cmd = None
     self.adas_acm_lka_hba_cmd = None
+    self.acm_status = None
 
   def update(self, cp, cp_cam, cp_adas, *_) -> structs.CarState:
     ret = structs.CarState()
@@ -78,6 +79,7 @@ class CarState(CarStateBase):
     self.vdm_adas_status = copy.copy(cp.vl["VDM_AdasSts"])
     self.acm_lka_hba_cmd = copy.copy(cp_cam.vl["ACM_lkaHbaCmd"])
     self.adas_acm_lka_hba_cmd = copy.copy(cp_adas.vl["ACM_lkaHbaCmd"])
+    self.acm_status = copy.copy(cp_cam.vl["ACM_Status"])
 
     return ret
 

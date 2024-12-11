@@ -3,7 +3,7 @@ from opendbc.car.common.numpy_fast import clip
 from opendbc.can.packer import CANPacker
 from opendbc.car import apply_std_steer_angle_limits
 from opendbc.car.interfaces import CarControllerBase
-from opendbc.car.rivian.riviancan import create_steering, create_longitudinal, create_acm_lka_hba_cmd
+from opendbc.car.rivian.riviancan import create_steering, create_longitudinal, create_acm_lka_hba_cmd, create_acm_status
 from opendbc.car.rivian.values import CarControllerParams
 
 
@@ -29,6 +29,8 @@ class CarController(CarControllerBase):
     apply_angle = apply_std_steer_angle_limits(apply_angle, self.apply_angle_last, CS.out.vEgo, CarControllerParams)
     self.apply_angle_last = apply_angle
     can_sends.append(create_steering(self.packer, (CS.steering_control_counter + 1) % 15, apply_angle, CC.latActive))
+
+    can_sends.append(create_acm_status(self.packer, CS.acm_status, CC.latActive))
 
     # cntr = CS.acm_lka_hba_cmd["ACM_lkaHbaCmd_Counter"]
     # can_sends.append(create_acm_lka_hba_cmd(self.packer, CS.acm_lka_hba_cmd, cntr,0))

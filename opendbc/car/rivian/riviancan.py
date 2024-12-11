@@ -13,9 +13,9 @@ def checksum(data, poly, xor_output):
 def create_steering(packer, frame, apply_steer, lkas):
   values = {
     "ACM_SteeringControl_Counter": frame % 15,
-    "ACM_EacEnabled": 1 if lkas else 0,
+    "ACM_EacEnabled": 1 if active else 0,
     "ACM_HapticRequired": 0,
-    "ACM_SteeringAngleRequest": apply_steer,
+    "ACM_SteeringAngleRequest": angle,
   }
 
   data = packer.make_can_msg("ACM_SteeringControl", 0, values)[1]
@@ -34,6 +34,24 @@ def create_longitudinal(packer, frame, accel, enabled):
   data = packer.make_can_msg("ACM_longitudinalRequest", 0, values)[1]
   values["ACM_longitudinalRequest_Checksum"] = checksum(data[1:], 0x1D, 0x12)
   return packer.make_can_msg("ACM_longitudinalRequest", 0, values)
+
+
+def create_acm_status(packer, acm_status, active):
+  values = {s: acm_status[s] for s in [
+    "ACM_Status_Checksum",
+    "ACM_Status_Counter",
+    "ACM_Unkown1",
+    "ACM_FeatureStatus",
+    "ACM_FaultStatus",
+    "ACM_Unkown2"
+  ]}
+
+  if active:
+    values["ACM_FeatureStatus"] = 3
+
+  data = packer.make_can_msg("ACM_Status", 0, values)[1]
+  values["ACM_Status_Checksum"] = checksum(data[1:], 0x1D, 0x5F)
+  return packer.make_can_msg("ACM_Status", 0, values)
 
 def create_acm_lka_hba_cmd(packer, acm_lka_hba_cmd, cntr, bus):
   values = {s: acm_lka_hba_cmd[s] for s in [

@@ -10,7 +10,7 @@ def checksum(data, poly, xor_output):
       crc &= 0xFF
   return crc ^ xor_output
 
-def create_steering(packer, frame, apply_steer, lkas):
+def create_steering(packer, frame, apply_steer, active):
   values = {
     "ACM_SteeringControl_Counter": frame % 15,
     "ACM_EacEnabled": 1 if active else 0,

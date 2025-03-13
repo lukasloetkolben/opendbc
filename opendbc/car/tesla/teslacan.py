@@ -55,19 +55,3 @@ class TeslaCAN:
     data = self.packer.make_can_msg("APS_eacMonitor", CANBUS.party, values)[1]
     values["APS_eacMonitorChecksum"] = self.checksum(0x27d, data[:2])
     return self.packer.make_can_msg("APS_eacMonitor", CANBUS.party, values)
-
-  def disable_autopilot(self, acc_settings):
-    values = {s: acc_settings[s] for s in [
-      "COPY",
-      "COPY_2",
-      "COPY_3",
-      "DAS_settingCounter",
-      "DAS_settingChecksum"
-    ]}
-
-    values["DAS_autopilotEnabled"] = 0
-    values["DAS_settingCounter"] =  (acc_settings["DAS_settingCounter"] + 1) % 16
-
-    data = self.packer.make_can_msg("DAS_settings", CANBUS.party, values)[1]
-    values["DAS_settingChecksum"] = self.checksum(0x293, data[:3])
-    return self.packer.make_can_msg("DAS_settings", CANBUS.party, values)

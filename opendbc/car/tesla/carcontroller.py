@@ -30,6 +30,9 @@ class CarController(CarControllerBase):
 
       can_sends.append(self.tesla_can.create_steering_control(self.apply_angle_last, lat_active, (self.frame // 2) % 16))
 
+    if self.frame % 10 == 100:
+      can_sends.append(self.tesla_can.disable_autopilot(CS.das_settings))
+
     if self.frame % 10 == 0:
       can_sends.append(self.tesla_can.create_steering_allowed((self.frame // 10) % 16))
 

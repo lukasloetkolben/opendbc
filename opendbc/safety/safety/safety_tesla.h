@@ -15,6 +15,11 @@ static void tesla_rx_hook(const CANPacket_t *to_push) {
       // Store it 1/10 deg to match steering request
       int angle_meas_new = (((GET_BYTE(to_push, 4) & 0x3FU) << 8) | GET_BYTE(to_push, 5)) - 8192U;
       update_sample(&angle_meas, angle_meas_new);
+
+      int hands_on_level = ((GET_BYTE(to_push, 4) >> 6) & 0x03U);
+      if (hands_on_level >= 3) {
+        mads_exit_controls(MADS_DISENGAGE_REASON_DRIVER_STEERING_OVERRIDE);
+      }
     }
 
     // Vehicle speed

@@ -31,8 +31,8 @@ class CarController(CarControllerBase, MadsCarController):
       self.apply_angle_last = apply_std_steer_angle_limits(actuators.steeringAngleDeg, self.apply_angle_last, CS.out.vEgo,
                                                            CS.out.steeringAngleDeg, CC.latActive, CarControllerParams.ANGLE_LIMITS)
 
-      can_sends.append(self.tesla_can.create_steering_control(self.apply_angle_last, lat_active, (self.frame // 2) % 16),
-                                                              self.use_lka_mode)
+      can_sends.append(self.tesla_can.create_steering_control(self.apply_angle_last, lat_active, (self.frame // 2) % 16,
+                                                              self.use_lka_mode))
 
     if self.frame % 10 == 0:
       can_sends.append(self.tesla_can.create_steering_allowed((self.frame // 10) % 16))

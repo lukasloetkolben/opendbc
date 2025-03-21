@@ -1,14 +1,10 @@
 import numpy as np
-from numpy import clip
-from openpilot.common.filter_simple import FirstOrderFilter
-from openpilot.common.pid import PIDController
 from openpilot.selfdrive.controls.lib.longcontrol import LongControl
 
 from opendbc.car.car_helpers import get_car_interface
-from opendbc.car.common.conversions import Conversions as CV
 from opendbc.car.tesla.values import CarControllerParams
 
-TESTING = False
+TESTING = True
 
 class TeslaTrafficLight:
   MAX_STOP_LINE_DIST = 127  # maximum valid distance for stop line
@@ -125,12 +121,8 @@ class TeslaTrafficLight:
       if calculated_decel > -1.5:
         calculated_decel = np.clip(calculated_decel, a_ego - 0.07, a_ego + 0.07)
 
-      if light_status["distance"] < 6:
-        should_stop = True
-      else:
-        should_stop = False
-
-      pid_accel_limits = self.CI.get_pid_accel_limits(self.CP, CS.vEgo, CS.vCruise * CV.KPH_TO_MS)
+      should_stop = light_status["distance"] < 6
+      pid_accel_limits = (CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)
       required_decel = float(self.LoC.update(CC.longActive, CS, calculated_decel, should_stop, pid_accel_limits))
 
       # Apply more deceleration when the model is braking, e.g. lead vehicle.

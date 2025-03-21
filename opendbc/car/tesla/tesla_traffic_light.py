@@ -119,7 +119,7 @@ class TeslaTrafficLight:
       if calculated_decel > -1.5:
         calculated_decel = np.clip(calculated_decel, a_ego - 0.07, a_ego + 0.07)
 
-      should_stop = light_status["distance"] < 6
+      should_stop = light_status["distance"] < 2
       pid_accel_limits = (CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)
       required_decel = float(self.LoC.update(CC.longActive, CS.out, calculated_decel, should_stop, pid_accel_limits))
 

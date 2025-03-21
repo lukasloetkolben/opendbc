@@ -8,7 +8,7 @@ from opendbc.car.car_helpers import get_car_interface
 from opendbc.car.common.conversions import Conversions as CV
 from opendbc.car.tesla.values import CarControllerParams
 
-TESTING = False
+TESTING = True
 
 class TeslaTrafficLight:
   MAX_STOP_LINE_DIST = 127  # maximum valid distance for stop line
@@ -125,11 +125,7 @@ class TeslaTrafficLight:
       if calculated_decel > -1.5:
         calculated_decel = np.clip(calculated_decel, a_ego - 0.07, a_ego + 0.07)
 
-      if light_status["distance"] < 6:
-        should_stop = True
-      else:
-        should_stop = False
-
+      should_stop = light_status["distance"] < 6
       pid_accel_limits = self.CI.get_pid_accel_limits(self.CP, CS.vEgo, CS.vCruise * CV.KPH_TO_MS)
       required_decel = float(self.LoC.update(CC.longActive, CS, calculated_decel, should_stop, pid_accel_limits))
 

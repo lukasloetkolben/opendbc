@@ -1,13 +1,14 @@
 import numpy as np
 from numpy import clip
-
-from opendbc.car.tesla.values import CarControllerParams
-from openpilot.common.pid import PIDController
 from openpilot.common.filter_simple import FirstOrderFilter
+from openpilot.common.pid import PIDController
+from openpilot.selfdrive.controls.lib.longcontrol import LongControl
 
-DT_CTRL = 0.04
+from opendbc.car.car_helpers import get_car_interface
+from opendbc.car.common.conversions import Conversions as CV
+from opendbc.car.tesla.values import CarControllerParams
+
 TESTING = False
-
 
 class TeslaTrafficLight:
   MAX_STOP_LINE_DIST = 127  # maximum valid distance for stop line
@@ -20,16 +21,10 @@ class TeslaTrafficLight:
 
   def __init__(self, CP):
     self.CP = CP
-    self.stopping = False
 
-    self.pid = PIDController((CP.longitudinalTuning.kpBP, CP.longitudinalTuning.kpV),
-                             (CP.longitudinalTuning.kiBP, CP.longitudinalTuning.kiV),
-                             k_f=CP.longitudinalTuning.kf, rate=1 / DT_CTRL)
-
-    self.pid.neg_limit = CarControllerParams.ACCEL_MIN
-    self.pid.pos_limit = CarControllerParams.ACCEL_MAX
-
-    self.decel_filter = FirstOrderFilter(0.0, 2.0, DT_CTRL)
+    self.CI = get_car_interface(self.CP)
+    self.LoC = LongControl(self.CP)
+    self.LoC.pid.i_rate = 0.04
 
   def calculate_required_deceleration(self, vego, distance_to_stop_m):
     # Already stopped
@@ -64,13 +59,6 @@ class TeslaTrafficLight:
 
     # Apply deceleration factor to create progressive profile
     required_deceleration *= decel_factor
-
-    # Special handling for final approach (under 5m)
-    if distance_to_stop_m <= 5:
-      final_decel = float(np.interp(distance_to_stop_m,
-                                    [5, 0],
-                                    [-1.75, CarControllerParams.ACCEL_MIN]))
-      return min(-required_deceleration, final_decel)
 
     # Ensure deceleration is negative (slowing down)
     return -required_deceleration
@@ -110,20 +98,17 @@ class TeslaTrafficLight:
     a_ego = CS.out.aEgo
     no_obstacle = CS.das_status2["DAS_pmmObstacleSeverity"] == 0
     gas_pressed = CS.out.gasPressed
-
+    result_accel = accel
     light_status = self._get_traffic_light_status(CS)
 
-    # Default to current accel
-    result_accel = accel
+    if not CC.longActive:
+      self.LoC.reset()
 
     # If beyond detection range, gas pressed, or ACC not active, just return current accel
     if (not light_status["valid"] or
       light_status["distance"] >= self.MAX_STOP_LINE_DIST or
       gas_pressed or
       not CC.longActive):
-      self.stopping = False
-      self.pid.reset()
-      self.decel_filter.update(accel)
       return accel
 
     # Handle green light case for smooth starts
@@ -132,47 +117,26 @@ class TeslaTrafficLight:
       "distance"] < 4):
       result_accel = max(accel, self.GREEN_LIGHT_ACCEL)
       result_accel = min(result_accel, CS.das_control["DAS_accelMax"])
-      self.stopping = False
-      self.pid.reset()
-      self.decel_filter.update(result_accel)
+      self.LoC.reset()
       return result_accel
-
-    # Reset when conditions change to green
-    if not TESTING and light_status["is_green"]:
-      self.stopping = False
-      self.pid.reset()
-      self.decel_filter.update(accel)
-      return accel
 
     # Handle yellow light - treat as red if we need significant deceleration
     is_effective_red = TESTING or light_status["is_red"]
-    required_decel = self.calculate_required_deceleration(v_ego, light_status["distance"])
+    calculated_decel = self.calculate_required_deceleration(v_ego, light_status["distance"])
 
     if not TESTING and light_status["is_yellow"]:
-      if required_decel >= self.YELLOW_DECEL_THRESHOLD:
+      if calculated_decel >= self.YELLOW_DECEL_THRESHOLD:
         is_effective_red = True
 
-    # Handle red (or effective red) light
+    # accel PID loop
     if is_effective_red:
+      if calculated_decel > -1.5:
+        calculated_decel = np.clip(calculated_decel, a_ego - 0.07, a_ego + 0.07)
 
-      if is_effective_red:
-        if required_decel > 0:
-          output_accel = required_decel
-        elif required_decel > -1.75 and not self.stopping:
-          output_accel = min(a_ego, clip(0.0, a_ego - 0.07, a_ego))
-        else:
-          # Active stopping mode
-          self.stopping = True
+      pid_accel_limits = self.CI.get_pid_accel_limits(self.CP, CS.vEgo, CS.vCruise * CV.KPH_TO_MS)
+      required_decel = float(self.LoC.update(CC.longActive, CS, calculated_decel, is_effective_red, pid_accel_limits))
 
-          error = required_decel - a_ego
-          output_accel = self.pid.update(error, speed=v_ego, feedforward=required_decel)
-
-      # Smooth deceleration
-      required_decel = self.decel_filter.update(output_accel)
       # Apply more deceleration when the model is braking, e.g. lead vehicle.
       result_accel = min(accel, required_decel)
-    else:
-      # For non-red/yellow lights, update the filter with current accel
-      self.decel_filter.update(accel)
 
     return result_accel

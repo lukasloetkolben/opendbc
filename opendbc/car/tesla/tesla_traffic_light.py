@@ -115,7 +115,7 @@ class TeslaTrafficLight:
         is_effective_red = True
 
     # accel PID loop
-    if is_effective_red:
+    if is_effective_red and calculated_decel < 0 and light_status["distance"] < 50:
       if calculated_decel > -1.5:
         calculated_decel = np.clip(calculated_decel, a_ego - 0.07, a_ego + 0.07)
 

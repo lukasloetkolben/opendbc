@@ -26,7 +26,7 @@ class TeslaTrafficLight:
 
     # Progressive deceleration profile based on distance
     # This creates a more natural feeling than constant deceleration
-    decel_factor = float(np.interp(distance_to_stop_m, [10, 30], [1.0, 0.6]))
+    decel_factor = float(np.interp(distance_to_stop_m, [10, 30], [1.0, 0.5]))
 
     # Base required deceleration to stop in target time
     # a = -v_f/t where v_f is current velocity (for smooth ramp-down)

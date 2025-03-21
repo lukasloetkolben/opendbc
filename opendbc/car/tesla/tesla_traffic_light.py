@@ -125,8 +125,13 @@ class TeslaTrafficLight:
       if calculated_decel > -1.5:
         calculated_decel = np.clip(calculated_decel, a_ego - 0.07, a_ego + 0.07)
 
+      if light_status["distance"] < 6:
+        should_stop = True
+      else:
+        should_stop = False
+
       pid_accel_limits = self.CI.get_pid_accel_limits(self.CP, CS.vEgo, CS.vCruise * CV.KPH_TO_MS)
-      required_decel = float(self.LoC.update(CC.longActive, CS, calculated_decel, is_effective_red, pid_accel_limits))
+      required_decel = float(self.LoC.update(CC.longActive, CS, calculated_decel, should_stop, pid_accel_limits))
 
       # Apply more deceleration when the model is braking, e.g. lead vehicle.
       result_accel = min(accel, required_decel)

@@ -1,7 +1,5 @@
 import numpy as np
 from openpilot.selfdrive.controls.lib.longcontrol import LongControl
-
-from opendbc.car.car_helpers import get_car_interface
 from opendbc.car.tesla.values import CarControllerParams
 
 TESTING = True
@@ -18,7 +16,6 @@ class TeslaTrafficLight:
   def __init__(self, CP):
     self.CP = CP
 
-    self.CI = get_car_interface(self.CP)
     self.LoC = LongControl(self.CP)
     self.LoC.pid.i_rate = 0.04
 

@@ -94,6 +94,7 @@ class TeslaTrafficLight:
       light_status["distance"] >= self.MAX_STOP_LINE_DIST or
       gas_pressed or
       not CC.longActive):
+      self.LoC.reset()
       return accel
 
     # Handle green light case for smooth starts
@@ -120,7 +121,7 @@ class TeslaTrafficLight:
 
       should_stop = light_status["distance"] < 6
       pid_accel_limits = (CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)
-      required_decel = float(self.LoC.update(CC.longActive, CS, calculated_decel, should_stop, pid_accel_limits))
+      required_decel = float(self.LoC.update(CC.longActive, CS.out, calculated_decel, should_stop, pid_accel_limits))
 
       # Apply more deceleration when the model is braking, e.g. lead vehicle.
       result_accel = min(accel, required_decel)

@@ -27,14 +27,6 @@ class TeslaTrafficLight:
     self.LoC.pid.i_rate = 0.04
 
   def calculate_required_deceleration(self, vego, distance_to_stop_m):
-    # Already stopped
-    if vego <= self.CP.vEgoStopping:
-      return self.CP.stopAccel
-
-    # Past the stop line case
-    if distance_to_stop_m <= 0:
-      return CarControllerParams.ACCEL_MIN
-
     # Target time to stop - creates a more comfortable deceleration profile
     # Higher speeds get more time to decelerate gradually
     target_time = max(3.0, vego * 0.45)

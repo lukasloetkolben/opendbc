@@ -2,7 +2,7 @@ import numpy as np
 from openpilot.selfdrive.controls.lib.longcontrol import LongControl
 from opendbc.car.tesla.values import CarControllerParams
 
-TESTING = True
+TESTING = False
 
 class TeslaTrafficLight:
   MAX_STOP_LINE_DIST = 127  # maximum valid distance for stop line

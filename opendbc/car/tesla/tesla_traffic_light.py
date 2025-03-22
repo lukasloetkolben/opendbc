@@ -145,7 +145,10 @@ class TeslaTrafficLight:
       return accel
 
     # Handle yellow light - treat as red if we need significant deceleration
-    is_effective_red = TESTING or light_status["is_red"]
+    is_effective_red = light_status["is_red"]
+    if TESTING:
+      is_effective_red = light_status["valid"]
+
     required_decel = self.calculate_required_deceleration(v_ego, light_status["distance"])
 
     if not TESTING and light_status["is_yellow"]:

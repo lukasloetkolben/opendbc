@@ -17,8 +17,10 @@ class TeslaTrafficLight:
   def __init__(self, CP):
     self.CP = CP
     self.phase = 0
+    self.last_accel = 0
     self.LoC = LongControl(self.CP)
     self.LoC.pid.i_rate = 0.04
+
 
   def calculate_required_deceleration(self, vego, distance_to_stop_m):
     if distance_to_stop_m <= 0:
@@ -110,12 +112,12 @@ class TeslaTrafficLight:
         accel = -2.5
         rate = 0.075
 
-      if v_ego <= 20 * CV.KPH_TO_MS and self.phase == 1:
+      if v_ego <= 15 * CV.KPH_TO_MS and self.phase == 1:
         self.phase = 2
 
       if self.phase == 2:
-        accel = 0
-        rate = 0.03
+        accel = calculated_decel
+        rate = 0.01
 
       if self.phase == 2 and (light_status["distance"] / v_ego) < 1.75:
         self.phase = 3
@@ -123,12 +125,12 @@ class TeslaTrafficLight:
       if self.phase == 3:
         should_stop = True
 
-      accel = np.clip(accel, a_ego - rate, a_ego + rate)
-
+      accel = np.clip(accel, self.last_accel - rate, self.last_accel + rate)
       pid_accel_limits = (CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)
-      pid_accel = float(self.LoC.update(CC.longActive, CS, accel, should_stop, pid_accel_limits))
+      pid_accel = float(self.LoC.update(CC.longActive, CS.out, accel, should_stop, pid_accel_limits))
 
       # Apply more deceleration when the model is braking, e.g. lead vehicle.
       result_accel = min(accel, pid_accel)
 
+    self.last_accel = result_accel
     return result_accel

@@ -18,9 +18,13 @@ class TeslaTrafficLight:
     self.CP = CP
     self.phase = 0
     self.last_accel = 0
+    self.phase_one_accel = -2.5
     self.LoC = LongControl(self.CP)
     self.LoC.pid.i_rate = 0.04
 
+  def reset_red_light(self):
+    self.phase = 0
+    self.phase_one_accel = -2.5
 
   def calculate_required_deceleration(self, vego, distance_to_stop_m):
     if distance_to_stop_m <= 0:
@@ -71,13 +75,13 @@ class TeslaTrafficLight:
 
     if not CC.longActive:
       self.LoC.reset()
-      self.phase = 0
+      self.reset_red_light()
 
     if (not light_status["valid"] or
       light_status["distance"] >= self.MAX_STOP_LINE_DIST or
       gas_pressed or
       not CC.longActive):
-      self.phase = 0
+      self.reset_red_light()
       return accel
 
     # Handle green light case for smooth starts
@@ -87,7 +91,7 @@ class TeslaTrafficLight:
       result_accel = max(accel, self.GREEN_LIGHT_ACCEL)
       result_accel = min(result_accel, CS.das_control["DAS_accelMax"])
       self.LoC.reset()
-      self.phase = 0
+      self.reset_red_light()
       return result_accel
 
     # Handle yellow light - treat as red if we need significant deceleration
@@ -99,7 +103,7 @@ class TeslaTrafficLight:
         is_effective_red = True
       else:
         is_effective_red = False
-        self.phase = 0
+        self.reset_red_light()
 
     if is_effective_red:
       rate = 0.07
@@ -109,7 +113,8 @@ class TeslaTrafficLight:
         self.phase = 1
 
       if self.phase == 1:
-        accel = -2.5
+        self.phase_one_accel = min(calculated_decel, self.phase_one_accel)
+        accel = self.phase_one_accel
         rate = 0.075
 
       if v_ego <= 20 * CV.KPH_TO_MS and self.phase == 1:
@@ -117,7 +122,7 @@ class TeslaTrafficLight:
 
       if self.phase == 2:
         accel = calculated_decel
-        rate = 0.01
+        rate = 0.035
 
       if self.phase == 2 and (light_status["distance"] / v_ego) < 1.75:
         self.phase = 3

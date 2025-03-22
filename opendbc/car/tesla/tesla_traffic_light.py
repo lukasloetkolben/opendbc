@@ -121,10 +121,10 @@ class TeslaTrafficLight:
         self.phase = 2
 
       if self.phase == 2:
-        accel = calculated_decel
-        rate = 0.035
+        accel = 0
+        rate = 0.01
 
-      if self.phase == 2 and (light_status["distance"] / v_ego) < 1.75:
+      if self.phase == 2 and light_status["distance"] < 4:
         self.phase = 3
 
       if self.phase == 3:

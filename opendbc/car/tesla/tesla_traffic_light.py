@@ -1,5 +1,6 @@
 import numpy as np
 from openpilot.selfdrive.controls.lib.longcontrol import LongControl
+from opendbc.car.common.conversions import Conversions as CV
 
 from opendbc.car.car_helpers import get_car_interface
 from opendbc.car.tesla.values import CarControllerParams
@@ -17,39 +18,19 @@ class TeslaTrafficLight:
 
   def __init__(self, CP):
     self.CP = CP
-
+    self.phase = 0
     self.CI = get_car_interface(self.CP)
     self.LoC = LongControl(self.CP)
     self.LoC.pid.i_rate = 0.04
 
   def calculate_required_deceleration(self, vego, distance_to_stop_m):
-    # Target time to stop - creates a more comfortable deceleration profile
-    # Higher speeds get more time to decelerate gradually
-    target_time = max(3.0, vego * 0.45)
+    if distance_to_stop_m <= 0:
+      return CarControllerParams.ACCEL_MIN
 
-    # Progressive deceleration profile based on distance
-    # This creates a more natural feeling than constant deceleration
-    decel_factor = float(np.interp(distance_to_stop_m, [10, 30], [1.0, 0.6]))
-
-    # Base required deceleration to stop in target time
-    # a = -v_f/t where v_f is current velocity (for smooth ramp-down)
-    time_based_decel = vego / target_time
-
-    # Distance-based deceleration (physics approach)
     # a = -v_i²/(2*d)
-    distance_based_decel = (vego ** 2) / (2 * max(0.1, distance_to_stop_m))
+    distance_based_decel = (vego ** 2) / (2 * distance_to_stop_m)
 
-    # Combine both approaches, weighted by distance
-    # Far away: rely more on time-based comfort
-    # Near stop line: rely more on distance-based precision
-    distance_weight = min(1.0, 15.0 / max(1.0, distance_to_stop_m))
-    required_deceleration = (1 - distance_weight) * time_based_decel + distance_weight * distance_based_decel
-
-    # Apply deceleration factor to create progressive profile
-    required_deceleration *= decel_factor
-
-    # Ensure deceleration is negative (slowing down)
-    return -required_deceleration
+    return -distance_based_decel
 
   def _get_traffic_light_status(self, CS):
     """Extract traffic light status information from car state"""
@@ -91,12 +72,13 @@ class TeslaTrafficLight:
 
     if not CC.longActive:
       self.LoC.reset()
+      self.phase = 0
 
-    # If beyond detection range, gas pressed, or ACC not active, just return current accel
     if (not light_status["valid"] or
       light_status["distance"] >= self.MAX_STOP_LINE_DIST or
       gas_pressed or
       not CC.longActive):
+      self.phase = 0
       return accel
 
     # Handle green light case for smooth starts
@@ -106,6 +88,7 @@ class TeslaTrafficLight:
       result_accel = max(accel, self.GREEN_LIGHT_ACCEL)
       result_accel = min(result_accel, CS.das_control["DAS_accelMax"])
       self.LoC.reset()
+      self.phase = 0
       return result_accel
 
     # Handle yellow light - treat as red if we need significant deceleration
@@ -115,17 +98,40 @@ class TeslaTrafficLight:
     if not TESTING and light_status["is_yellow"]:
       if calculated_decel >= self.YELLOW_DECEL_THRESHOLD:
         is_effective_red = True
+      else:
+        is_effective_red = False
+        self.phase = 0
 
-    # accel PID loop
     if is_effective_red:
-      if calculated_decel > -1.5:
-        calculated_decel = np.clip(calculated_decel, a_ego - 0.07, a_ego + 0.07)
+      rate = 0.07
+      should_stop = False
 
-      should_stop = light_status["distance"] < 6
+      if self.phase == 0 and calculated_decel < -2:
+        self.phase = 1
+      
+      if self.phase == 1:
+        accel = -2.5
+        rate = 0.075
+
+      if v_ego <= 20 * CV.KPH_TO_MS and self.phase == 1:
+        self.phase = 2
+
+      if self.phase == 2:
+        accel = 0
+        rate = 0.03
+
+      if self.phase == 2 and (light_status["distance"] / v_ego) < 1.75:
+        self.phase = 3
+
+      if self.phase == 3:
+        should_stop = True
+
+      accel = np.clip(accel, a_ego - rate, a_ego + rate)
+
       pid_accel_limits = (CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)
-      required_decel = float(self.LoC.update(CC.longActive, CS, calculated_decel, should_stop, pid_accel_limits))
+      pid_accel = float(self.LoC.update(CC.longActive, CS, accel, should_stop, pid_accel_limits))
 
       # Apply more deceleration when the model is braking, e.g. lead vehicle.
-      result_accel = min(accel, required_decel)
+      result_accel = min(accel, pid_accel)
 
     return result_accel

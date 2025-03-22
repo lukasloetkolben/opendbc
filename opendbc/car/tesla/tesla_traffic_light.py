@@ -108,7 +108,7 @@ class TeslaTrafficLight:
 
       if self.phase == 0 and calculated_decel < -2:
         self.phase = 1
-      
+
       if self.phase == 1:
         accel = -2.5
         rate = 0.075

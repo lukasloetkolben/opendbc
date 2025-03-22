@@ -3,6 +3,7 @@ from openpilot.selfdrive.controls.lib.longcontrol import LongControl
 from opendbc.car.common.conversions import Conversions as CV
 from opendbc.car.tesla.values import CarControllerParams
 
+
 TESTING = True
 
 class TeslaTrafficLight:
@@ -18,13 +19,24 @@ class TeslaTrafficLight:
     self.CP = CP
     self.phase = 0
     self.last_accel = 0
-    self.phase_one_accel = -2.5
+
     self.LoC = LongControl(self.CP)
     self.LoC.pid.i_rate = 0.04
+    # Store the last 4 deceleration values
+    self.decel_history = np.zeros(4)
+    self.avg_calculated_decel = 0
+
+  # Add this new method to your class:
+  def update_decel_history(self, new_decel):
+    # Shift values: remove oldest, add newest
+    self.decel_history = np.roll(self.decel_history, -1)
+    self.decel_history[-1] = new_decel
+
+    # Calculate and return the average
+    return np.mean(self.decel_history)
 
   def reset_red_light(self):
     self.phase = 0
-    self.phase_one_accel = -2.5
 
   def calculate_required_deceleration(self, vego, distance_to_stop_m):
     if distance_to_stop_m <= 0:
@@ -97,6 +109,8 @@ class TeslaTrafficLight:
     # Handle yellow light - treat as red if we need significant deceleration
     is_effective_red = TESTING or light_status["is_red"]
     calculated_decel = self.calculate_required_deceleration(v_ego, light_status["distance"])
+    self.avg_calculated_decel = self.update_decel_history(calculated_decel)
+
 
     if not TESTING and light_status["is_yellow"]:
       if calculated_decel >= self.YELLOW_DECEL_THRESHOLD:
@@ -109,19 +123,18 @@ class TeslaTrafficLight:
       rate = 0.07
       should_stop = False
 
-      if self.phase == 0 and calculated_decel < -2:
+      if self.phase == 0 and self.avg_calculated_decel < -2:
         self.phase = 1
 
       if self.phase == 1:
-        self.phase_one_accel = min(calculated_decel, self.phase_one_accel)
-        accel = self.phase_one_accel
+        accel = -2.5
         rate = 0.075
 
       if v_ego <= 20 * CV.KPH_TO_MS and self.phase == 1:
         self.phase = 2
 
       if self.phase == 2:
-        accel = 0
+        accel = calculated_decel
         rate = 0.01
 
       if self.phase == 2 and light_status["distance"] < 4:

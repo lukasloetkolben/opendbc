@@ -112,7 +112,7 @@ class TeslaTrafficLight:
         accel = -2.5
         rate = 0.075
 
-      if v_ego <= 15 * CV.KPH_TO_MS and self.phase == 1:
+      if v_ego <= 20 * CV.KPH_TO_MS and self.phase == 1:
         self.phase = 2
 
       if self.phase == 2:

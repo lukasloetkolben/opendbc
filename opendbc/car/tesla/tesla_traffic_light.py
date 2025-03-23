@@ -49,19 +49,9 @@ class TeslaTrafficLight:
     if vego < 0.1:
       return 0.0
 
-    # For a traffic light, we'll treat it as a stationary lead vehicle (v_lead = 0)
-    v_lead = 0.0
-
-    # Use the same safety calculations as in long_mpc.py for stopping distance
-    # The traffic light acts as a non-moving obstacle (v=0) at distance_to_stop_m
-    t_follow = 0.5  # Use a smaller follow time for traffic lights compared to vehicles
-
-    # Calculate the safe following distance using the same formula as in the MPC
-    safe_distance = get_safe_obstacle_distance(vego, t_follow)
-
     # The effective distance we want to maintain from the stop line
     # is the safe distance minus the stopping equivalence factor of the lead (which is 0)
-    desired_distance = safe_distance - get_stopped_equivalence_factor(v_lead)
+    desired_distance = 1
 
     # If we're closer than the desired distance, we need to brake
     distance_error = distance_to_stop_m - desired_distance
@@ -93,7 +83,7 @@ class TeslaTrafficLight:
 
     # Scale the deceleration based on how much we've violated the safety distance
     # The more we violate, the closer to max braking we want to be
-    distance_violation_ratio = min(1.0, abs(distance_error) / safe_distance)
+    distance_violation_ratio = min(1.0, abs(distance_error) / max(desired_distance * 5, 1.0))
 
     # Blend between the base deceleration and max deceleration based on violation
     required_decel = base_decel * (

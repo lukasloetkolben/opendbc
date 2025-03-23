@@ -49,52 +49,58 @@ class TeslaTrafficLight:
     if vego < 0.1:
       return 0.0
 
-    # The effective distance we want to maintain from the stop line
-    # is the safe distance minus the stopping equivalence factor of the lead (which is 0)
-    desired_distance = 1
+    # Calibration factor to adjust stopping distance
+    # Decrease this value to stop closer to the stop line (e.g., 0.7-0.9)
+    # Increase this value to stop further from the stop line (e.g., 1.1-1.3)
+    STOP_DISTANCE_SCALE = 0.7  # Calibration factor
 
-    # If we're closer than the desired distance, we need to brake
-    distance_error = distance_to_stop_m - desired_distance
+    # Apply the calibration factor to the distance
+    calibrated_distance = distance_to_stop_m * STOP_DISTANCE_SCALE
 
-    # Handle immediate danger case
-    if distance_to_stop_m < CRASH_DISTANCE:
+    # Target distance from stop line when fully stopped
+    FINAL_DISTANCE = 1.0  # 1 meter from the stop line when stopped
+
+    # Handle immediate danger case (too close to stop line)
+    if calibrated_distance < CRASH_DISTANCE:
       return CarControllerParams.ACCEL_MIN
 
-    # If we have sufficient distance, maintain current acceleration
-    if distance_error > 0:
-      # We're far enough away, just maintain current acceleration with a cap at 0
-      # (don't accelerate toward a stop)
-      return min(aego, 0.0)
+    # Basic kinematic calculation for required deceleration
+    # Using v_f^2 = v_i^2 + 2*a*d, where v_f = 0 (we want to stop)
+    # Solving for a: a = -v_i^2 / (2*d)
+    # We subtract FINAL_DISTANCE to stop with our target gap
+    stopping_distance = max(0.1, calibrated_distance - FINAL_DISTANCE)
 
-    # Calculate how much deceleration is needed based on the distance error
-    # and current velocity (similar to what MPC optimization would do)
-    #
-    # We want deceleration proportional to how much we've violated the safe distance
-    # normalized by the stopping distance
-
-    # First calculate a base deceleration assuming constant deceleration to stop
-    # Using the equation: v_f^2 = v_i^2 + 2*a*d
-    # For stopping v_f = 0, so a = -v_i^2/(2*d)
-    if distance_to_stop_m > 0:
-      base_decel = -(vego ** 2) / (2 * max(distance_to_stop_m, 0.1))
+    # Calculate basic required deceleration to stop with the desired gap
+    if stopping_distance > 0:
+      required_decel = -(vego ** 2) / (2 * stopping_distance)
     else:
-      # If we're at or past the stop line, maximum braking
-      base_decel = CarControllerParams.ACCEL_MIN
+      # If we're already at or past our target stopping point, maximum braking
+      required_decel = CarControllerParams.ACCEL_MIN
 
-    # Scale the deceleration based on how much we've violated the safety distance
-    # The more we violate, the closer to max braking we want to be
-    distance_violation_ratio = min(1.0, abs(distance_error) / max(desired_distance * 5, 1.0))
+    # Add a margin of safety by increasing the magnitude (more negative)
+    # This makes the car start braking a bit earlier than strictly necessary
+    safety_margin = 1.1  # 10% more deceleration than the basic physics calculation
+    required_decel = required_decel * safety_margin
 
-    # Blend between the base deceleration and max deceleration based on violation
-    required_decel = base_decel * (
-        1.0 - distance_violation_ratio) + CarControllerParams.ACCEL_MIN * distance_violation_ratio
+    # Calculate minimum safe braking distance with current velocity
+    # This is a physics-based minimum stopping distance
+    min_safe_distance = (vego ** 2) / (2 * abs(CarControllerParams.ACCEL_MIN))
 
-    # Clip to vehicle capabilities and ensure we're not accelerating
+    # If we're too close to stop comfortably, increase braking force
+    if calibrated_distance < min_safe_distance + FINAL_DISTANCE:
+      # Calculate how much we've violated the minimum safe distance
+      violation_ratio = 1.0 - (calibrated_distance / (min_safe_distance + FINAL_DISTANCE))
+      violation_ratio = clip(violation_ratio, 0.0, 1.0)
+
+      # Blend between calculated deceleration and maximum deceleration
+      # based on how much we've violated the safe distance
+      required_decel = required_decel * (1.0 - violation_ratio) + CarControllerParams.ACCEL_MIN * violation_ratio
+
+    # Ensure deceleration is within vehicle capabilities and never positive (no acceleration)
     required_decel = clip(required_decel, CarControllerParams.ACCEL_MIN, 0.0)
 
-    # Limit acceleration change rate (jerk) similar to MPC's jerk cost
-    # This provides smoother transitions in braking
-    max_accel_change = 2.0 * DT_CTRL  # m/s³ * dt
+    # Limit acceleration change rate (jerk) for smoother braking
+    max_accel_change = 2.0  # m/s³ * dt
     prev_decel = min(aego, 0.0)  # Only consider braking component
     required_decel = clip(required_decel,
                           prev_decel - max_accel_change,

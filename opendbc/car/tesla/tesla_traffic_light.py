@@ -115,10 +115,10 @@ class TeslaTrafficLight:
     if is_effective_red and ((light_status["distance"] / v_ego) <= 8 or self.phase != 0):
       output_accel = 0
       required_decel = self.calculate_required_deceleration(v_ego, light_status["distance"])
-      rate = 0.03
+      rate = 0.07
 
       if required_decel >= -2 and self.phase == 0:
-        output_accel = clip(0.0, a_ego - 0.03, a_ego)
+        output_accel = clip(0.0, a_ego - rate, a_ego)
 
       if required_decel < -2 and self.phase == 0:
         self.phase = 1

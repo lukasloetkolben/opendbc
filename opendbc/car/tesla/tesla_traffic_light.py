@@ -134,9 +134,10 @@ class TeslaTrafficLight:
         accel = min(max(self.target_speed - v_ego, -0.6), 0.1)
         output_accel = clip(accel, self.last_accel - rate, self.last_accel + rate)
 
-      should_stop = (light_status["distance"] / v_ego) < 1
+      should_stop = ((light_status["distance"] / v_ego) < 1) or light_status["distance"] < 4
       if should_stop or self.phase == 3:
         self.phase = 3
+        rate = 0.1
         output_accel = clip(CarControllerParams.ACCEL_MIN, self.last_accel - rate, self.last_accel + rate)
 
       pid_accel_limits = (CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)

@@ -138,7 +138,7 @@ class TeslaTrafficLight:
         output_accel = self.last_accel - 0.06
 
       pid_accel_limits = (CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)
-      required_decel = float(self.LoC.update(CC.longActive, CS, output_accel, should_stop, pid_accel_limits))
+      required_decel = float(self.LoC.update(CC.longActive, CS.out, output_accel, should_stop, pid_accel_limits))
 
       # Apply more deceleration when the model is braking, e.g. lead vehicle.
       result_accel = min(accel, required_decel)

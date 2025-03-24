@@ -116,7 +116,7 @@ class TeslaTrafficLight:
     if is_effective_red and ((light_status["distance"] / v_ego) <= 8) or self.phase != 0:
       output_accel = 0
       required_decel = self.calculate_required_deceleration(v_ego, light_status["distance"])
-      rate = 0.07
+      rate = 0.03
       if required_decel > -2 and self.phase == 0:
         output_accel = clip(0.0, a_ego - 0.03, a_ego)
       else:
@@ -131,14 +131,13 @@ class TeslaTrafficLight:
         self.phase = 2
 
       if self.phase == 2:
-        accel = min(max(self.target_speed - v_ego, -0.6), 0.1)
+        accel = min(max(self.target_speed - v_ego, -0.1), 0.1)
         output_accel = clip(accel, self.last_accel - rate, self.last_accel + rate)
 
-      should_stop = ((light_status["distance"] / v_ego) < 1) or light_status["distance"] < 4
-      if should_stop or self.phase == 3:
+      if light_status["distance"] < 4:
         self.phase = 3
         rate = 0.1
-        output_accel = clip(CarControllerParams.ACCEL_MIN, self.last_accel - rate, self.last_accel + rate)
+        output_accel = clip(CarControllerParams.ACCEL_MIN, self.last_accel - rate, self.last_accel)
 
       pid_accel_limits = (CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)
       required_decel = float(self.LoC.update(CC.longActive, CS.out, output_accel, self.phase == 3, pid_accel_limits))

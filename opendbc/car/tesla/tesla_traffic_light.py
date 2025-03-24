@@ -137,11 +137,12 @@ class TeslaTrafficLight:
         self.phase = 3
 
       if self.phase == 3:
+
         rate = self.CP.stoppingDecelRate
         output_accel = required_decel if v_ego > self.CP.vEgoStopping else self.CP.stopAccel
-        output_accel = clip(output_accel, self.last_accel - rate, self.last_accel + rate)
+        output_accel = CarControllerParams.ACCEL_MIN # clip(output_accel, self.last_accel - rate, self.last_accel + rate)
 
-
+      print(f"Phase {self.phase} - {round(accel, 2)}")
       pid_accel_limits = (CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)
       required_decel = float(self.LoC.update(CC.longActive, CS.out, output_accel, self.phase == 3, pid_accel_limits))
 

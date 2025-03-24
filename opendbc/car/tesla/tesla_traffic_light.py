@@ -2,12 +2,10 @@ import numpy as np
 from numpy import clip
 
 from opendbc.car.tesla.values import CarControllerParams
-from openpilot.common.pid import PIDController
-from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import get_safe_obstacle_distance, \
-  get_stopped_equivalence_factor, CRASH_DISTANCE
+from openpilot.selfdrive.controls.lib.longcontrol import LongControl
 
 DT_CTRL = 0.04
-TESTING = True
+TESTING = False
 
 
 class TeslaTrafficLight:
@@ -16,97 +14,34 @@ class TeslaTrafficLight:
   RED_LIGHT_STATE = 1
   GREEN_LIGHT_STATE = 2
   YELLOW_LIGHT_STATE = 3
-  YELLOW_DECEL_THRESHOLD = -2.5  # threshold to treat yellow as red
   GREEN_LIGHT_ACCEL = 0.4  # gentle acceleration for green lights
 
   def __init__(self, CP):
     self.CP = CP
-    self.stopping = False
+    self.target_speed = 20 / 3.6  # 20 km/h
+    self.target_braking = 0
+    self.phase = 0
 
-    self.pid = PIDController((CP.longitudinalTuning.kpBP, CP.longitudinalTuning.kpV),
-                             (CP.longitudinalTuning.kiBP, CP.longitudinalTuning.kiV),
-                             k_f=CP.longitudinalTuning.kf, rate=1 / DT_CTRL)
+    self.LoC = LongControl(self.CP)
+    self.LoC.pid.i_rate = 0.04
+    self.last_accel = 0
 
-    self.pid.neg_limit = CarControllerParams.ACCEL_MIN
-    self.pid.pos_limit = CarControllerParams.ACCEL_MAX
+  def calculate_required_deceleration(self, v_ego, a_ego, distance_to_traffic_light):
+    target_distance = distance_to_traffic_light - 15
 
-    self.last_result_accel = 0
-
-  def calculate_required_deceleration(self, aego, vego, distance_to_stop_m):
-    """
-    Calculate the deceleration required to stop at a traffic light by modeling it
-    as a stopped vehicle at the stop line position.
-
-    Parameters:
-    aego (float): Current ego acceleration in m/s^2
-    vego (float): Current ego velocity in m/s
-    distance_to_stop_m (float): Distance to the stop line in meters
-
-    Returns:
-    float: Required deceleration in m/s^2 to safely stop
-    """
-    # If already stopped or very slow, no need to decelerate
-    if vego < 0.1:
-      return 0.0
-
-    # Calibration factor to adjust stopping distance
-    # Decrease this value to stop closer to the stop line (e.g., 0.7-0.9)
-    # Increase this value to stop further from the stop line (e.g., 1.1-1.3)
-    STOP_DISTANCE_SCALE = 0.7  # Calibration factor
-
-    # Apply the calibration factor to the distance
-    calibrated_distance = distance_to_stop_m * STOP_DISTANCE_SCALE
-
-    # Target distance from stop line when fully stopped
-    FINAL_DISTANCE = 1.0  # 1 meter from the stop line when stopped
-
-    # Handle immediate danger case (too close to stop line)
-    if calibrated_distance < CRASH_DISTANCE:
+    # If we're already at or past the target point, return a strong deceleration
+    if target_distance <= 0:
       return CarControllerParams.ACCEL_MIN
 
-    # Basic kinematic calculation for required deceleration
-    # Using v_f^2 = v_i^2 + 2*a*d, where v_f = 0 (we want to stop)
-    # Solving for a: a = -v_i^2 / (2*d)
-    # We subtract FINAL_DISTANCE to stop with our target gap
-    stopping_distance = max(0.1, calibrated_distance - FINAL_DISTANCE)
+    # Using kinematics equation: a = (vf^2 - vi^2) / (2*d)
+    required_accel = (self.target_speed ** 2 - v_ego ** 2) / (2 * target_distance)
 
-    # Calculate basic required deceleration to stop with the desired gap
-    if stopping_distance > 0:
-      required_decel = -(vego ** 2) / (2 * stopping_distance)
-    else:
-      # If we're already at or past our target stopping point, maximum braking
-      required_decel = CarControllerParams.ACCEL_MIN
+    # If the calculated acceleration is positive, it means we need to speed up
+    # In this case, we should return a small negative value to maintain speed
+    if required_accel >= 0:
+      return -0.1
 
-    # Add a margin of safety by increasing the magnitude (more negative)
-    # This makes the car start braking a bit earlier than strictly necessary
-    safety_margin = 1.1  # 10% more deceleration than the basic physics calculation
-    required_decel = required_decel * safety_margin
-
-    # Calculate minimum safe braking distance with current velocity
-    # This is a physics-based minimum stopping distance
-    min_safe_distance = (vego ** 2) / (2 * abs(CarControllerParams.ACCEL_MIN))
-
-    # If we're too close to stop comfortably, increase braking force
-    if calibrated_distance < min_safe_distance + FINAL_DISTANCE:
-      # Calculate how much we've violated the minimum safe distance
-      violation_ratio = 1.0 - (calibrated_distance / (min_safe_distance + FINAL_DISTANCE))
-      violation_ratio = clip(violation_ratio, 0.0, 1.0)
-
-      # Blend between calculated deceleration and maximum deceleration
-      # based on how much we've violated the safe distance
-      required_decel = required_decel * (1.0 - violation_ratio) + CarControllerParams.ACCEL_MIN * violation_ratio
-
-    # Ensure deceleration is within vehicle capabilities and never positive (no acceleration)
-    required_decel = clip(required_decel, CarControllerParams.ACCEL_MIN, 0.0)
-
-    # Limit acceleration change rate (jerk) for smoother braking
-    max_accel_change = 2.0  # m/s³ * dt
-    prev_decel = min(aego, 0.0)  # Only consider braking component
-    required_decel = clip(required_decel,
-                          prev_decel - max_accel_change,
-                          prev_decel + max_accel_change)
-
-    return required_decel
+    return required_accel
 
   def _get_traffic_light_status(self, CS):
     """Extract traffic light status information from car state"""
@@ -143,7 +78,6 @@ class TeslaTrafficLight:
     a_ego = CS.out.aEgo
     no_obstacle = CS.das_status2["DAS_pmmObstacleSeverity"] == 0
     gas_pressed = CS.out.gasPressed
-
     light_status = self._get_traffic_light_status(CS)
 
     # Default to current accel
@@ -154,8 +88,7 @@ class TeslaTrafficLight:
       light_status["distance"] >= self.MAX_STOP_LINE_DIST or
       gas_pressed or
       not CC.longActive):
-      self.stopping = False
-      self.pid.reset()
+      self.phase = 0
       return accel
 
     # Handle green light case for smooth starts
@@ -164,36 +97,52 @@ class TeslaTrafficLight:
       "distance"] < 4):
       result_accel = max(accel, self.GREEN_LIGHT_ACCEL)
       result_accel = min(result_accel, CS.das_control["DAS_accelMax"])
-      self.stopping = False
-      self.pid.reset()
+      self.phase = 0
       return result_accel
 
     # Reset when conditions change to green
     if not TESTING and light_status["is_green"]:
-      self.stopping = False
-      self.pid.reset()
+      self.phase = 0
       return accel
 
     # Handle yellow light - treat as red if we need significant deceleration
-    is_effective_red = light_status["is_red"]
-    if TESTING:
-      is_effective_red = light_status["valid"]
-
-    required_decel = self.calculate_required_deceleration(a_ego, v_ego, light_status["distance"])
+    is_effective_red = TESTING or light_status["is_red"]
 
     if not TESTING and light_status["is_yellow"]:
-      if required_decel >= self.YELLOW_DECEL_THRESHOLD:
+      if light_status["distance"] / v_ego >= 3:
         is_effective_red = True
 
     # Handle red (or effective red) light
-    if is_effective_red:
+    if is_effective_red and (light_status["distance"] / v_ego) <= 8:
 
-      error = self.last_result_accel - a_ego
-      output_accel = self.pid.update(error, speed=v_ego, feedforward=required_decel)
+      required_decel = self.calculate_required_deceleration(v_ego, light_status["distance"])
+
+      if required_decel > -1.5 and self.phase == 0:
+        output_accel = clip(0.0, a_ego - 0.03, a_ego)
+      else:
+        # Active stopping mode
+        self.phase = 1
+        output_accel = required_decel
+
+      if self.phase == 1:
+        self.target_braking = min(required_decel, self.target_braking)
+        output_accel = self.target_braking
+
+      if v_ego <= self.target_speed:
+        self.phase = 2
+
+      if self.phase == 2:
+        output_accel = min(max(self.target_speed - v_ego, -0.6), 0.3)
+
+      should_stop = (light_status["distance"] / v_ego) < 1
+      if should_stop:
+        output_accel = self.last_accel - 0.06
+
+      pid_accel_limits = (CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)
+      required_decel = float(self.LoC.update(CC.longActive, CS, output_accel, should_stop, pid_accel_limits))
 
       # Apply more deceleration when the model is braking, e.g. lead vehicle.
-      result_accel = min(accel, output_accel)
+      result_accel = min(accel, required_decel)
 
-
-    self.last_result_accel = result_accel
+    self.last_accel = result_accel
     return result_accel

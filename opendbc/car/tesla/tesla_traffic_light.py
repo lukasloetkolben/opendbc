@@ -142,6 +142,8 @@ class TeslaTrafficLight:
 
       if v_ego <= self.CP.vEgoStopping and self.phase == 3:
         self.phase = 4
+
+      if self.phase == 4:
         output_accel = self.CP.stopAccel
 
       print(f"Phase {self.phase} - {round(accel, 2)}")

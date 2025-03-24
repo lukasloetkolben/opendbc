@@ -122,7 +122,6 @@ class TeslaTrafficLight:
       else:
         # Active stopping mode
         self.phase = 1
-        output_accel = required_decel
 
       if self.phase == 1:
         self.target_braking = min(required_decel, self.target_braking)

@@ -33,14 +33,7 @@ class TeslaTrafficLight:
       return CarControllerParams.ACCEL_MIN
 
     # Using kinematics equation: a = (vf^2 - vi^2) / (2*d)
-    required_accel = (self.target_speed ** 2 - v_ego ** 2) / (2 * target_distance)
-
-    # If the calculated acceleration is positive, it means we need to speed up
-    # In this case, we should return a small negative value to maintain speed
-    if required_accel >= 0:
-      return -0.1
-
-    return required_accel
+    return (self.target_speed ** 2 - v_ego ** 2) / (2 * target_distance)
 
   def _get_traffic_light_status(self, CS):
     """Extract traffic light status information from car state"""
@@ -118,7 +111,8 @@ class TeslaTrafficLight:
       rate = 0.07
 
       if required_decel >= -2 and self.phase == 0:
-        output_accel = clip(0.0, a_ego - rate, a_ego)
+        accel = min(max(required_decel, -0.1), 0.1)
+        output_accel = clip(accel, a_ego - rate, a_ego)
 
       if required_decel < -2 and self.phase == 0:
         self.phase = 1

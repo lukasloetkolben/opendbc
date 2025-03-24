@@ -124,7 +124,7 @@ class TeslaTrafficLight:
         self.phase = 2
 
       if self.phase == 2:
-        accel = min(max(self.target_speed - v_ego, -0.1), 0.1)
+        accel = min(max(self.target_speed - v_ego, -0.1), 0.03)
         output_accel = clip(accel, self.last_accel - rate, self.last_accel + rate)
 
       if (light_status["distance"] / v_ego <= 1.5) and self.phase == 2:
@@ -132,7 +132,7 @@ class TeslaTrafficLight:
 
       if self.phase == 3:
         rate = self.CP.stoppingDecelRate
-        output_accel = clip(-2, self.last_accel - rate, self.last_accel + rate)
+        output_accel = clip(-1.95, self.last_accel - rate, self.last_accel + rate)
 
       if v_ego <= self.CP.vEgoStopping and self.phase == 3:
         self.phase = 4

@@ -18,7 +18,7 @@ class TeslaTrafficLight:
 
   def __init__(self, CP):
     self.CP = CP
-    self.target_speed = 25 / 3.6  # 20 km/h
+    self.target_speed = 25 / 3.6  # 25 km/h
     self.phase = 0
 
     self.LoC = LongControl(self.CP)
@@ -133,11 +133,14 @@ class TeslaTrafficLight:
         accel = min(max(self.target_speed - v_ego, -0.1), 0.1)
         output_accel = clip(accel, self.last_accel - rate, self.last_accel + rate)
 
-      if ((light_status["distance"] < 4) or (light_status["distance"] / v_ego <= 1)) and self.phase == 2:
+      if (light_status["distance"] / v_ego <= 1.5) and self.phase == 2:
         self.phase = 3
 
       if self.phase == 3:
-        output_accel = clip(CarControllerParams.ACCEL_MIN, self.last_accel - rate, self.last_accel)
+        rate = self.CP.stoppingDecelRate
+        output_accel = required_decel if v_ego > self.CP.vEgoStopping else self.CP.stopAccel
+        output_accel = clip(output_accel, self.last_accel - rate, self.last_accel + rate)
+
 
       pid_accel_limits = (CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)
       required_decel = float(self.LoC.update(CC.longActive, CS.out, output_accel, self.phase == 3, pid_accel_limits))

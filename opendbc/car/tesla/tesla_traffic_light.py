@@ -5,7 +5,7 @@ from opendbc.car.tesla.values import CarControllerParams
 from openpilot.selfdrive.controls.lib.longcontrol import LongControl
 
 DT_CTRL = 0.04
-TESTING = False
+TESTING = True
 
 
 class TeslaTrafficLight:

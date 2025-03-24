@@ -138,7 +138,8 @@ class TeslaTrafficLight:
 
       if self.phase == 3:
         rate = self.CP.stoppingDecelRate
-        output_accel = CarControllerParams.ACCEL_MIN # clip(output_accel, self.last_accel - rate, self.last_accel + rate)
+
+        output_accel = clip(-2, self.last_accel - rate, self.last_accel + rate)
 
       if v_ego <= self.CP.vEgoStopping and self.phase == 3:
         self.phase = 4

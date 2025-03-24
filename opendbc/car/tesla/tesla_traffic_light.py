@@ -18,7 +18,7 @@ class TeslaTrafficLight:
 
   def __init__(self, CP):
     self.CP = CP
-    self.target_speed = 20 / 3.6  # 20 km/h
+    self.target_speed = 25 / 3.6  # 20 km/h
     self.target_braking = 0
     self.phase = self.target_braking = 0
 
@@ -116,7 +116,7 @@ class TeslaTrafficLight:
     if is_effective_red and ((light_status["distance"] / v_ego) <= 8) or self.phase != 0:
       output_accel = 0
       required_decel = self.calculate_required_deceleration(v_ego, light_status["distance"])
-
+      rate = 0.07
       if required_decel > -2 and self.phase == 0:
         output_accel = clip(0.0, a_ego - 0.03, a_ego)
       else:
@@ -124,21 +124,23 @@ class TeslaTrafficLight:
         self.phase = 1
 
       if self.phase == 1:
-        self.target_braking = min(required_decel, self.target_braking)
-        output_accel = self.target_braking
+        self.target_braking = required_decel
+        output_accel = clip(self.target_braking, self.last_accel - rate, self.last_accel + rate)
 
       if v_ego <= self.target_speed:
         self.phase = 2
 
       if self.phase == 2:
-        output_accel = min(max(self.target_speed - v_ego, -0.6), 0.3)
+        accel = min(max(self.target_speed - v_ego, -0.6), 0.6)
+        output_accel = clip(accel, self.last_accel - rate, self.last_accel + rate)
 
       should_stop = (light_status["distance"] / v_ego) < 1
       if should_stop:
-        output_accel = self.last_accel - 0.06
+        self.phase = 3
+        output_accel = self.last_accel - rate
 
       pid_accel_limits = (CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)
-      required_decel = float(self.LoC.update(CC.longActive, CS.out, output_accel, should_stop, pid_accel_limits))
+      required_decel = float(self.LoC.update(CC.longActive, CS.out, output_accel, self.phase == 3, pid_accel_limits))
 
       # Apply more deceleration when the model is braking, e.g. lead vehicle.
       result_accel = min(accel, required_decel)

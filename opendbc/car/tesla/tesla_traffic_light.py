@@ -19,8 +19,7 @@ class TeslaTrafficLight:
   def __init__(self, CP):
     self.CP = CP
     self.target_speed = 25 / 3.6  # 20 km/h
-    self.target_braking = 0
-    self.phase = self.target_braking = 0
+    self.phase = 0
 
     self.LoC = LongControl(self.CP)
     self.LoC.pid.i_rate = 0.04
@@ -88,7 +87,7 @@ class TeslaTrafficLight:
       light_status["distance"] >= self.MAX_STOP_LINE_DIST or
       gas_pressed or
       not CC.longActive):
-      self.phase = self.target_braking = 0
+      self.phase = 0
       return accel
 
     # Handle green light case for smooth starts
@@ -97,12 +96,12 @@ class TeslaTrafficLight:
       "distance"] < 4):
       result_accel = max(accel, self.GREEN_LIGHT_ACCEL)
       result_accel = min(result_accel, CS.das_control["DAS_accelMax"])
-      self.phase = self.target_braking = 0
+      self.phase = 0
       return result_accel
 
     # Reset when conditions change to green
     if not TESTING and light_status["is_green"]:
-      self.phase = self.target_braking = 0
+      self.phase = 0
       return accel
 
     # Handle yellow light - treat as red if we need significant deceleration
@@ -117,26 +116,27 @@ class TeslaTrafficLight:
       output_accel = 0
       required_decel = self.calculate_required_deceleration(v_ego, light_status["distance"])
       rate = 0.03
-      if required_decel > -2 and self.phase == 0:
+
+      if required_decel >= -2 and self.phase == 0:
         output_accel = clip(0.0, a_ego - 0.03, a_ego)
-      else:
-        # Active stopping mode
+
+      if required_decel < -2 and self.phase == 0:
         self.phase = 1
 
       if self.phase == 1:
-        self.target_braking = required_decel
-        output_accel = clip(self.target_braking, self.last_accel - rate, self.last_accel + rate)
+        output_accel = clip(required_decel, self.last_accel - rate, self.last_accel + rate)
 
-      if v_ego <= self.target_speed:
+      if v_ego <= self.target_speed and self.phase == 1:
         self.phase = 2
 
       if self.phase == 2:
         accel = min(max(self.target_speed - v_ego, -0.1), 0.1)
         output_accel = clip(accel, self.last_accel - rate, self.last_accel + rate)
 
-      if light_status["distance"] < 4:
+      if ((light_status["distance"] < 4) or (light_status["distance"] / v_ego <= 1)) and self.phase == 2:
         self.phase = 3
-        rate = 0.1
+
+      if self.phase == 3:
         output_accel = clip(CarControllerParams.ACCEL_MIN, self.last_accel - rate, self.last_accel)
 
       pid_accel_limits = (CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)

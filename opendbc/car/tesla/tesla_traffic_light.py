@@ -27,7 +27,7 @@ class TeslaTrafficLight:
     self.last_accel = 0
 
   def calculate_required_deceleration(self, v_ego, distance_to_traffic_light):
-    target_distance = distance_to_traffic_light - 15
+    target_distance = distance_to_traffic_light - 10
 
     # If we're already at or past the target point, return a strong deceleration
     if target_distance <= 0:

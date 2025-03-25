@@ -117,7 +117,7 @@ class TeslaTrafficLight:
       output_accel = 0
 
       if self.phase == 0:
-        output_accel = min(accel, 0.1)
+        output_accel = clip(min(accel, 0.5), a_ego - DT_CTRL, a_ego + DT_CTRL)
 
       if light_status["distance"] / v_ego < 5 and v_ego > TeslaTrafficLight.SLOW_DOWN_SPEED and self.phase == 0:
         self.phase = 1

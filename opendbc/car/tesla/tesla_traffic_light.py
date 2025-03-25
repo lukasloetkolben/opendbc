@@ -104,7 +104,7 @@ class TeslaTrafficLight:
         is_effective_red = True
 
     # Handle red (or effective red) light
-    if is_effective_red and ((light_status["distance"] / v_ego) <= 8 or self.phase != 0):
+    if is_effective_red and ((light_status["distance"] / v_ego) <= 7 or self.phase != 0):
       if self.phase == 3:
         offset = -2
         target_speed = 0
@@ -115,17 +115,15 @@ class TeslaTrafficLight:
       required_decel = self.calculate_required_deceleration(v_ego, light_status["distance"], offset, target_speed)
       self.required_decelerations.append(required_decel)
       output_accel = 0
-      rate = 0.07
 
       if self.phase == 0:
         output_accel = min(accel, 0.1)
 
-      if light_status["distance"] / v_ego < 3 and v_ego > TeslaTrafficLight.SLOW_DOWN_SPEED and self.phase == 0:
+      if light_status["distance"] / v_ego < 4 and v_ego > TeslaTrafficLight.SLOW_DOWN_SPEED and self.phase == 0:
         self.phase = 1
 
       if self.phase == 1:
-        required_decel = sum(self.required_decelerations) / len(self.required_decelerations)
-        output_accel = clip(required_decel, self.last_accel - rate, self.last_accel + rate)
+        output_accel = sum(self.required_decelerations) / len(self.required_decelerations)
 
       if v_ego <= TeslaTrafficLight.SLOW_DOWN_SPEED and self.phase == 1:
         self.phase = 2
@@ -133,12 +131,11 @@ class TeslaTrafficLight:
       if self.phase == 2:
         output_accel = min(max(TeslaTrafficLight.SLOW_DOWN_SPEED - v_ego, -0.1), 0.1)
 
-      if (light_status["distance"] / v_ego <= 1.5) and self.phase == 2:
+      if (light_status["distance"] / v_ego <= 2) and self.phase == 2:
         self.phase = 3
 
       if self.phase == 3:
-        rate = self.CP.stoppingDecelRate
-        output_accel = clip(required_decel, self.last_accel - rate, self.last_accel + rate)
+        output_accel = sum(self.required_decelerations) / len(self.required_decelerations)
 
       if (v_ego <= self.CP.vEgoStopping or light_status["distance"] <= 1) and self.phase == 3:
         self.phase = 4

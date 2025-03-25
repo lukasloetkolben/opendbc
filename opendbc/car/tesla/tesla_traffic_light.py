@@ -106,7 +106,7 @@ class TeslaTrafficLight:
     # Handle red (or effective red) light
     if is_effective_red and ((light_status["distance"] / v_ego) <= 8 or self.phase != 0):
       if self.phase == 3:
-        offset = -1
+        offset = -2
         target_speed = 0
       else:
         offset = -10
@@ -138,7 +138,7 @@ class TeslaTrafficLight:
         rate = self.CP.stoppingDecelRate
         output_accel = clip(required_decel, self.last_accel - rate, self.last_accel + rate)
 
-      if v_ego <= self.CP.vEgoStopping and self.phase == 3:
+      if (v_ego <= self.CP.vEgoStopping or light_status["distance"] <= 1) and self.phase == 3:
         self.phase = 4
 
       if self.phase == 4:

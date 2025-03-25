@@ -1,6 +1,5 @@
-import numpy as np
+from collections import deque
 from numpy import clip
-
 from opendbc.car.tesla.values import CarControllerParams
 from openpilot.selfdrive.controls.lib.longcontrol import LongControl
 
@@ -23,6 +22,7 @@ class TeslaTrafficLight:
     self.LoC = LongControl(self.CP)
     self.LoC.pid.i_rate = 0.04
     self.last_accel = 0
+    self.required_decelerations = deque([0, 0, 0, 0], maxlen=4)
 
   def calculate_required_deceleration(self, v_ego, distance_to_traffic_light, distance_offset, target_speed):
     target_distance = distance_to_traffic_light + distance_offset
@@ -113,6 +113,7 @@ class TeslaTrafficLight:
         target_speed = min(CS.out.cruiseState.speed, TeslaTrafficLight.SLOW_DOWN_SPEED)
 
       required_decel = self.calculate_required_deceleration(v_ego, light_status["distance"], offset, target_speed)
+      self.required_decelerations.append(required_decel)
       output_accel = 0
       rate = 0.07
 
@@ -123,6 +124,7 @@ class TeslaTrafficLight:
         self.phase = 1
 
       if self.phase == 1:
+        required_decel = sum(self.required_decelerations) / len(self.required_decelerations)
         output_accel = clip(required_decel, self.last_accel - rate, self.last_accel + rate)
 
       if v_ego <= TeslaTrafficLight.SLOW_DOWN_SPEED and self.phase == 1:

@@ -14,7 +14,7 @@ class TeslaTrafficLight:
   GREEN_LIGHT_STATE = 2
   YELLOW_LIGHT_STATE = 3
   GREEN_LIGHT_ACCEL = 0.4  # gentle acceleration for green lights
-  SLOW_DOWN_SPEED = 25 / 3.6 # 25km/h
+  SLOW_DOWN_SPEED = 20 / 3.6 # 25km/h
 
   def __init__(self, CP):
     self.CP = CP
@@ -109,7 +109,7 @@ class TeslaTrafficLight:
         offset = -2
         target_speed = 0
       else:
-        offset = -10
+        offset = -13
         target_speed = min(CS.out.cruiseState.speed, TeslaTrafficLight.SLOW_DOWN_SPEED)
 
       required_decel = self.calculate_required_deceleration(v_ego, light_status["distance"], offset, target_speed)
@@ -119,13 +119,14 @@ class TeslaTrafficLight:
       if self.phase == 0:
         output_accel = min(accel, 0.1)
 
-      if light_status["distance"] / v_ego < 4 and v_ego > TeslaTrafficLight.SLOW_DOWN_SPEED and self.phase == 0:
+      if light_status["distance"] / v_ego < 5 and v_ego > TeslaTrafficLight.SLOW_DOWN_SPEED and self.phase == 0:
         self.phase = 1
 
       if self.phase == 1:
         output_accel = sum(self.required_decelerations) / len(self.required_decelerations)
+        output_accel = clip(self.required_decelerations, self.last_accel - DT_CTRL, self.last_accel + DT_CTRL)
 
-      if v_ego <= TeslaTrafficLight.SLOW_DOWN_SPEED and self.phase == 1:
+      if light_status["distance"] / v_ego < 2 and self.phase == 1:
         self.phase = 3
 
       # if self.phase == 2:

@@ -22,7 +22,7 @@ class TeslaTrafficLight:
     self.LoC = LongControl(self.CP)
     self.LoC.pid.i_rate = 0.04
     self.last_accel = 0
-    self.required_decelerations = deque([0, 0, 0, 0], maxlen=4)
+    self.required_decelerations = deque([0, 0, 0, 0, 0, 0], maxlen=6)
 
   def calculate_required_deceleration(self, v_ego, distance_to_traffic_light, distance_offset, target_speed):
     target_distance = distance_to_traffic_light + distance_offset
@@ -126,13 +126,13 @@ class TeslaTrafficLight:
         output_accel = sum(self.required_decelerations) / len(self.required_decelerations)
 
       if v_ego <= TeslaTrafficLight.SLOW_DOWN_SPEED and self.phase == 1:
-        self.phase = 2
-
-      if self.phase == 2:
-        output_accel = min(max(TeslaTrafficLight.SLOW_DOWN_SPEED - v_ego, -0.1), 0.1)
-
-      if (light_status["distance"] / v_ego <= 2) and self.phase == 2:
         self.phase = 3
+
+      # if self.phase == 2:
+      #   output_accel = min(max(TeslaTrafficLight.SLOW_DOWN_SPEED - v_ego, -0.1), 0.1)
+
+      # if (light_status["distance"] / v_ego <= 2) and self.phase == 2:
+      #  self.phase = 3
 
       if self.phase == 3:
         output_accel = sum(self.required_decelerations) / len(self.required_decelerations)

@@ -106,15 +106,15 @@ class TeslaTrafficLight:
 
     # Handle red (or effective red) light
     if is_effective_red and ((light_status["distance"] / v_ego) <= 8 or self.phase != 0):
-      output_accel = 0
+      self.target_speed = min(CS.out.cruiseState.speed, 25 / 3.6)
       required_decel = self.calculate_required_deceleration(v_ego, light_status["distance"])
+      output_accel = 0
       rate = 0.07
 
-      if required_decel >= -2 and self.phase == 0:
-        output_accel = min(max(required_decel, -0.1), 0.1)
-        output_accel = clip(output_accel, a_ego - rate, a_ego)
+      if self.phase == 0:
+        output_accel = min(accel, 0.1)
 
-      if required_decel < -2 and self.phase == 0:
+      if light_status["distance"] / v_ego < 4 and v_ego > self.target_speed and self.phase == 0:
         self.phase = 1
 
       if self.phase == 1:
@@ -145,6 +145,8 @@ class TeslaTrafficLight:
 
       # Apply more deceleration when the model is braking, e.g. lead vehicle.
       result_accel = min(accel, required_decel)
+    else:
+      self.phase = 0
 
     self.last_accel = result_accel
     return result_accel

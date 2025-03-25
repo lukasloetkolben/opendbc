@@ -25,8 +25,8 @@ class TeslaTrafficLight:
     self.LoC.pid.i_rate = 0.04
     self.last_accel = 0
 
-  def calculate_required_deceleration(self, v_ego, distance_to_traffic_light):
-    target_distance = distance_to_traffic_light - 10
+  def calculate_required_deceleration(self, v_ego, distance_to_traffic_light, distance_offset):
+    target_distance = distance_to_traffic_light + distance_offset
 
     # If we're already at or past the target point, return a strong deceleration
     if target_distance <= 0:
@@ -107,7 +107,7 @@ class TeslaTrafficLight:
     # Handle red (or effective red) light
     if is_effective_red and ((light_status["distance"] / v_ego) <= 8 or self.phase != 0):
       self.target_speed = min(CS.out.cruiseState.speed, 25 / 3.6)
-      required_decel = self.calculate_required_deceleration(v_ego, light_status["distance"])
+      required_decel = self.calculate_required_deceleration(v_ego, light_status["distance"], -10)
       output_accel = 0
       rate = 0.07
 
@@ -130,6 +130,7 @@ class TeslaTrafficLight:
         self.phase = 3
 
       if self.phase == 3:
+        required_decel = self.calculate_required_deceleration(v_ego, light_status["distance"], -1)
         rate = self.CP.stoppingDecelRate
         output_accel = clip(required_decel, self.last_accel - rate, self.last_accel + rate)
 

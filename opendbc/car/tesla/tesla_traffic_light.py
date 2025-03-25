@@ -124,7 +124,7 @@ class TeslaTrafficLight:
 
       if self.phase == 1:
         output_accel = sum(self.required_decelerations) / len(self.required_decelerations)
-        output_accel = clip(self.required_decelerations, self.last_accel - DT_CTRL, self.last_accel + DT_CTRL)
+        output_accel = clip(output_accel, self.last_accel - DT_CTRL, self.last_accel + DT_CTRL)
 
       if light_status["distance"] / v_ego < 2 and self.phase == 1:
         self.phase = 3

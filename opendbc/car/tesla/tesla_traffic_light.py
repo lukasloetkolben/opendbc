@@ -4,7 +4,7 @@ from opendbc.car.tesla.values import CarControllerParams
 from openpilot.selfdrive.controls.lib.longcontrol import LongControl
 
 DT_CTRL = 0.04
-TESTING = True
+TESTING = False
 
 
 class TeslaTrafficLight:
@@ -22,7 +22,7 @@ class TeslaTrafficLight:
     self.LoC = LongControl(self.CP)
     self.LoC.pid.i_rate = 0.04
     self.last_accel = 0
-    self.required_decelerations = deque([0, 0, 0, 0, 0, 0], maxlen=6)
+    self.required_decelerations = deque([0 for _ in range(10)], maxlen=10)
 
   def calculate_required_deceleration(self, v_ego, distance_to_traffic_light, distance_offset, target_speed):
     target_distance = distance_to_traffic_light + distance_offset
@@ -109,7 +109,7 @@ class TeslaTrafficLight:
         offset = -2
         target_speed = 0
       else:
-        offset = -13
+        offset = -10
         target_speed = min(CS.out.cruiseState.speed, TeslaTrafficLight.SLOW_DOWN_SPEED)
 
       required_decel = self.calculate_required_deceleration(v_ego, light_status["distance"], offset, target_speed)
@@ -119,7 +119,7 @@ class TeslaTrafficLight:
       if self.phase == 0:
         output_accel = clip(min(accel, 0.5), a_ego - DT_CTRL, a_ego + DT_CTRL)
 
-      if light_status["distance"] / v_ego < 5 and v_ego > TeslaTrafficLight.SLOW_DOWN_SPEED and self.phase == 0:
+      if light_status["distance"] / v_ego < 4 and v_ego > TeslaTrafficLight.SLOW_DOWN_SPEED and self.phase == 0:
         self.phase = 1
 
       if self.phase == 1:
@@ -136,7 +136,7 @@ class TeslaTrafficLight:
       #  self.phase = 3
 
       if self.phase == 3:
-        output_accel = sum(self.required_decelerations) / len(self.required_decelerations)
+        output_accel = required_decel
 
       if (v_ego <= self.CP.vEgoStopping or light_status["distance"] <= 1) and self.phase == 3:
         self.phase = 4

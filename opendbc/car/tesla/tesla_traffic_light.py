@@ -92,7 +92,7 @@ class TeslaTrafficLight:
         is_effective_red = True
 
     # Handle red (or effective red) light
-    time = np.interp(v_ego, [20, 60], [3, 5])
+    time = np.interp(v_ego, [20, 60], [3, 6])
     if is_effective_red and ((avg_stop_line_distance / v_ego) <= time or self.phase != 0):
       if self.phase == 3:
         distance = stop_line_distance

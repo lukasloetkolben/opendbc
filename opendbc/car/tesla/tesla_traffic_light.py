@@ -91,14 +91,14 @@ class TeslaTrafficLight:
         is_effective_red = True
 
     # Handle red (or effective red) light
-    if is_effective_red and ((avg_stop_line_distance / v_ego) <= 8 or self.phase != 0):
+    if is_effective_red and ((avg_stop_line_distance / v_ego) <= 7 or self.phase != 0):
       if self.phase == 3:
-        offset = -2
+        offset = -1
         target_speed = 0
         distance = stop_line_distance
       else:
-        offset = -10
-        target_speed = min(CS.out.cruiseState.speed, self.SLOW_DOWN_SPEED)
+        offset = 0
+        target_speed = 0
         distance = avg_stop_line_distance
 
       required_decel = self.calculate_required_deceleration(v_ego, distance, offset, target_speed)
@@ -106,16 +106,10 @@ class TeslaTrafficLight:
       output_accel = 0
 
       if self.phase == 0:
-        output_accel = clip(min(accel, -0.5), a_ego - 0.08, a_ego + 0.08)
-
-      if stop_line_distance / v_ego < 6 and v_ego > self.SLOW_DOWN_SPEED and self.phase == 0:
-        self.phase = 1
-
-      if self.phase == 1:
         output_accel = sum(self.required_decelerations) / len(self.required_decelerations)
         output_accel = clip(output_accel, self.last_accel - 0.08, self.last_accel + 0.08)
 
-      if avg_stop_line_distance < 25 and self.phase == 1:
+      if avg_stop_line_distance < 25 and self.phase == 0:
         self.phase = 3
 
       if self.phase == 3:

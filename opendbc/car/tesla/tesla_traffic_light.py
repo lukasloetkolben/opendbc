@@ -4,7 +4,7 @@ from opendbc.car.tesla.values import CarControllerParams
 from openpilot.selfdrive.controls.lib.longcontrol import LongControl
 
 DT_CTRL = 0.04
-TESTING = False
+TESTING = True
 
 
 class TeslaTrafficLight:
@@ -14,7 +14,7 @@ class TeslaTrafficLight:
   GREEN_LIGHT_STATE = 2
   YELLOW_LIGHT_STATE = 3
   GREEN_LIGHT_ACCEL = 0.4  # gentle acceleration for green lights
-  SLOW_DOWN_SPEED = 20 / 3.6 # 25km/h
+  SLOW_DOWN_SPEED = 20 / 3.6  # 25km/h
 
   def __init__(self, CP):
     self.CP = CP
@@ -22,8 +22,8 @@ class TeslaTrafficLight:
     self.LoC = LongControl(self.CP)
     self.LoC.pid.i_rate = 0.04
     self.last_accel = 0
-    self.stop_line_distances = deque([0 for _ in range(20)], maxlen=20)
-    self.required_decelerations = deque([0 for _ in range(10)], maxlen=10)
+    self.stop_line_distances = deque([0] * 20, maxlen=20)
+    self.required_decelerations = deque([0] * 10, maxlen=10)
 
   def calculate_required_deceleration(self, v_ego, distance_to_traffic_light, distance_offset, target_speed):
     target_distance = distance_to_traffic_light + distance_offset
@@ -35,31 +35,27 @@ class TeslaTrafficLight:
     # Using kinematics equation: a = (vf^2 - vi^2) / (2*d)
     return (target_speed ** 2 - v_ego ** 2) / (2 * target_distance)
 
-  def _get_traffic_light_status(self, CS):
-    """Extract traffic light status information from car state"""
-
-    # Get traffic light status
-    light_state = CS.das_road["TrafficLightState"]
-    distance = CS.das_road["StopLineDist"]
-
-    return {
-      "distance": distance,
-      "is_red": light_state == self.RED_LIGHT_STATE,
-      "is_yellow": light_state == self.YELLOW_LIGHT_STATE,
-      "is_green": light_state == self.GREEN_LIGHT_STATE
-    }
-
   def update(self, CC, CS, accel):
     """Update the traffic light controller"""
+    # Extract traffic light status directly
+    light_state = CS.das_road["TrafficLightState"]
+    stop_line_distance = CS.das_road["StopLineDist"]
+    is_red = light_state == self.RED_LIGHT_STATE
+    is_yellow = light_state == self.YELLOW_LIGHT_STATE
+    is_green = light_state == self.GREEN_LIGHT_STATE
+
+    # Get vehicle state
     v_ego = CS.out.vEgo
     a_ego = CS.out.aEgo
     no_obstacle = CS.das_status2["DAS_pmmObstacleSeverity"] == 0
     gas_pressed = CS.out.gasPressed
-    light_status = self._get_traffic_light_status(CS)
-    stop_line_distance = light_status["distance"]
+
+    # Update distance tracking
     self.stop_line_distances.append(stop_line_distance)
     avg_stop_line_distance = sum(self.stop_line_distances) / len(self.stop_line_distances)
-    valid = (avg_stop_line_distance < self.MAX_STOP_LINE_DIST and CS.das_road["StopLineReason"] == self.TRAFFIC_LIGHT_REASON)
+    valid = (avg_stop_line_distance < self.MAX_STOP_LINE_DIST and
+             CS.das_road["StopLineReason"] == self.TRAFFIC_LIGHT_REASON)
+
     if TESTING:
       valid = avg_stop_line_distance < self.MAX_STOP_LINE_DIST
 
@@ -68,30 +64,29 @@ class TeslaTrafficLight:
 
     # If beyond detection range, gas pressed, or ACC not active, just return current accel
     if (not valid or
-      avg_stop_line_distance >= self.MAX_STOP_LINE_DIST or
-      gas_pressed or
-      not CC.longActive):
+        avg_stop_line_distance >= self.MAX_STOP_LINE_DIST or
+        gas_pressed or
+        not CC.longActive):
       self.phase = 0
       return accel
 
     # Handle green light case for smooth starts
-    if not TESTING and (
-      light_status["is_green"] and v_ego < 2 and no_obstacle and CS.das_control["DAS_setSpeed"] > 0 and light_status[
-      "distance"] < 4):
+    if not TESTING and (is_green and v_ego < 2 and no_obstacle and
+                        CS.das_control["DAS_setSpeed"] > 0 and stop_line_distance < 4):
       result_accel = max(accel, self.GREEN_LIGHT_ACCEL)
       result_accel = min(result_accel, CS.das_control["DAS_accelMax"])
       self.phase = 0
       return result_accel
 
     # Reset when conditions change to green
-    if not TESTING and light_status["is_green"]:
+    if not TESTING and is_green:
       self.phase = 0
       return accel
 
     # Handle yellow light - treat as red if we need significant deceleration
-    is_effective_red = (TESTING or light_status["is_red"]) and valid
+    is_effective_red = (TESTING or is_red) and valid
 
-    if not TESTING and (light_status["is_yellow"] and valid):
+    if not TESTING and (is_yellow and valid):
       if avg_stop_line_distance / v_ego >= 3:
         is_effective_red = True
 
@@ -103,7 +98,7 @@ class TeslaTrafficLight:
         distance = stop_line_distance
       else:
         offset = -10
-        target_speed = min(CS.out.cruiseState.speed, TeslaTrafficLight.SLOW_DOWN_SPEED)
+        target_speed = min(CS.out.cruiseState.speed, self.SLOW_DOWN_SPEED)
         distance = avg_stop_line_distance
 
       required_decel = self.calculate_required_deceleration(v_ego, distance, offset, target_speed)
@@ -113,7 +108,7 @@ class TeslaTrafficLight:
       if self.phase == 0:
         output_accel = clip(min(accel, -0.5), a_ego - 0.08, a_ego + 0.08)
 
-      if stop_line_distance / v_ego < 6 and v_ego > TeslaTrafficLight.SLOW_DOWN_SPEED and self.phase == 0:
+      if stop_line_distance / v_ego < 6 and v_ego > self.SLOW_DOWN_SPEED and self.phase == 0:
         self.phase = 1
 
       if self.phase == 1:

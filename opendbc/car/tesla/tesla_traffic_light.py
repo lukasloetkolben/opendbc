@@ -27,8 +27,8 @@ class TeslaTrafficLight:
     self.stop_line_distances = deque([0] * 20, maxlen=20)
     self.required_decelerations = deque([0] * 10, maxlen=10)
 
-  def calculate_required_deceleration(self, v_ego, distance_to_traffic_light, distance_offset, target_speed):
-    target_distance = distance_to_traffic_light + distance_offset
+  def calculate_required_deceleration(self, v_ego, distance_to_traffic_light, target_speed=0):
+    target_distance = distance_to_traffic_light
 
     # If we're already at or past the target point, return a strong deceleration
     if target_distance <= 0:
@@ -93,18 +93,14 @@ class TeslaTrafficLight:
         is_effective_red = True
 
     # Handle red (or effective red) light
-    time = np.interp(v_ego, [25, 50], [3, 6])
+    time = np.interp(v_ego, [20, 60], [3, 6])
     if is_effective_red and ((avg_stop_line_distance / v_ego) <= time or self.phase != 0):
       if self.phase == 3:
-        offset = -10
-        target_speed = 25 / 3.6
         distance = stop_line_distance
       else:
-        offset = 0
-        target_speed = 0
         distance = avg_stop_line_distance
 
-      required_decel = self.calculate_required_deceleration(v_ego, distance, offset, target_speed)
+      required_decel = self.calculate_required_deceleration(v_ego, distance)
       self.required_decelerations.append(required_decel)
       output_accel = 0
 
@@ -117,6 +113,7 @@ class TeslaTrafficLight:
 
       if self.phase == 3:
         output_accel = required_decel
+        output_accel = clip(output_accel, self.last_accel - 0.08, self.last_accel + 0.08)
 
       if (v_ego <= self.CP.vEgoStopping or stop_line_distance <= 1) and self.phase == 3:
         self.phase = 4

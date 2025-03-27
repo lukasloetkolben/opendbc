@@ -99,7 +99,7 @@ class TeslaTrafficLight:
         offset = 0
       else:
         distance = avg_stop_line_distance
-        offset = -1
+        offset = -2
 
       required_decel = self.calculate_required_deceleration(v_ego, distance, offset)
       self.required_decelerations.append(required_decel)
@@ -116,7 +116,7 @@ class TeslaTrafficLight:
         output_accel = np.mean(list(self.required_decelerations)[-3:])
         output_accel = clip(output_accel, self.last_accel - 0.08, self.last_accel + 0.08)
 
-      if (v_ego <= self.CP.vEgoStopping or stop_line_distance <= 1) and self.phase == 3:
+      if (v_ego <= self.CP.vEgoStopping or stop_line_distance <= 1.5) and self.phase == 3:
         self.phase = 4
 
       if self.phase == 4:

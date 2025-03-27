@@ -25,10 +25,10 @@ class TeslaTrafficLight:
     self.LoC.pid.i_rate = 0.04
     self.last_accel = 0
     self.stop_line_distances = deque([0] * 20, maxlen=20)
-    self.required_decelerations = deque([0] * 10, maxlen=10)
+    self.required_decelerations = deque([0] * 25, maxlen=25)
 
-  def calculate_required_deceleration(self, v_ego, distance_to_traffic_light, target_speed=0):
-    target_distance = distance_to_traffic_light
+  def calculate_required_deceleration(self, v_ego, distance_to_traffic_light, target_speed=0, offset = 0):
+    target_distance = distance_to_traffic_light + offset
 
     # If we're already at or past the target point, return a strong deceleration
     if target_distance <= 0:
@@ -48,7 +48,6 @@ class TeslaTrafficLight:
 
     # Get vehicle state
     v_ego = CS.out.vEgo
-    a_ego = CS.out.aEgo
     no_obstacle = CS.das_status2["DAS_pmmObstacleSeverity"] == 0
     gas_pressed = CS.out.gasPressed
 
@@ -93,14 +92,16 @@ class TeslaTrafficLight:
         is_effective_red = True
 
     # Handle red (or effective red) light
-    time = np.interp(v_ego, [20, 60], [3, 6])
+    time = np.interp(v_ego, [20, 60], [3, 5])
     if is_effective_red and ((avg_stop_line_distance / v_ego) <= time or self.phase != 0):
       if self.phase == 3:
         distance = stop_line_distance
+        offset = 0
       else:
         distance = avg_stop_line_distance
+        offset = -1
 
-      required_decel = self.calculate_required_deceleration(v_ego, distance)
+      required_decel = self.calculate_required_deceleration(v_ego, distance, offset)
       self.required_decelerations.append(required_decel)
       output_accel = 0
 
@@ -108,11 +109,11 @@ class TeslaTrafficLight:
         output_accel = sum(self.required_decelerations) / len(self.required_decelerations)
         output_accel = clip(output_accel, self.last_accel - 0.08, self.last_accel + 0.08)
 
-      if avg_stop_line_distance < 15 and self.phase == 0:
+      if avg_stop_line_distance < 10 and self.phase == 0:
         self.phase = 3
 
       if self.phase == 3:
-        output_accel = required_decel
+        output_accel = sum(self.required_decelerations[-3:]) / 3
         output_accel = clip(output_accel, self.last_accel - 0.08, self.last_accel + 0.08)
 
       if (v_ego <= self.CP.vEgoStopping or stop_line_distance <= 1) and self.phase == 3:

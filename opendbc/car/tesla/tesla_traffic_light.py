@@ -106,14 +106,14 @@ class TeslaTrafficLight:
       output_accel = 0
 
       if self.phase == 0:
-        output_accel = sum(self.required_decelerations) / len(self.required_decelerations)
+        output_accel =  np.mean(self.required_decelerations)
         output_accel = clip(output_accel, self.last_accel - 0.08, self.last_accel + 0.08)
 
-      if avg_stop_line_distance < 10 and self.phase == 0:
+      if avg_stop_line_distance < 12 and self.phase == 0:
         self.phase = 3
 
       if self.phase == 3:
-        output_accel = sum(self.required_decelerations[-3:]) / 3
+        output_accel = np.mean(self.required_decelerations[-3:])
         output_accel = clip(output_accel, self.last_accel - 0.08, self.last_accel + 0.08)
 
       if (v_ego <= self.CP.vEgoStopping or stop_line_distance <= 1) and self.phase == 3:

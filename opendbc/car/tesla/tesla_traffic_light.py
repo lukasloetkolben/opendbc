@@ -57,10 +57,11 @@ class TeslaTrafficLight:
     gas_pressed = CS.out.gasPressed
     light_status = self._get_traffic_light_status(CS)
     stop_line_distance = light_status["distance"]
-    avg_stop_line_distance = sum(self.required_decelerations) / len(self.required_decelerations)
-    valid = (stop_line_distance < self.MAX_STOP_LINE_DIST and CS.das_road["StopLineReason"] == self.TRAFFIC_LIGHT_REASON)
+    self.stop_line_distances.append(stop_line_distance)
+    avg_stop_line_distance = sum(self.stop_line_distances) / len(self.stop_line_distances)
+    valid = (avg_stop_line_distance < self.MAX_STOP_LINE_DIST and CS.das_road["StopLineReason"] == self.TRAFFIC_LIGHT_REASON)
     if TESTING:
-      valid = stop_line_distance < self.MAX_STOP_LINE_DIST
+      valid = avg_stop_line_distance < self.MAX_STOP_LINE_DIST
 
     # Default to current accel
     result_accel = accel

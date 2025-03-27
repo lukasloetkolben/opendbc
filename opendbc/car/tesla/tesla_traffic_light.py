@@ -1,4 +1,6 @@
 from collections import deque
+
+import numpy as np
 from numpy import clip
 from opendbc.car.tesla.values import CarControllerParams
 from openpilot.selfdrive.controls.lib.longcontrol import LongControl
@@ -91,10 +93,11 @@ class TeslaTrafficLight:
         is_effective_red = True
 
     # Handle red (or effective red) light
-    if is_effective_red and ((avg_stop_line_distance / v_ego) <= 7 or self.phase != 0):
+    time = np.interp(v_ego, [25, 50], [3, 6])
+    if is_effective_red and ((avg_stop_line_distance / v_ego) <= time or self.phase != 0):
       if self.phase == 3:
-        offset = -1
-        target_speed = 0
+        offset = -10
+        target_speed = 25 / 3.6
         distance = stop_line_distance
       else:
         offset = 0
@@ -109,7 +112,7 @@ class TeslaTrafficLight:
         output_accel = sum(self.required_decelerations) / len(self.required_decelerations)
         output_accel = clip(output_accel, self.last_accel - 0.08, self.last_accel + 0.08)
 
-      if avg_stop_line_distance < 25 and self.phase == 0:
+      if avg_stop_line_distance < 15 and self.phase == 0:
         self.phase = 3
 
       if self.phase == 3:

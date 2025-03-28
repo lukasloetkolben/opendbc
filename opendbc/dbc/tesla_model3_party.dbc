@@ -86,7 +86,7 @@ BO_ 280 DI_systemStatus: 8 PARTY
  SG_ DI_systemStatusChecksum : 0|8@1+ (1,0) [0|255] ""  X
 
 BO_ 605 DAS_road: 6 XXX
- SG_ StopLineReason : 10|2@1+ (1,0) [0|3] "" XXX
+ SG_ StopLineReason : 9|3@1+ (1,0) [0|7] "" XXX
  SG_ StopLineDist : 16|8@1+ (0.5,0) [0|255] "" XXX
  SG_ TrafficLightState : 26|3@0+ (1,0) [0|7] "" XXX
 

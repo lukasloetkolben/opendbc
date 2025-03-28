@@ -7,7 +7,9 @@ from openpilot.selfdrive.controls.lib.longcontrol import LongControl
 
 class TeslaTrafficLight:
   MAX_STOP_LINE_DIST = 127
-  TRAFFIC_LIGHT_REASON = 3  # reason code for traffic light
+  TRAFFIC_LIGHT_REASON = 7
+  STOP_REASON = 3
+  YIELD_REASON = 2
   RED_LIGHT_STATE = 1
   GREEN_LIGHT_STATE = 2
   YELLOW_LIGHT_STATE = 3

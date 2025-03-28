@@ -87,7 +87,7 @@ class TeslaTrafficLight:
 
       if self.phase == 0:
         output_accel = np.mean(list(self.required_decelerations))
-        output_accel = clip(output_accel, self.last_accel - 0.08, self.last_accel + 0.08)
+        output_accel = clip(output_accel, self.last_accel - 0.04, self.last_accel + 0.04)
 
       if avg_stop_line_distance < 12 and self.phase == 0:
         self.phase = 3

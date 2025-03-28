@@ -37,7 +37,7 @@ class TeslaTrafficLight:
   def update(self, CC, CS, accel):
     # Extract traffic light status
     light_state = CS.das_road["TrafficLightState"]
-    print(f"Stop Line Reason: {CS.das_road["StopLineReason"]}")
+    print(f"Type: {CS.das_road["StopLineReason"]:02d} Distance: {CS.das_road["StopLineDist"]:.1f}m")
     stop_line_distance = CS.das_road["StopLineDist"]
     is_red = light_state == self.RED_LIGHT_STATE
     is_yellow = light_state == self.YELLOW_LIGHT_STATE

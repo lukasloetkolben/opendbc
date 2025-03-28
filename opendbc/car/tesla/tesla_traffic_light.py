@@ -4,6 +4,7 @@ import numpy as np
 from numpy import clip
 from opendbc.car.tesla.values import CarControllerParams
 from openpilot.selfdrive.controls.lib.longcontrol import LongControl
+from openpilot.common.conversions import Conversions as CV
 
 class TeslaTrafficLight:
   MAX_STOP_LINE_DIST = 127
@@ -75,7 +76,7 @@ class TeslaTrafficLight:
       if avg_stop_line_distance / v_ego >= 3:
         is_effective_red = True
 
-    time = np.interp(v_ego, [20, 60], [3, 6])
+    time = np.interp(v_ego, [20 * CV.KPH_TO_MS, 70 * CV.KPH_TO_MS], [3, 5])
     if is_effective_red and ((avg_stop_line_distance / v_ego) <= time or self.phase != 0):
 
       distance = stop_line_distance if self.phase == 3 else avg_stop_line_distance

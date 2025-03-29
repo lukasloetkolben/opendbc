@@ -8,7 +8,7 @@ from openpilot.common.conversions import Conversions as CV
 
 class TeslaTrafficLight:
   MAX_STOP_LINE_DIST = 127
-  TRAFFIC_LIGHT_REASON = 7
+  TRAFFIC_LIGHT_REASONS = [6, 7]
   STOP_REASON = 3
   YIELD_REASON = 2
   RED_LIGHT_STATE = 1
@@ -52,7 +52,7 @@ class TeslaTrafficLight:
     self.stop_line_distances.append(stop_line_distance)
     avg_stop_line_distance = sum(self.stop_line_distances) / len(self.stop_line_distances)
     valid = (avg_stop_line_distance < self.MAX_STOP_LINE_DIST and
-             CS.das_road["StopLineReason"] == self.TRAFFIC_LIGHT_REASON)
+             int(CS.das_road["StopLineReason"]) in self.TRAFFIC_LIGHT_REASONS)
 
     # Default to current accel
     result_accel = accel

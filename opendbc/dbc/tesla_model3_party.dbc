@@ -85,6 +85,11 @@ BO_ 280 DI_systemStatus: 8 PARTY
  SG_ DI_systemStatusCounter : 8|4@1+ (1,0) [0|15] ""  X
  SG_ DI_systemStatusChecksum : 0|8@1+ (1,0) [0|255] ""  X
 
+BO_ 605 DAS_road: 6 XXX
+ SG_ TrafficLight : 11|2@0+ (1,0) [0|3] "" XXX
+ SG_ StopLineDist : 16|8@1+ (0.5,0) [0|255] "" XXX
+ SG_ TrafficLightState : 26|3@0+ (1,0) [0|7] "" XXX
+
 BO_ 697 DAS_control: 8 PARTY
  SG_ DAS_controlChecksum : 56|8@1+ (1,0) [0|255] ""  aps
  SG_ DAS_controlCounter : 53|3@1+ (1,0) [0|7] ""  aps

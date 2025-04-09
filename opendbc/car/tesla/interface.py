@@ -23,7 +23,7 @@ class CarInterface(CarInterfaceBase):
     ret.radarUnavailable = True
 
     ret.experimentalLongitudinalAvailable = True
-    if experimental_long:
+    if experimental_long or True:
       ret.openpilotLongitudinalControl = True
       ret.safetyConfigs[0].safetyParam |= TeslaSafetyFlags.LONG_CONTROL.value
 

@@ -38,7 +38,6 @@ class CarController(CarControllerBase):
     # Longitudinal control
     if self.CP.openpilotLongitudinalControl:
       if self.frame % 4 == 0:
-        # Stock Tesla ACC ramps down request after overriding to not violate accelMax, this period is even longer with FSD
         accel = self.tesla_stop_controller.update(CC, CS, actuators.accel)
         state = 13 if cruise_cancel else 4  # 4=ACC_ON, 13=ACC_CANCEL_GENERIC_SILENT
         accel = float(np.clip(accel, CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX))

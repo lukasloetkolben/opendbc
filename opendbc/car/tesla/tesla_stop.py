@@ -11,7 +11,6 @@ from opendbc.car.tesla.values import CarControllerParams
 class TeslaStop:
     MAX_STOP_LINE_DIST = 127
     TRAFFIC_LIGHT = 3
-    STOP_REASON = 3
     YIELD_REASON = 2
     RED_LIGHT_STATE = 1
     GREEN_LIGHT_STATE = 2
@@ -24,7 +23,7 @@ class TeslaStop:
         self.LoC.pid.i_rate = 0.04
         self.last_accel = 0
         self.phase = 0
-        self.stop_line_distances = deque([0] * 30, maxlen=30)
+        self.stop_line_distances = deque([127.0] * 10, maxlen=10)
         self.required_decelerations = deque([0] * 25, maxlen=25)
 
     def calculate_required_deceleration(self, v_ego, distance_to_traffic_light, target_speed=0, offset=0):
@@ -57,26 +56,8 @@ class TeslaStop:
         # Update distance tracking
         self.stop_line_distances.append(stop_line_distance)
 
-        # IQR-Filter
-        sorted_distances = sorted(self.stop_line_distances)
-        q1_idx = len(sorted_distances) // 4
-        q3_idx = 3 * len(sorted_distances) // 4
-
-        q1 = sorted_distances[q1_idx]
-        q3 = sorted_distances[q3_idx]
-        iqr = q3 - q1
-
-        lower_bound = q1 - 1.5 * iqr
-        upper_bound = q3 + 1.5 * iqr
-
-        filtered_distances = [d for d in self.stop_line_distances if lower_bound <= d <= upper_bound]
-
-        if not filtered_distances:
-            avg_stop_line_distance = sorted_distances[len(sorted_distances) // 2]
-        else:
-            avg_stop_line_distance = sum(filtered_distances) / len(filtered_distances)
-
-        valid = (avg_stop_line_distance < self.MAX_STOP_LINE_DIST and CS.das_road["TrafficLight"] == self.TRAFFIC_LIGHT and CS.das_road["TrafficLightState"] != 0)
+        avg_stop_line_distance = np.mean(list(self.stop_line_distances))
+        valid = avg_stop_line_distance < self.MAX_STOP_LINE_DIST and int(CS.das_road["TrafficLight"]) == self.TRAFFIC_LIGHT
 
         # Default to current accel
         result_accel = accel
@@ -106,9 +87,7 @@ class TeslaStop:
         time = np.interp(v_ego, [20 * CV.KPH_TO_MS, 80 * CV.KPH_TO_MS], [3, 5])
         if is_effective_red and ((avg_stop_line_distance / v_ego) <= time or self.phase != 0):
 
-            distance = self.stop_line_distances[-1] if self.phase == 3 else avg_stop_line_distance
-
-            required_decel = self.calculate_required_deceleration(v_ego, distance, offset=-2)
+            required_decel = self.calculate_required_deceleration(v_ego, avg_stop_line_distance, offset=-2)
             self.required_decelerations.append(required_decel)
             output_accel = 0
 
@@ -117,21 +96,21 @@ class TeslaStop:
                 output_accel = clip(output_accel, self.last_accel - 0.04, self.last_accel + 0.04)
 
             if avg_stop_line_distance < 12 and self.phase == 0:
-                self.phase = 3
+                self.phase = 1
 
-            if self.phase == 3:
+            if self.phase == 1:
                 output_accel = np.mean(list(self.required_decelerations)[-5:])
                 output_accel = clip(output_accel, self.last_accel - 0.10, self.last_accel + 0.04)
 
-            if (v_ego <= self.CP.vEgoStopping or self.stop_line_distances[-1] <= 2) and self.phase == 3:
-                self.phase = 4
+            if (v_ego <= self.CP.vEgoStopping or self.stop_line_distances[-1] <= 2) and self.phase == 1:
+                self.phase = 2
 
-            if self.phase == 4:
+            if self.phase == 2:
                 output_accel = self.CP.stopAccel
                 output_accel = clip(output_accel, self.last_accel - 0.08, self.last_accel + 0.04)
 
             pid_accel_limits = (CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)
-            required_decel = float(self.LoC.update(CC.longActive, CS.out, output_accel, self.phase == 4, pid_accel_limits))
+            required_decel = float(self.LoC.update(CC.longActive, CS.out, output_accel, self.phase == 2, pid_accel_limits))
 
             # Apply more deceleration when the model is braking, e.g. lead vehicle.
             result_accel = min(accel, required_decel)

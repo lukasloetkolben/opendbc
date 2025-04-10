@@ -168,12 +168,12 @@ static bool tesla_fwd_hook(int bus_num, int addr) {
 static safety_config tesla_init(uint16_t param) {
 
   static const CanMsg TESLA_TX_MSGS[] = {
-    {0x488, 0, 4, true},  // DAS_steeringControl
-    {0x27D, 0, 3, true},  // APS_eacMonitor
+    {0x488, 0, 4,  .check_relay = true},  // DAS_steeringControl
+    {0x27D, 0, 3,  .check_relay = true},  // APS_eacMonitor
   };
 
   static const CanMsg TESLA_PT_TX_MSGS[] = {
-    {0x2bf, 0, 8, true},  // DAS_control
+    {0x2bf, 0, 8,  .check_relay = true},  // DAS_control
   };
 
   const int TESLA_FLAG_LONGITUDINAL_CONTROL = 1;

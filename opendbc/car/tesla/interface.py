@@ -35,7 +35,7 @@ class CarInterface(CarInterfaceBase):
 
     ret.experimentalLongitudinalAvailable = True
     if experimental_long or (candidate == CAR.TESLA_MODEL_S_RAVEN):
-      ret.openpilotLongitudinalControl = True
+      ret.openpilotLongitudinalControl = False
       ret.safetyConfigs[0].safetyParam |= TeslaSafetyFlags.LONG_CONTROL.value
 
       ret.vEgoStopping = 0.1

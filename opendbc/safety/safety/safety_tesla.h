@@ -173,7 +173,7 @@ static safety_config tesla_init(uint16_t param) {
   };
 
   static const CanMsg TESLA_PT_TX_MSGS[] = {
-    {0x2bf, 0, 8,  .check_relay = true},  // DAS_control
+    {0x2bf, 0, 8,  .check_relay = true,  .disable_static_blocking = false},  // DAS_control
   };
 
   const int TESLA_FLAG_LONGITUDINAL_CONTROL = 1;

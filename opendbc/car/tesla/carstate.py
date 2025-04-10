@@ -110,7 +110,7 @@ class CarState(CarStateBase):
     ret.stockAeb = cp_ap.vl["DAS_control"]["DAS_aebEvent"] == 1
 
     # Stock Autosteer should be off (includes FSD)
-    ret.invalidLkasSetting = cp_ap_party.vl["DAS_settings"]["DAS_autosteerEnabled"] != 0
+    #ret.invalidLkasSetting = cp_ap_party.vl["DAS_settings"]["DAS_autosteerEnabled"] != 0
 
     # Buttons # ToDo: add Gap adjust button
 

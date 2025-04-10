@@ -21,11 +21,6 @@ class CarState(CarStateBase):
       **self.can_define_chassis.dv,
     }
 
-    if self.CP.carFingerprint not in PLATFORM_3Y:
-      # TODO: this should be swapped on the harnesses
-      CANBUS.chassis = 1
-      CANBUS.radar = 5
-
     self.hands_on_level = 0
     self.das_control = None
     self.angle_rate_calulator = CanSignalRateCalculator(100)

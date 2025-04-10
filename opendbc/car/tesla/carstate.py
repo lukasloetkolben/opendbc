@@ -104,7 +104,7 @@ class CarState(CarStateBase):
       ret.doorOpen = any((self.can_defines["GTW_carState"][door].get(int(cp_chassis.vl["GTW_carState"][door]), "OPEN") == "OPEN") for door in DOORS)
       ret.leftBlinker = cp_chassis.vl["GTW_carState"]["BC_indicatorLStatus"] == 1
       ret.rightBlinker = cp_chassis.vl["GTW_carState"]["BC_indicatorRStatus"] == 1
-      ret.seatbeltUnlatched = cp_chassis.vl["DriverSeat"]["buckleStatus"] != 1
+      ret.seatbeltUnlatched = False # cp_chassis.vl["DriverSeat"]["buckleStatus"] != 1
 
     # AEB
     ret.stockAeb = cp_ap.vl["DAS_control"]["DAS_aebEvent"] == 1
@@ -161,7 +161,7 @@ class CarState(CarStateBase):
 
       chassis_messages = [
         ("GTW_carState", 10),
-        ("DriverSeat", 20),
+        #("DriverSeat", 20),
       ]
 
       parsers = {

@@ -23,7 +23,7 @@ class TeslaStop:
         self.LoC.pid.i_rate = 0.04
         self.last_accel = 0
         self.phase = 0
-        self.stop_line_distances = deque([127.0] * 10, maxlen=10)
+        self.stop_line_distances = deque([127.0] * 3, maxlen=3)
         self.required_decelerations = deque([0] * 25, maxlen=25)
 
     def calculate_required_deceleration(self, v_ego, distance_to_traffic_light, target_speed=0, offset=0):
@@ -85,7 +85,7 @@ class TeslaStop:
                 is_effective_red = True
 
         time = np.interp(v_ego, [20 * CV.KPH_TO_MS, 80 * CV.KPH_TO_MS], [3, 5])
-        if is_effective_red and ((avg_stop_line_distance / v_ego) <= time or self.phase != 0):
+        if is_effective_red and ((stop_line_distance / v_ego) <= time or self.phase != 0):
 
             required_decel = self.calculate_required_deceleration(v_ego, avg_stop_line_distance, offset=-2)
             self.required_decelerations.append(required_decel)

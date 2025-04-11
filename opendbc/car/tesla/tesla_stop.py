@@ -23,7 +23,6 @@ class TeslaStop:
         self.LoC.pid.i_rate = 0.04
         self.last_accel = 0
         self.phase = 0
-        self.stop_line_distances = []
         self.required_decelerations = []
         self.reset()
 
@@ -38,7 +37,6 @@ class TeslaStop:
 
     def reset(self):
       self.phase = 0
-      self.stop_line_distances = [127.0]
       self.required_decelerations = [0]
 
     def update(self, CC, CS, accel):
@@ -54,22 +52,13 @@ class TeslaStop:
         no_obstacle = CS.das_status2["DAS_pmmObstacleSeverity"] == 0
         gas_pressed = CS.out.gasPressed
 
-        # Update distance tracking
-        self.stop_line_distances.append(stop_line_distance)
-        self.stop_line_distances = self.stop_line_distances[:-2]
-
-        if len(self.stop_line_distances) == 0:
-          return accel
-
-        avg_stop_line_distance = sum(self.stop_line_distances) / len(self.stop_line_distances)
-        valid = avg_stop_line_distance < self.MAX_STOP_LINE_DIST and int(CS.das_road["TrafficLight"]) == self.TRAFFIC_LIGHT
+        valid = (0 < stop_line_distance < self.MAX_STOP_LINE_DIST) and int(CS.das_road["TrafficLight"]) == self.TRAFFIC_LIGHT
 
         # Default to current accel
         result_accel = accel
 
         # If beyond detection range, gas pressed, or ACC not active, just return current accel
         if (not valid or
-                avg_stop_line_distance >= self.MAX_STOP_LINE_DIST or
                 gas_pressed or
                 not CC.longActive or
                 is_green):
@@ -86,15 +75,15 @@ class TeslaStop:
         is_effective_red = is_red and valid
 
         if is_yellow and valid:
-            if avg_stop_line_distance / v_ego >= 3:
+            if stop_line_distance / v_ego >= 3:
                 is_effective_red = True
 
         time = np.interp(v_ego, [20 * CV.KPH_TO_MS, 80 * CV.KPH_TO_MS], [3, 5])
         if is_effective_red and ((stop_line_distance / v_ego) <= time or self.phase != 0):
 
-            required_decel = self.calculate_required_deceleration(v_ego, avg_stop_line_distance, offset=-3)
+            required_decel = self.calculate_required_deceleration(v_ego, stop_line_distance, offset=-3)
             self.required_decelerations.append(required_decel)
-            self.required_decelerations = self.required_decelerations[:-max((avg_stop_line_distance // 2), 5)]
+            self.required_decelerations = self.required_decelerations[:-max((stop_line_distance // 2), 5)]
             output_accel = sum(self.required_decelerations) / len(self.required_decelerations)
 
             if self.phase == 0:
@@ -106,7 +95,7 @@ class TeslaStop:
             if self.phase == 1:
                 output_accel = clip(output_accel, self.last_accel - 0.10, self.last_accel + 0.04)
 
-            if (v_ego <= self.CP.vEgoStopping or self.stop_line_distances[-1] <= 2) and self.phase == 1:
+            if (v_ego <= self.CP.vEgoStopping or stop_line_distance <= 2) and self.phase == 1:
                 self.phase = 2
 
             if self.phase == 2:

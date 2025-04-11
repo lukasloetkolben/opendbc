@@ -57,6 +57,10 @@ class TeslaStop:
         # Update distance tracking
         self.stop_line_distances.append(stop_line_distance)
         self.stop_line_distances = self.stop_line_distances[:-2]
+
+        if len(self.stop_line_distances) == 0:
+          return accel
+
         avg_stop_line_distance = sum(self.stop_line_distances) / len(self.stop_line_distances)
         valid = avg_stop_line_distance < self.MAX_STOP_LINE_DIST and int(CS.das_road["TrafficLight"]) == self.TRAFFIC_LIGHT
 

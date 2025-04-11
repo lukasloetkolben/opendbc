@@ -124,7 +124,6 @@ class CarState(CarStateBase):
     party_messages = []
     ap_messages = [
       ("DAS_control", 25),
-      ("DAS_status", 2),
     ]
 
     if CP.carFingerprint in PLATFORM_3Y:
@@ -137,6 +136,7 @@ class CarState(CarStateBase):
         ("UI_warning", 10)
       ]
       ap_messages += [
+        ("DAS_status", 2),
         ("DAS_settings", 2),
       ]
     elif CP.carFingerprint == CAR.TESLA_MODEL_S_RAVEN:

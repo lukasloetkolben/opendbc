@@ -37,7 +37,7 @@ class TeslaStop:
 
     def reset(self):
       self.phase = 0
-      self.required_decelerations = [0]
+      self.required_decelerations = [0] * 25
 
     def update(self, CC, CS, accel):
         # Extract traffic light status
@@ -83,7 +83,7 @@ class TeslaStop:
 
             required_decel = self.calculate_required_deceleration(v_ego, stop_line_distance, offset=-3)
             self.required_decelerations.append(required_decel)
-            self.required_decelerations = self.required_decelerations[-max(int(stop_line_distance / 2), 5):]
+            self.required_decelerations = self.required_decelerations[-max(int(stop_line_distance), 35):]
             output_accel = sum(self.required_decelerations) / len(self.required_decelerations)
 
             if self.phase == 0:

@@ -4,6 +4,7 @@ from opendbc.car import Bus, structs
 from opendbc.car.interfaces import CarStateBase
 from opendbc.car.rivian.values import DBC, GEAR_MAP
 from opendbc.car.common.conversions import Conversions as CV
+from cereal import messaging
 
 GearShifter = structs.CarState.GearShifter
 
@@ -11,7 +12,10 @@ GearShifter = structs.CarState.GearShifter
 class CarState(CarStateBase):
   def __init__(self, CP, CP_SP):
     super().__init__(CP, CP_SP)
-    self.last_speed = 30
+    self.sm = messaging.SubMaster(['uiSetSpeed'])
+    self.button_hold_frames = 0
+    self.last_button_press = -1
+    self.set_speed = 10
 
     self.acm_lka_hba_cmd = None
     self.sccm_wheel_touch = None
@@ -46,13 +50,25 @@ class CarState(CarStateBase):
     ret.steerFaultTemporary = cp.vl["EPAS_AdasStatus"]["EPAS_EacErrorCode"] != 0
 
     # Cruise state
-    speed = min(int(cp_adas.vl["ACM_tsrCmd"]["ACM_tsrSpdDisClsMain"]), 85)
-    self.last_speed = speed if speed != 0 else self.last_speed
     ret.cruiseState.enabled = cp_cam.vl["ACM_Status"]["ACM_FeatureStatus"] == 1
-    # TODO: find cruise set speed on CAN
-    ret.cruiseState.speed = self.last_speed * CV.MPH_TO_MS  # detected speed limit
-    if not self.CP.openpilotLongitudinalControl:
-      ret.cruiseState.speed = -1
+
+    self.sm.update(0)
+    button_press = int(self.sm["uiSetSpeed"].buttonSignal)
+
+    if button_press == self.last_button_press:
+      self.button_hold_frames += 1
+    else:
+      self.button_hold_frames = 0
+    self.last_button_press = button_press
+
+    if self.button_hold_frames % 15 == 1 and button_press:
+      self.set_speed += button_press * CV.MPH_TO_MS
+
+    if not ret.cruiseState.enabled:
+      self.set_speed = ret.vEgo
+
+    self.set_speed = max(1, min(self.set_speed, 42))
+    ret.cruiseState.speed = self.set_speed
     ret.cruiseState.available = True  # cp.vl["VDM_AdasSts"]["VDM_AdasInterfaceStatus"] == 1
     ret.cruiseState.standstill = cp.vl["VDM_AdasSts"]["VDM_AdasAccelRequestAcknowledged"] == 1
 

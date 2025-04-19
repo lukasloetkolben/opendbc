@@ -165,7 +165,6 @@ class CarState(CarStateBase):
 
       chassis_messages = [
         ("GTW_carState", 10),
-        ("DriverSeat", 20),
       ]
 
       parsers = {

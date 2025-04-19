@@ -8,6 +8,9 @@ from cereal import messaging
 
 GearShifter = structs.CarState.GearShifter
 
+MAX_SET_SPEED = 42  # m/s
+MIN_SET_SPEED = 1  # m/s
+
 
 class CarState(CarStateBase):
   def __init__(self, CP, CP_SP):
@@ -16,6 +19,7 @@ class CarState(CarStateBase):
     self.button_hold_frames = 0
     self.last_button_press = -1
     self.set_speed = 10
+    self.sign_speed = -1
 
     self.acm_lka_hba_cmd = None
     self.sccm_wheel_touch = None
@@ -52,9 +56,9 @@ class CarState(CarStateBase):
     # Cruise state
     ret.cruiseState.enabled = cp_cam.vl["ACM_Status"]["ACM_FeatureStatus"] == 1
 
+    # Button Logic
     self.sm.update(0)
     button_press = int(self.sm["uiSetSpeed"].buttonSignal)
-
     if button_press == self.last_button_press:
       self.button_hold_frames += 1
     else:
@@ -64,10 +68,25 @@ class CarState(CarStateBase):
     if self.button_hold_frames % 15 == 1 and button_press:
       self.set_speed += button_press * CV.MPH_TO_MS
 
+    # Traffic Sign Detection
+    sign_speed = int(cp_adas.vl["ACM_tsrCmd"]["ACM_tsrSpdDisClsMain"])
+    if sign_speed not in [0, 254, 255]:  # 0=No Recognition, 254=Reserved, 255=Invalid
+      sign_speed = min(sign_speed * CV.MPH_TO_MS, MAX_SET_SPEED)  # 253=Unlimited_Speed
+    else:
+      sign_speed = self.sign_speed # Use last valid Detected Speed
+
+    # Use Traffic Sign only if its in a reasonable range to avoid False Positives
+    if self.sign_speed != sign_speed and abs(self.set_speed - sign_speed) <= 9:  # ~20MPH
+      self.set_speed = sign_speed
+    self.sign_speed = sign_speed
+
+    if ret.gasPressed and ret.vEgo > self.set_speed:
+      self.set_speed = ret.vEgo
+
     if not ret.cruiseState.enabled:
       self.set_speed = ret.vEgo
 
-    self.set_speed = max(1, min(self.set_speed, 42))
+    self.set_speed = max(MIN_SET_SPEED, min(self.set_speed, MAX_SET_SPEED))
     ret.cruiseState.speed = self.set_speed
     ret.cruiseState.available = True  # cp.vl["VDM_AdasSts"]["VDM_AdasInterfaceStatus"] == 1
     ret.cruiseState.standstill = cp.vl["VDM_AdasSts"]["VDM_AdasAccelRequestAcknowledged"] == 1

@@ -20,6 +20,8 @@ class CarState(CarStateBase):
     self.last_button_press = -1
     self.set_speed = 10
     self.sign_speed = 10
+    self.decrease_counter = 0
+    self.increase_counter = 1
 
     self.acm_lka_hba_cmd = None
     self.sccm_wheel_touch = None
@@ -68,23 +70,22 @@ class CarState(CarStateBase):
     if self.button_hold_frames % 15 == 1 and button_press:
       self.set_speed += button_press * CV.MPH_TO_MS
 
-    # Traffic Sign Detection
-    current_sign_speed = int(cp_adas.vl["ACM_tsrCmd"]["ACM_tsrSpdDisClsMain"])
-    if current_sign_speed in [0, 254, 255]:  # 0=No Recognition, 254=Reserved, 255=Invalid
-      # If the speed sign is invalid, use the last valid detected speed.
-      current_sign_speed = self.sign_speed
+    accel = cp_cam.vl["ACM_longitudinalRequest"]["ACM_AccelerationRequest"]
+    if -3.86 >= accel >= -3.94:
+      self.decrease_counter += 1
     else:
-      current_sign_speed = min(current_sign_speed * CV.MPH_TO_MS, MAX_SET_SPEED)  # 253=Unlimited_Speed
+      self.decrease_counter = 0
 
-    # Use the detected traffic sign speed only if it's a new value and within a reasonable range
-    # (approximately +/- ~20MPH) of the current vehicle speed to avoid false positives.
-    if self.sign_speed != current_sign_speed and abs(self.set_speed - current_sign_speed) <= 9:
-      self.set_speed = current_sign_speed
-    self.sign_speed = current_sign_speed
+    if 0.57 <= accel <= 0.62:
+      self.increase_counter += 1
+    else:
+      self.increase_counter = 0
 
-    # If the driver is pressing the gas pedal and the vehicle speed exceeds the current set speed,
-    if ret.gasPressed and ret.vEgo > self.set_speed:
-      self.set_speed = ret.vEgo
+    if self.decrease_counter != 0 and self.decrease_counter % 100 == 0:
+      self.set_speed -= 1
+
+    if self.increase_counter != 0 and self.increase_counter % 100 == 0:
+      self.set_speed += 1
 
     if not ret.cruiseState.enabled:
       self.set_speed = ret.vEgo

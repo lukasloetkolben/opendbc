@@ -50,7 +50,7 @@ class TeslaCAN:
 
     bus = CANBUS.party if self.is_3Y else CANBUS.powertrain
     data = self.packers[bus].make_can_msg("DAS_control", bus, values)[1]
-    values["DAS_controlChecksum"] = self.checksum(0x2b9, data[:7])
+    values["DAS_controlChecksum"] = self.checksum(0x2bf, data[:7])
     return self.packers[bus].make_can_msg("DAS_control", bus, values)
 
   def create_steering_allowed(self, counter):

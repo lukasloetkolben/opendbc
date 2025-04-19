@@ -63,8 +63,7 @@ class CarState(CarStateBase):
       ret.brakePressed = cp_party.vl["IBST_private2"]["IBST_brakePedalApplied"] == 1
 
     # Steering wheel
-    epas_name = "EPAS3S" if is_3Y else "EPAS"
-    epas_status = cp_party.vl[f"{epas_name}_sysStatus"]
+    epas_status = cp_chassis.vl[f"EPAS_sysStatus"]
     self.hands_on_level = epas_status[f"{epas_name}_handsOnLevel"]
     ret.steeringAngleDeg = -epas_status[f"{epas_name}_internalSAS"]
     ret.steeringRateDeg = self.angle_rate_calulator.update(ret.steeringAngleDeg, epas_status[f"{epas_name}_sysStatusCounter"])
@@ -146,7 +145,6 @@ class CarState(CarStateBase):
     elif CP.carFingerprint == CAR.TESLA_MODEL_S_RAVEN:
       # TODO: verify frequencies
       party_messages += [
-        ("EPAS_sysStatus", 100),
         ("ESP_private1", 50),
         ("IBST_private2", 50),
       ]
@@ -164,6 +162,7 @@ class CarState(CarStateBase):
       ]
 
       chassis_messages = [
+        ("EPAS_sysStatus", 100),
         ("GTW_carState", 10),
       ]
 

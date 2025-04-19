@@ -64,14 +64,14 @@ class CarState(CarStateBase):
 
     # Steering wheel
     epas_status = cp_chassis.vl[f"EPAS_sysStatus"]
-    self.hands_on_level = epas_status[f"{epas_name}_handsOnLevel"]
-    ret.steeringAngleDeg = -epas_status[f"{epas_name}_internalSAS"]
-    ret.steeringRateDeg = self.angle_rate_calulator.update(ret.steeringAngleDeg, epas_status[f"{epas_name}_sysStatusCounter"])
-    ret.steeringTorque = -epas_status[f"{epas_name}_torsionBarTorque"]
+    self.hands_on_level = epas_status[f"EPAS_handsOnLevel"]
+    ret.steeringAngleDeg = -epas_status[f"EPAS_internalSAS"]
+    ret.steeringRateDeg = self.angle_rate_calulator.update(ret.steeringAngleDeg, epas_status[f"EPAS_sysStatusCounter"])
+    ret.steeringTorque = -epas_status[f"EPAS_torsionBarTorque"]
 
     # This matches stock logic, but with halved minimum frames (0.25-0.3s)
     ret.steeringPressed = self.update_steering_pressed(abs(ret.steeringTorque) > STEER_THRESHOLD, 15)
-    eac_status = self.can_defines[f"{epas_name}_sysStatus"][f"{epas_name}_eacStatus"].get(int(epas_status[f"{epas_name}_eacStatus"]), None)
+    eac_status = self.can_defines[f"EPAS_sysStatus"][f"EPAS_eacStatus"].get(int(epas_status[f"EPAS_eacStatus"]), None)
     ret.steerFaultPermanent = eac_status == "EAC_FAULT"
     ret.steerFaultTemporary = eac_status == "EAC_INHIBITED"
 

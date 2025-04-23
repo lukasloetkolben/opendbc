@@ -5,7 +5,7 @@ from opendbc.car.interfaces import CarStateBase
 from opendbc.car.rivian.values import DBC, GEAR_MAP
 from opendbc.car.common.conversions import Conversions as CV
 from cereal import messaging
-#from openpilot.common.params import Params
+from openpilot.common.params import Params
 
 GearShifter = structs.CarState.GearShifter
 
@@ -81,8 +81,8 @@ class CarState(CarStateBase):
     # Use the detected traffic sign speed only if it's a new value and within a reasonable range
     # (approximately +/- ~20MPH) of the current vehicle speed to avoid false positives.
     if self.sign_speed != current_sign_speed and abs(self.set_speed - current_sign_speed) <= 9:
-      offset = 1 # int(Params().get("TrafficSignOffset"))
-      self.sign_offset = offset + + ((5 * offset) / 100)
+      offset = int(Params().get("TrafficSignOffset"))
+      self.sign_offset = offset + ((5 * offset) / 100)
       if self.sign_offset != 0:
        self.set_speed = current_sign_speed * self.sign_offset
     self.sign_speed = current_sign_speed

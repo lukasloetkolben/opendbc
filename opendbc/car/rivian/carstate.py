@@ -82,7 +82,7 @@ class CarState(CarStateBase):
     # (approximately +/- ~20MPH) of the current vehicle speed to avoid false positives.
     if self.sign_speed != current_sign_speed and abs(self.set_speed - current_sign_speed) <= 9:
       offset = int(Params().get("TrafficSignOffset"))
-      self.sign_offset = offset + ((5 * offset) / 100)
+      self.sign_offset = 1 + ((5 * offset) / 100)
       if self.sign_offset != 0:
        self.set_speed = current_sign_speed * self.sign_offset
     self.sign_speed = current_sign_speed

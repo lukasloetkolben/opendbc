@@ -83,7 +83,7 @@ class CarState(CarStateBase):
     if self.sign_speed != current_sign_speed and abs(self.set_speed - current_sign_speed) <= 9:
       offset = int(Params().get("TrafficSignOffset"))
       self.sign_offset = 1 + ((5 * offset) / 100)
-      if self.sign_offset != 0:
+      if offset != 0:
        self.set_speed = current_sign_speed * self.sign_offset
     self.sign_speed = current_sign_speed
 

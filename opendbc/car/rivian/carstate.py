@@ -21,7 +21,6 @@ class CarState(CarStateBase):
     self.last_button_press = -1
     self.set_speed = 10
     self.sign_speed = 10
-    self.sign_offset = 1
 
     self.acm_lka_hba_cmd = None
     self.sccm_wheel_touch = None
@@ -82,9 +81,8 @@ class CarState(CarStateBase):
     # (approximately +/- ~20MPH) of the current vehicle speed to avoid false positives.
     if self.sign_speed != current_sign_speed and abs(self.set_speed - current_sign_speed) <= 9:
       offset = int(Params().get("TrafficSignOffset"))
-      self.sign_offset = 1 + ((5 * offset) / 100)
       if offset != 0:
-       self.set_speed = current_sign_speed * self.sign_offset
+       self.set_speed = current_sign_speed * (1 + ((5 * offset) / 100))
     self.sign_speed = current_sign_speed
 
     # If the driver is pressing the gas pedal and the vehicle speed exceeds the current set speed,

@@ -71,13 +71,13 @@ class CarState(CarStateBase):
     if increase_btn_pressed_now and self.increase_cntr % 50 == 0:
       self.set_speed += 5 * CV.MPH_TO_MS
     elif self.increase_btn_pressed_prev and not increase_btn_pressed_now:
-        self.set_speed += 1 * CV.MPH_TO_MS
+      self.set_speed += 1 * CV.MPH_TO_MS
 
     # Check if decrease button was pressed in the previous frame and is not pressed now (falling edge)
     if decrease_btn_pressed_now and self.decrease_cntr % 50 == 0:
       self.set_speed -= 5 * CV.MPH_TO_MS
     elif self.decrease_btn_pressed_prev and not decrease_btn_pressed_now:
-        self.set_speed -= 1 * CV.MPH_TO_MS
+      self.set_speed -= 1 * CV.MPH_TO_MS
 
     # Update previous button states for the next iteration
     self.increase_btn_pressed_prev = increase_btn_pressed_now

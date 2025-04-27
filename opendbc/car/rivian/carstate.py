@@ -61,25 +61,24 @@ class CarState(CarStateBase):
     ret.cruiseState.enabled = cp_cam.vl["ACM_Status"]["ACM_FeatureStatus"] == 1
 
     # Button logic
-    cluster_speed = cp_adas.vl["Cluster"]["Cluster_VehicleSpeed"] * CV.MPH_TO_MS
     increase_btn_pressed_now = cp_park.vl["WheelButtons"]["RightButton_RightClick"] == 2
     decrease_btn_pressed_now = cp_park.vl["WheelButtons"]["RightButton_LeftClick"] == 2
 
     self.increase_cntr = self.increase_cntr + 1 if increase_btn_pressed_now else 0
     self.decrease_cntr = self.decrease_cntr + 1 if decrease_btn_pressed_now else 0
 
-
+    cluster_speed = cp_adas.vl["Cluster"]["Cluster_VehicleSpeed"] * CV.MPH_TO_MS
+    set_speed_mph = self.set_speed * CV.MPH_TO_MS
     # Check if increase button was pressed in the previous frame and is not pressed now (falling edge)
     if increase_btn_pressed_now and self.increase_cntr % 100 == 0:
-      self.set_speed += 5 * CV.MPH_TO_MS
-      int(math.ceil(self.set_speed + 1 / 5.0)) * 5
+      self.set_speed = (int(math.ceil(set_speed_mph + 1 / 5.0)) * 5) * CV.MPH_TO_MS
       self.long_press = True
     elif self.increase_btn_pressed_prev and not increase_btn_pressed_now and not self.long_press:
       self.set_speed += 1 * CV.MPH_TO_MS
 
     # Check if decrease button was pressed in the previous frame and is not pressed now (falling edge)
     if decrease_btn_pressed_now and self.decrease_cntr % 100 == 0:
-      int(math.ceil(self.set_speed - 1 / -5.0)) * -5
+      self.set_speed = (int(math.ceil(set_speed_mph - 1 / -5.0)) * -5) * CV.MPH_TO_MS
       self.long_press = True
     elif self.decrease_btn_pressed_prev and not decrease_btn_pressed_now and not self.long_press:
       self.set_speed -= 1 * CV.MPH_TO_MS

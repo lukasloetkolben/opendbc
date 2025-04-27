@@ -67,8 +67,6 @@ class CarState(CarStateBase):
     self.increase_cntr = self.increase_cntr + 1 if increase_btn_pressed_now else 0
     self.decrease_cntr = self.decrease_cntr + 1 if decrease_btn_pressed_now else 0
 
-    if not increase_btn_pressed_now and not decrease_btn_pressed_now:
-      self.long_press = False
 
     # Check if increase button was pressed in the previous frame and is not pressed now (falling edge)
     if increase_btn_pressed_now and self.increase_cntr % 100 == 0:
@@ -87,6 +85,8 @@ class CarState(CarStateBase):
     # Update previous button states for the next iteration
     self.increase_btn_pressed_prev = increase_btn_pressed_now
     self.decrease_btn_pressed_prev = decrease_btn_pressed_now
+    if not increase_btn_pressed_now and not decrease_btn_pressed_now:
+      self.long_press = False
 
     # sync with set-speed
     accel = cp_cam.vl["ACM_longitudinalRequest"]["ACM_AccelerationRequest"]

@@ -15,7 +15,6 @@ class CarState(CarStateBase):
     super().__init__(CP, CP_SP)
     self.sm = messaging.SubMaster(['uiSetSpeed'])
 
-    self.last_accel = 0
     self.accel_cntr = 0
     self.set_speed = 10
     self.increase_btn_pressed_prev = False
@@ -68,13 +67,13 @@ class CarState(CarStateBase):
     self.decrease_cntr = self.decrease_cntr + 1 if decrease_btn_pressed_now else 0
 
     # Check if increase button was pressed in the previous frame and is not pressed now (falling edge)
-    if increase_btn_pressed_now and self.increase_cntr % 50 == 0:
+    if increase_btn_pressed_now and self.increase_cntr % 100 == 0:
       self.set_speed += 5 * CV.MPH_TO_MS
     elif self.increase_btn_pressed_prev and not increase_btn_pressed_now:
       self.set_speed += 1 * CV.MPH_TO_MS
 
     # Check if decrease button was pressed in the previous frame and is not pressed now (falling edge)
-    if decrease_btn_pressed_now and self.decrease_cntr % 50 == 0:
+    if decrease_btn_pressed_now and self.decrease_cntr % 100 == 0:
       self.set_speed -= 5 * CV.MPH_TO_MS
     elif self.decrease_btn_pressed_prev and not decrease_btn_pressed_now:
       self.set_speed -= 1 * CV.MPH_TO_MS
@@ -84,13 +83,13 @@ class CarState(CarStateBase):
     self.decrease_btn_pressed_prev = decrease_btn_pressed_now
 
     # sync with set-speed
-    # accel = cp_cam.vl["ACM_longitudinalRequest"]["ACM_AccelerationRequest"]
-    # self.accel_cntr = self.accel_cntr + 1 if (-3.9 > accel > -3.95) else 0
-    # if self.accel_cntr != 0 and self.accel_cntr % 100 == 0:
-    #  self.set_speed -= 1 * CV.MPH_TO_MS
+    accel = cp_cam.vl["ACM_longitudinalRequest"]["ACM_AccelerationRequest"]
+    self.accel_cntr = self.accel_cntr + 1 if (-3.9 > accel > -3.94) else 0
+    if self.accel_cntr != 0 and self.accel_cntr % 100 == 0:
+      self.set_speed -= 1 * CV.MPH_TO_MS
 
     if not ret.cruiseState.enabled:
-      self.set_speed = ret.vEgo
+      self.set_speed = cp_adas.vl["Cluster"]["Cluster_VehicleSpeed"] * CV.MPH_TO_MS
 
     self.set_speed = max(MIN_SET_SPEED, min(self.set_speed, MAX_SET_SPEED))
     ret.cruiseState.speed = self.set_speed
@@ -160,6 +159,7 @@ class CarState(CarStateBase):
     adas_messages = [
       ("IndicatorLights", 10),
       ("ACM_tsrCmd", 10),
+      ("Cluster", 10),
     ]
 
     alt_messages = [

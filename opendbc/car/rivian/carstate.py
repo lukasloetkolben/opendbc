@@ -15,9 +15,13 @@ class CarState(CarStateBase):
     super().__init__(CP, CP_SP)
     self.sm = messaging.SubMaster(['uiSetSpeed'])
 
+    self.last_accel = 0
+    self.accel_cntr = 0
     self.set_speed = 10
     self.increase_btn_pressed_prev = False
+    self.increase_cntr = 0
     self.decrease_btn_pressed_prev = False
+    self.decrease_cntr = 0
 
     self.acm_lka_hba_cmd = None
     self.sccm_wheel_touch = None
@@ -60,17 +64,30 @@ class CarState(CarStateBase):
     increase_btn_pressed_now = cp_park.vl["WheelButtons"]["RightButton_RightClick"] == 1
     decrease_btn_pressed_now = cp_park.vl["WheelButtons"]["RightButton_LeftClick"] == 1
 
+    self.increase_cntr = self.increase_cntr + 1 if increase_btn_pressed_now else 0
+    self.decrease_cntr = self.decrease_cntr + 1 if decrease_btn_pressed_now else 0
+
     # Check if increase button was pressed in the previous frame and is not pressed now (falling edge)
     if self.increase_btn_pressed_prev and not increase_btn_pressed_now:
         self.set_speed += 1 * CV.MPH_TO_MS
+    elif increase_btn_pressed_now and self.increase_cntr % 50 == 0:
+      self.set_speed += 5 * CV.MPH_TO_MS
 
     # Check if decrease button was pressed in the previous frame and is not pressed now (falling edge)
     if self.decrease_btn_pressed_prev and not decrease_btn_pressed_now:
         self.set_speed -= 1 * CV.MPH_TO_MS
+    elif decrease_btn_pressed_now and self.decrease_cntr % 50 == 0:
+      self.set_speed -= 5 * CV.MPH_TO_MS
 
     # Update previous button states for the next iteration
     self.increase_btn_pressed_prev = increase_btn_pressed_now
     self.decrease_btn_pressed_prev = decrease_btn_pressed_now
+
+    # sync with set-speed
+    accel = cp_cam["ACM_longitudinalRequest"]["ACM_AccelerationRequest"]
+    self.accel_cntr = self.accel_cntr + 1 if (-3.9 > accel > -3.95) else 0
+    if self.accel_cntr != 0 and self.accel_cntr % 100 == 0:
+      self.set_speed -= 1 * CV.MPH_TO_MS
 
     if not ret.cruiseState.enabled:
       self.set_speed = ret.vEgo

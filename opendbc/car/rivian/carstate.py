@@ -68,7 +68,7 @@ class CarState(CarStateBase):
     self.decrease_cntr = self.decrease_cntr + 1 if decrease_btn_pressed_now else 0
 
     cluster_speed = cp_adas.vl["Cluster"]["Cluster_VehicleSpeed"] * CV.MPH_TO_MS
-    set_speed_mph = self.set_speed * CV.MPH_TO_MS
+    set_speed_mph = self.set_speed * CV.MS_TO_MPH
     # Check if increase button was pressed in the previous frame and is not pressed now (falling edge)
     if increase_btn_pressed_now and self.increase_cntr % 100 == 0:
       self.set_speed = (int(math.ceil((set_speed_mph + 1) / 5.0)) * 5) * CV.MPH_TO_MS

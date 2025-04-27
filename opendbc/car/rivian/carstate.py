@@ -5,22 +5,19 @@ from opendbc.car.interfaces import CarStateBase
 from opendbc.car.rivian.values import DBC, GEAR_MAP
 from opendbc.car.common.conversions import Conversions as CV
 from cereal import messaging
-from openpilot.common.params import Params
 
 GearShifter = structs.CarState.GearShifter
-
 MAX_SET_SPEED = 42  # m/s
 MIN_SET_SPEED = 1  # m/s
-
 
 class CarState(CarStateBase):
   def __init__(self, CP, CP_SP):
     super().__init__(CP, CP_SP)
     self.sm = messaging.SubMaster(['uiSetSpeed'])
-    self.button_hold_frames = 0
-    self.last_button_press = -1
+
     self.set_speed = 10
-    self.sign_speed = 10
+    self.increase_btn_pressed_prev = False
+    self.decrease_btn_pressed_prev = False
 
     self.acm_lka_hba_cmd = None
     self.sccm_wheel_touch = None
@@ -30,6 +27,8 @@ class CarState(CarStateBase):
     cp = can_parsers[Bus.pt]
     cp_cam = can_parsers[Bus.cam]
     cp_adas = can_parsers[Bus.adas]
+    cp_park = can_parsers[Bus.alt]
+
     ret = structs.CarState()
 
     # Vehicle speed
@@ -57,37 +56,21 @@ class CarState(CarStateBase):
     # Cruise state
     ret.cruiseState.enabled = cp_cam.vl["ACM_Status"]["ACM_FeatureStatus"] == 1
 
-    # Button Logic
-    self.sm.update(0)
-    button_press = int(self.sm["uiSetSpeed"].buttonSignal)
-    if button_press == self.last_button_press:
-      self.button_hold_frames += 1
-    else:
-      self.button_hold_frames = 0
-    self.last_button_press = button_press
+    # Button logic
+    increase_btn_pressed_now = cp_park.vl["WheelButtons"]["RightButton_RightClick"] == 1
+    decrease_btn_pressed_now = cp_park.vl["WheelButtons"]["RightButton_LeftClick"] == 1
 
-    if self.button_hold_frames % 15 == 1 and button_press:
-      self.set_speed += button_press * CV.MPH_TO_MS
+    # Check if increase button was pressed in the previous frame and is not pressed now (falling edge)
+    if self.increase_btn_pressed_prev and not increase_btn_pressed_now:
+        self.set_speed += 1 * CV.MPH_TO_MS
 
-    # Traffic Sign Detection
-    current_sign_speed = int(cp_adas.vl["ACM_tsrCmd"]["ACM_tsrSpdDisClsMain"])
-    if current_sign_speed in [0, 254, 255]:  # 0=No Recognition, 254=Reserved, 255=Invalid
-      # If the speed sign is invalid, use the last valid detected speed.
-      current_sign_speed = self.sign_speed
-    else:
-      current_sign_speed = min(current_sign_speed * CV.MPH_TO_MS, MAX_SET_SPEED)  # 253=Unlimited_Speed
+    # Check if decrease button was pressed in the previous frame and is not pressed now (falling edge)
+    if self.decrease_btn_pressed_prev and not decrease_btn_pressed_now:
+        self.set_speed -= 1 * CV.MPH_TO_MS
 
-    # Use the detected traffic sign speed only if it's a new value and within a reasonable range
-    # (approximately +/- ~20MPH) of the current vehicle speed to avoid false positives.
-    if self.sign_speed != current_sign_speed and abs(self.set_speed - current_sign_speed) <= 9:
-      offset = int(Params().get("TrafficSignOffset"))
-      if offset != 0:
-       self.set_speed = current_sign_speed * (1 + ((5 * offset) / 100))
-    self.sign_speed = current_sign_speed
-
-    # If the driver is pressing the gas pedal and the vehicle speed exceeds the current set speed,
-    if ret.gasPressed and ret.vEgo > self.set_speed:
-      self.set_speed = ret.vEgo
+    # Update previous button states for the next iteration
+    self.increase_btn_pressed_prev = increase_btn_pressed_now
+    self.decrease_btn_pressed_prev = decrease_btn_pressed_now
 
     if not ret.cruiseState.enabled:
       self.set_speed = ret.vEgo
@@ -162,8 +145,13 @@ class CarState(CarStateBase):
       ("ACM_tsrCmd", 10),
     ]
 
+    alt_messages = [
+      ("WheelButtons", 20),
+    ]
+
     return {
       Bus.pt: CANParser(DBC[CP.carFingerprint][Bus.pt], pt_messages, 0),
       Bus.adas: CANParser(DBC[CP.carFingerprint][Bus.pt], adas_messages, 1),
       Bus.cam: CANParser(DBC[CP.carFingerprint][Bus.pt], cam_messages, 2),
+      Bus.alt: CANParser(DBC[CP.carFingerprint][Bus.alt], alt_messages, 5),
     }

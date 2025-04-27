@@ -84,7 +84,7 @@ class CarState(CarStateBase):
     self.decrease_btn_pressed_prev = decrease_btn_pressed_now
 
     # sync with set-speed
-    accel = cp_cam["ACM_longitudinalRequest"]["ACM_AccelerationRequest"]
+    accel = cp_cam.vl["ACM_longitudinalRequest"]["ACM_AccelerationRequest"]
     self.accel_cntr = self.accel_cntr + 1 if (-3.9 > accel > -3.95) else 0
     if self.accel_cntr != 0 and self.accel_cntr % 100 == 0:
       self.set_speed -= 1 * CV.MPH_TO_MS

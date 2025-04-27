@@ -1,4 +1,4 @@
-import copy
+import copy, math
 from opendbc.can.parser import CANParser
 from opendbc.car import Bus, structs
 from opendbc.car.interfaces import CarStateBase
@@ -61,6 +61,7 @@ class CarState(CarStateBase):
     ret.cruiseState.enabled = cp_cam.vl["ACM_Status"]["ACM_FeatureStatus"] == 1
 
     # Button logic
+    cluster_speed = cp_adas.vl["Cluster"]["Cluster_VehicleSpeed"] * CV.MPH_TO_MS
     increase_btn_pressed_now = cp_park.vl["WheelButtons"]["RightButton_RightClick"] == 2
     decrease_btn_pressed_now = cp_park.vl["WheelButtons"]["RightButton_LeftClick"] == 2
 
@@ -71,13 +72,14 @@ class CarState(CarStateBase):
     # Check if increase button was pressed in the previous frame and is not pressed now (falling edge)
     if increase_btn_pressed_now and self.increase_cntr % 100 == 0:
       self.set_speed += 5 * CV.MPH_TO_MS
+      int(math.ceil(self.set_speed + 1 / 5.0)) * 5
       self.long_press = True
     elif self.increase_btn_pressed_prev and not increase_btn_pressed_now and not self.long_press:
       self.set_speed += 1 * CV.MPH_TO_MS
 
     # Check if decrease button was pressed in the previous frame and is not pressed now (falling edge)
     if decrease_btn_pressed_now and self.decrease_cntr % 100 == 0:
-      self.set_speed -= 5 * CV.MPH_TO_MS
+      int(math.ceil(self.set_speed - 1 / -5.0)) * -5
       self.long_press = True
     elif self.decrease_btn_pressed_prev and not decrease_btn_pressed_now and not self.long_press:
       self.set_speed -= 1 * CV.MPH_TO_MS
@@ -95,7 +97,7 @@ class CarState(CarStateBase):
       self.set_speed -= 1 * CV.MPH_TO_MS
 
     if not ret.cruiseState.enabled:
-      self.set_speed = cp_adas.vl["Cluster"]["Cluster_VehicleSpeed"] * CV.MPH_TO_MS
+      self.set_speed = cluster_speed
 
     self.set_speed = max(MIN_SET_SPEED, min(self.set_speed, MAX_SET_SPEED))
     ret.cruiseState.speed = self.set_speed

@@ -71,14 +71,14 @@ class CarState(CarStateBase):
     set_speed_mph = self.set_speed * CV.MPH_TO_MS
     # Check if increase button was pressed in the previous frame and is not pressed now (falling edge)
     if increase_btn_pressed_now and self.increase_cntr % 100 == 0:
-      self.set_speed = (int(math.ceil(set_speed_mph + 1 / 5.0)) * 5) * CV.MPH_TO_MS
+      self.set_speed = (int(math.ceil((set_speed_mph + 1) / 5.0)) * 5) * CV.MPH_TO_MS
       self.long_press = True
     elif self.increase_btn_pressed_prev and not increase_btn_pressed_now and not self.long_press:
       self.set_speed += 1 * CV.MPH_TO_MS
 
     # Check if decrease button was pressed in the previous frame and is not pressed now (falling edge)
     if decrease_btn_pressed_now and self.decrease_cntr % 100 == 0:
-      self.set_speed = (int(math.ceil(set_speed_mph - 1 / -5.0)) * -5) * CV.MPH_TO_MS
+      self.set_speed = (int(math.ceil((set_speed_mph - 1) / -5.0)) * -5) * CV.MPH_TO_MS
       self.long_press = True
     elif self.decrease_btn_pressed_prev and not decrease_btn_pressed_now and not self.long_press:
       self.set_speed -= 1 * CV.MPH_TO_MS
@@ -91,8 +91,8 @@ class CarState(CarStateBase):
 
     # sync with set-speed
     accel = cp_cam.vl["ACM_longitudinalRequest"]["ACM_AccelerationRequest"]
-    self.accel_cntr = self.accel_cntr + 1 if (-3.9 > accel > -3.94) else 0
-    if self.accel_cntr != 0 and self.accel_cntr % 100 == 0:
+    self.accel_cntr = self.accel_cntr + 1 if (-3.9 > accel > -3.94) else 1
+    if self.accel_cntr % 100 == 0:
       self.set_speed -= 1 * CV.MPH_TO_MS
 
     if not ret.cruiseState.enabled:

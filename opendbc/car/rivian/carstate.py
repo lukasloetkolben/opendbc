@@ -78,7 +78,7 @@ class CarState(CarStateBase):
 
     # Check if decrease button was pressed in the previous frame and is not pressed now (falling edge)
     if decrease_btn_pressed_now and self.decrease_cntr % 75 == 0:
-      self.set_speed =  (int(math.floor((set_speed_mph - 1) / 5.0)) * 5) * CV.MPH_TO_MS
+      self.set_speed = (int(math.floor((set_speed_mph - 1) / 5.0)) * 5) * CV.MPH_TO_MS
       self.long_press = True
     elif self.decrease_btn_pressed_prev and not decrease_btn_pressed_now and not self.long_press:
       self.set_speed -= 1 * CV.MPH_TO_MS
@@ -128,8 +128,8 @@ class CarState(CarStateBase):
     ret.seatbeltUnlatched = cp.vl["RCM_Status"]["RCM_Status_IND_WARN_BELT_DRIVER"] != 0
 
     # Blindspot
-    # ret.leftBlindspot = False
-    # ret.rightBlindspot = False
+    ret.leftBlindspot = cp_park.vl["BSM_BlindSpotIndicator"]["BSM_BlindSpotIndicator_Left"] != 0
+    ret.rightBlindspot = cp_park.vl["BSM_BlindSpotIndicator"]["BSM_BlindSpotIndicator_Right"] != 0
 
     # AEB
     ret.stockAeb = cp_cam.vl["ACM_AebRequest"]["ACM_EnableRequest"] != 0
@@ -171,6 +171,7 @@ class CarState(CarStateBase):
 
     alt_messages = [
       ("WheelButtons", 20),
+      ("BSM_BlindSpotIndicator", 20),
     ]
 
     return {

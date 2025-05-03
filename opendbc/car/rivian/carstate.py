@@ -15,7 +15,6 @@ class CarState(CarStateBase):
     super().__init__(CP, CP_SP)
     self.sm = messaging.SubMaster(['uiSetSpeed'])
 
-    self.accel_cntr = 0
     self.set_speed = 10
     self.increase_btn_pressed_prev = False
     self.increase_cntr = 0
@@ -88,12 +87,6 @@ class CarState(CarStateBase):
     self.decrease_btn_pressed_prev = decrease_btn_pressed_now
     if not increase_btn_pressed_now and not decrease_btn_pressed_now:
       self.long_press = False
-
-    # sync with set-speed
-    accel = cp_cam.vl["ACM_longitudinalRequest"]["ACM_AccelerationRequest"]
-    self.accel_cntr = self.accel_cntr + 1 if (-3.9 > accel > -3.94) else 1
-    if self.accel_cntr % 100 == 0:
-      self.set_speed -= 1 * CV.MPH_TO_MS
 
     if not ret.cruiseState.enabled:
       self.set_speed = cluster_speed

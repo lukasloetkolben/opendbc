@@ -13,7 +13,7 @@ class CarController(CarControllerBase):
     super().__init__(dbc_names, CP, CP_SP)
     self.apply_torque_last = 0
     self.packer = CANPacker(dbc_names[Bus.pt])
-
+    self.last_accel = 0
     self.cancel_frames = 0
 
   def update(self, CC, CC_SP, CS, now_nanos):
@@ -38,8 +38,12 @@ class CarController(CarControllerBase):
 
     # Longitudinal control
     if self.CP.openpilotLongitudinalControl:
-      accel = float(np.clip(actuators.accel, CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX))
+      DELTA_UP = 0.1
+      DELTA_DOWN = 0.14
+      accel = np.clip(actuators.accel, self.last_accel - DELTA_DOWN, self.last_accel + DELTA_UP)
+      accel = float(np.clip(accel, CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX))
       can_sends.append(create_longitudinal(self.packer, self.frame, accel, CC.enabled))
+      self.last_accel = accel
     else:
       interface_status = None
       if CC.cruiseControl.cancel:

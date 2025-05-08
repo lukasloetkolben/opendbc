@@ -40,8 +40,12 @@ class CarController(CarControllerBase):
     if self.CP.openpilotLongitudinalControl:
       DELTA_UP = 0.1
       DELTA_DOWN = 0.14
-      accel = np.clip(actuators.accel, self.last_accel - DELTA_DOWN, self.last_accel + DELTA_UP)
-      accel = float(np.clip(accel, CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX))
+
+      accel = actuators.accel
+      if CC.enabled:
+        accel = np.clip(accel, self.last_accel - DELTA_DOWN, self.last_accel + DELTA_UP)
+        accel = float(np.clip(accel, CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX))
+
       can_sends.append(create_longitudinal(self.packer, self.frame, accel, CC.enabled))
       self.last_accel = accel
     else:

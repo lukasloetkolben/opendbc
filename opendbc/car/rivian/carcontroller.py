@@ -42,7 +42,7 @@ class CarController(CarControllerBase):
       DELTA_DOWN = 0.14
 
       accel = actuators.accel
-      if CC.enabled:
+      if CC.enabled and not CS.out.gasPressed:
         accel = np.clip(accel, self.last_accel - DELTA_DOWN, self.last_accel + DELTA_UP)
         accel = float(np.clip(accel, CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX))
 

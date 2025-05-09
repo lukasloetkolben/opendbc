@@ -9,8 +9,8 @@ static int volkswagen_steer_power_prev = 0;
 
 static safety_config volkswagen_meb_init(uint16_t param) {
   // Transmit of GRA_ACC_01 is allowed on bus 0 and 2 to keep compatibility with gateway and camera integration
-  static const CanMsg VOLKSWAGEN_MEB_STOCK_TX_MSGS[] = {{MSG_HCA_03, 0, 24, true}, {MSG_EA_01, 0, 8, false}, {MSG_EA_02, 0, 8, false}, {MSG_GRA_ACC_01, 0, 8, false},
-                                                       {MSG_GRA_ACC_01, 2, 8, false}, {MSG_LDW_02, 0, 8, false}};
+  static const CanMsg VOLKSWAGEN_MEB_STOCK_TX_MSGS[] = {{MSG_HCA_03, 0, 24, true}, {MSG_EA_01, 0, 8, false, .disable_static_blocking = true}, {MSG_EA_02, 0, 8, false , .disable_static_blocking = true}, {MSG_GRA_ACC_01, 0, 8, false, .disable_static_blocking = true},
+                                                       {MSG_GRA_ACC_01, 2, 8, false, .disable_static_blocking = true}, {MSG_LDW_02, 0, 8, false, .disable_static_blocking = true}};
 
   static RxCheck volkswagen_meb_rx_checks[] = {
     {.msg = {{MSG_LH_EPS_03, 0, 8, .max_counter = 15U, .frequency = 100U}, { 0 }, { 0 }}},

@@ -29,7 +29,6 @@ class CarState(CarStateBase):
     cp = can_parsers[Bus.pt]
     cp_cam = can_parsers[Bus.cam]
     cp_adas = can_parsers[Bus.adas]
-    cp_park = can_parsers[Bus.alt]
     ret = structs.CarState()
 
     # Vehicle speed
@@ -62,6 +61,8 @@ class CarState(CarStateBase):
     if not self.CP.openpilotLongitudinalControl:
       ret.cruiseState.speed = -1
     else:
+      cp_park = can_parsers[Bus.alt]
+
       # Button logic
       increase_btn_pressed_now = cp_park.vl["WheelButtons"]["RightButton_RightClick"] == 2
       decrease_btn_pressed_now = cp_park.vl["WheelButtons"]["RightButton_LeftClick"] == 2

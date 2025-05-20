@@ -63,13 +63,12 @@ class CarState(CarStateBase):
     else:
       cp_park = can_parsers[Bus.alt]
 
-      # distance scroll wheel
-      right_scroll = cp_park.vl["WheelButtons"]["RightButton_Scroll"]
-      if right_scroll != 255:
-        prev_distance_button = self.distance_button
-        self.distance_button = right_scroll
-        if prev_distance_button != self.distance_button:
+      # distance scroll wheel (1 line reduced)
+      current_right_scroll = cp_park.vl["WheelButtons"]["RightButton_Scroll"]
+      if current_right_scroll != 255:
+        if self.distance_button != current_right_scroll:
           ret.buttonEvents = [structs.CarState.ButtonEvent(pressed=False, type=ButtonType.gapAdjustCruise)]
+        self.distance_button = current_right_scroll
 
       # button logic for set-speed
       increase_btn_pressed_now = cp_park.vl["WheelButtons"]["RightButton_RightClick"] == 2
@@ -82,12 +81,12 @@ class CarState(CarStateBase):
       if increase_btn_pressed_now and self.increase_cntr % 66 == 0:
         self.set_speed = (int(math.ceil((set_speed_mph + 1) / 5.0)) * 5) * CV.MPH_TO_MS
       elif not self.increase_btn_pressed_prev and increase_btn_pressed_now:
-        self.set_speed += 1 * CV.MPH_TO_MS
+        self.set_speed += CV.MPH_TO_MS
 
       if decrease_btn_pressed_now and self.decrease_cntr % 66 == 0:
         self.set_speed = (int(math.floor((set_speed_mph - 1) / 5.0)) * 5) * CV.MPH_TO_MS
       elif not self.decrease_btn_pressed_prev and decrease_btn_pressed_now:
-        self.set_speed -= 1 * CV.MPH_TO_MS
+        self.set_speed -= CV.MPH_TO_MS
 
       self.increase_btn_pressed_prev = increase_btn_pressed_now
       self.decrease_btn_pressed_prev = decrease_btn_pressed_now

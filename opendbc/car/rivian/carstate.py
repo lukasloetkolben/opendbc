@@ -63,7 +63,15 @@ class CarState(CarStateBase):
     else:
       cp_park = can_parsers[Bus.alt]
 
-      # Button logic
+      # distance scroll wheel
+      right_scroll = cp_park.vl["WheelButtons"]["RightButton_Scroll"]
+      if right_scroll != 255:
+        prev_distance_button = self.distance_button
+        self.distance_button = right_scroll
+        if prev_distance_button != self.distance_button:
+          ret.buttonEvents = [structs.CarState.ButtonEvent(pressed=False, type=ButtonType.gapAdjustCruise)]
+
+      # button logic for set-speed
       increase_btn_pressed_now = cp_park.vl["WheelButtons"]["RightButton_RightClick"] == 2
       decrease_btn_pressed_now = cp_park.vl["WheelButtons"]["RightButton_LeftClick"] == 2
 
@@ -71,19 +79,16 @@ class CarState(CarStateBase):
       self.decrease_cntr = self.decrease_cntr + 1 if decrease_btn_pressed_now else 0
 
       set_speed_mph = self.set_speed * CV.MS_TO_MPH
-      # Check if increase button was pressed in the previous frame and is not pressed now (rising edge)
       if increase_btn_pressed_now and self.increase_cntr % 66 == 0:
         self.set_speed = (int(math.ceil((set_speed_mph + 1) / 5.0)) * 5) * CV.MPH_TO_MS
       elif not self.increase_btn_pressed_prev and increase_btn_pressed_now:
         self.set_speed += 1 * CV.MPH_TO_MS
 
-      # Check if decrease button was pressed in the previous frame and is not pressed now (rising edge)
       if decrease_btn_pressed_now and self.decrease_cntr % 66 == 0:
         self.set_speed = (int(math.floor((set_speed_mph - 1) / 5.0)) * 5) * CV.MPH_TO_MS
       elif not self.decrease_btn_pressed_prev and decrease_btn_pressed_now:
         self.set_speed -= 1 * CV.MPH_TO_MS
 
-      # Update previous button states for the next iteration
       self.increase_btn_pressed_prev = increase_btn_pressed_now
       self.decrease_btn_pressed_prev = decrease_btn_pressed_now
 
@@ -127,14 +132,6 @@ class CarState(CarStateBase):
 
     # AEB
     ret.stockAeb = cp_cam.vl["ACM_AebRequest"]["ACM_EnableRequest"] != 0
-
-    # distance scroll wheel
-    right_scroll = cp_park.vl["WheelButtons"]["RightButton_Scroll"]
-    if right_scroll != 255:
-      prev_distance_button = self.distance_button
-      self.distance_button = right_scroll
-      if prev_distance_button != self.distance_button:
-        ret.buttonEvents = [structs.CarState.ButtonEvent(pressed=False, type=ButtonType.gapAdjustCruise)]
 
     # Messages needed by carcontroller
     self.acm_lka_hba_cmd = copy.copy(cp_cam.vl["ACM_lkaHbaCmd"])

@@ -169,14 +169,18 @@ class CarState(CarStateBase):
       ("ACM_tsrCmd", 10),
     ]
 
-    alt_messages = [
-      ("WheelButtons", 20),
-      ("BSM_BlindSpotIndicator", 20),
-    ]
-
-    return {
+    messages = {
       Bus.pt: CANParser(DBC[CP.carFingerprint][Bus.pt], pt_messages, 0),
       Bus.adas: CANParser(DBC[CP.carFingerprint][Bus.pt], adas_messages, 1),
       Bus.cam: CANParser(DBC[CP.carFingerprint][Bus.pt], cam_messages, 2),
-      Bus.alt: CANParser(DBC[CP.carFingerprint][Bus.alt], alt_messages, 5),
     }
+
+    # only available with the longitudinal upgrade
+    if CP.openpilotLongitudinalControl:
+      alt_messages = [
+        ("WheelButtons", 20),
+        ("BSM_BlindSpotIndicator", 20),
+      ]
+      messages[Bus.alt] = CANParser(DBC[CP.carFingerprint][Bus.alt], alt_messages, 5)
+
+    return messages

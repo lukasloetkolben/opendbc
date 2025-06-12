@@ -62,7 +62,8 @@ class CarController(CarControllerBase):
     super().__init__(dbc_names, CP)
     self.apply_angle_last = 0
     self.packer = CANPacker(dbc_names[Bus.party])
-    self.tesla_can = TeslaCAN(self.packer)
+    self.radar_packer = CANPacker(dbc_names[Bus.radar])
+    self.tesla_can = TeslaCAN(self.packer, self.radar_packer)
 
     # Vehicle model used for lateral limiting
     self.VM = VehicleModel(get_safety_CP())
@@ -100,6 +101,11 @@ class CarController(CarControllerBase):
       if CC.cruiseControl.cancel:
         cntr = (CS.das_control["DAS_controlCounter"] + 1) % 8
         can_sends.append(self.tesla_can.create_longitudinal_command(13, 0, cntr, CS.out.vEgo, False))
+
+    # Radar
+    cntr = self.frame % 16
+    can_sends.append(self.tesla_can.create_radar_speed(cntr, CS.out))
+    can_sends.append(self.tesla_can.create_radar_yaw_rate(cntr, CS.out))
 
     # TODO: HUD control
     new_actuators = actuators.as_builder()

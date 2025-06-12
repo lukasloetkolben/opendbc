@@ -2,10 +2,16 @@ from opendbc.car.common.conversions import Conversions as CV
 from opendbc.car.interfaces import V_CRUISE_MAX
 from opendbc.car.tesla.values import CANBUS, CarControllerParams
 
-
 class TeslaCAN:
-  def __init__(self, packer):
+  def __init__(self, packer, radar_packer):
     self.packer = packer
+    self.radar_packer = radar_packer
+
+  @staticmethod
+  def checksum(msg_id, dat):
+    ret = (msg_id & 0xFF) + ((msg_id >> 8) & 0xFF)
+    ret += sum(dat)
+    return ret & 0xFF
 
   def create_steering_control(self, angle, enabled):
     values = {
@@ -40,3 +46,51 @@ class TeslaCAN:
     }
 
     return self.packer.make_can_msg("APS_eacMonitor", CANBUS.party, values)
+
+  def create_radar_speed(self, counter, cs):
+    gear = cs.gearShifter
+
+    GEAR_MAP = {
+      "unknown": 0,
+      "park": 1,
+      "reverse": 2,
+      "neutral": 3,
+      "drive": 4,
+    }
+
+    if cs.standstill:
+      direction = 2  # standstill
+    else:
+      direction = 0 if cs.vEgo > 0 else 1  # 0=forward 1=backward
+
+    values = {
+      "Speed": cs.vEgo,
+      "Gear": GEAR_MAP[gear],
+      "Active": 1,
+      "wheelDirectionFrL": direction,
+      "wheelDirectionFrR": direction,
+      "wheelDirectionReL": direction,
+      "wheelDirectionReR": direction,
+      "Counter": counter % 16,
+      "Checksum": 0
+    }
+
+    data = self.radar_packer.make_can_msg("SpeedInformation", CANBUS.party, values)[1]
+    values["Checksum"] = self.checksum(0x50, data[:-1])
+    return self.radar_packer.make_can_msg("SpeedInformation", 1, values)
+
+
+  def create_radar_yaw_rate(self, counter, cs):
+      values = {
+              "Acceleration": cs.aEgo,
+              "YawRate": cs.yawRate * CV.RAD_TO_DEG,
+              "Counter": counter % 16,
+              "SETME_15": 15,
+              "SETME_7": 7,
+              "Checksum": 0,
+      }
+
+      data = self.radar_packer.make_can_msg("YawRateInformation", CANBUS.party, values)[1]
+      values["Checksum"] = self.checksum(0x51, data[:-1])
+      return self.radar_packer.make_can_msg("YawRateInformation", 1, values)
+

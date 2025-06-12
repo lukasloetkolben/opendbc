@@ -27,7 +27,7 @@ static uint8_t tesla_get_counter(const CANPacket_t *to_push) {
   } else if ((addr == 0x257) || (addr == 0x118) || (addr == 0x39d) || (addr == 0x286) || (addr == 0x311)) {
     // Signal: DI_speedCounter, DI_systemStatusCounter, IBST_statusCounter, DI_locStatusCounter, UI_warningCounter
     cnt = GET_BYTE(to_push, 1) & 0x0FU;
-  } else if (addr == 0x155) {
+  } else if ((addr == 0x155) || (addr == 0x50) || (addr == 0x51) ) {
     // Signal: ESP_wheelRotationCounter
     cnt = GET_BYTE(to_push, 6) >> 4;
   } else if (addr == 0x370) {
@@ -40,7 +40,7 @@ static uint8_t tesla_get_counter(const CANPacket_t *to_push) {
 
 static int _tesla_get_checksum_byte(const int addr) {
   int checksum_byte = -1;
-  if ((addr == 0x370) || (addr == 0x2b9) || (addr == 0x155)) {
+  if ((addr == 0x370) || (addr == 0x2b9) || (addr == 0x155) || (addr == 0x50) || (addr == 0x51)) {
     // Signal: EPAS3S_sysStatusChecksum, DAS_controlChecksum, ESP_wheelRotationChecksum
     checksum_byte = 7;
   } else if (addr == 0x488) {
@@ -330,6 +330,8 @@ static safety_config tesla_init(uint16_t param) {
     {0x488, 0, 4, .check_relay = true, .disable_static_blocking = true},  // DAS_steeringControl
     {0x2b9, 0, 8, .check_relay = true, .disable_static_blocking = true},  // DAS_control
     {0x27D, 0, 3, .check_relay = true, .disable_static_blocking = true},  // APS_eacMonitor
+    {0x50,  1, 8, .check_relay = false, .disable_static_blocking = false},
+    {0x51,  1, 8, .check_relay = false, .disable_static_blocking = false},
   };
 
   UNUSED(param);

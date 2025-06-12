@@ -55,6 +55,16 @@ BO_ 905 DAS_status2: 8 PARTY
  SG_ DAS_pmmObstacleSeverity : 10|3@1+ (1,0) [0|7] ""  aps
  SG_ DAS_accSpeedLimit : 0|10@1+ (0.4,0) [0|204.6] "mph"  aps
 
+BO_ 257 RCM_inertial1: 8 CH
+ SG_ RCM_inertial1Checksum : 56|8@1+ (1,0) [0|0] "" X
+ SG_ RCM_inertial1Counter : 52|4@1+ (1,0) [0|0] "" X
+ SG_ RCM_pitchRate : 16|15@1- (0.00025,0) [0|0] "rad/s" X
+ SG_ RCM_pitchRateQF : 50|2@1+ (1,0) [0|0] "" X
+ SG_ RCM_rollRate : 31|15@1- (0.00025,0) [0|0] "rad/s" X
+ SG_ RCM_rollRateQF : 46|2@1+ (1,0) [0|0] "" X
+ SG_ RCM_yawRate : 0|16@1- (0.0001,0) [0|0] "rad/s" X
+ SG_ RCM_yawRateQF : 48|1@1+ (1,0) [0|0] "" X
+
 BO_ 264 DI_torque: 8 PARTY
  SG_ DI_axleSpeed : 40|16@1- (0.1,0.0) [-2750|2750] "RPM"  epas3s
  SG_ DI_torqueActual : 27|13@1- (2,0) [-7500|7500] "Nm"  X
@@ -300,6 +310,12 @@ CM_ SG_ 785 leftBlinkerOn "only describes stalk position if half pressed without
 CM_ SG_ 785 rightBlinkerOn "only describes stalk position if half pressed without auto-cancel blinkers. otherwise acts as expected";
 CM_ SG_ 785 scrollWheelPressed "captures either scroll wheel left, right or down press";
 
+VAL_ 257 RCM_pitchRate -16384 "SNA";
+VAL_ 257 RCM_pitchRateQF 0 "INIT" 1 "VALID" 2 "TEMP_INVALID" 3 "FAULTED";
+VAL_ 257 RCM_rollRate -16384 "SNA";
+VAL_ 257 RCM_rollRateQF 0 "INIT" 1 "VALID" 2 "TEMP_INVALID" 3 "FAULTED";
+VAL_ 257 RCM_yawRate -32768 "SNA";
+VAL_ 257 RCM_yawRateQF 0 "FAULTED" 1 "NOT_FAULTED";
 VAL_ 545 VCFRONT_uiAudioLVState 1 "LV_ON" 2 "LV_GOING_DOWN" 3 "LV_FAULT" 0 "LV_OFF" ;
 VAL_ 545 VCFRONT_uiHiCurrentLVState 1 "LV_ON" 2 "LV_GOING_DOWN" 3 "LV_FAULT" 0 "LV_OFF" ;
 VAL_ 545 VCFRONT_vcrightHiCurrentLVState 1 "LV_ON" 2 "LV_GOING_DOWN" 3 "LV_FAULT" 0 "LV_OFF" ;

@@ -39,6 +39,7 @@ class CarState(CarStateBase):
     # Vehicle speed
     ret.vEgoRaw = cp_party.vl["DI_speed"]["DI_vehicleSpeed"] * CV.KPH_TO_MS
     ret.vEgo, ret.aEgo = self.update_speed_kf(ret.vEgoRaw)
+    ret.yawRate = cp_party.vl["RCM_inertial1"]["RCM_yawRate"]
 
     # Gas pedal
     pedal_status = cp_party.vl["DI_systemStatus"]["DI_accelPedalPos"]
@@ -129,7 +130,8 @@ class CarState(CarStateBase):
       ("IBST_status", 25),
       ("DI_state", 10),
       ("EPAS3S_sysStatus", 100),
-      ("UI_warning", 10)
+      ("UI_warning", 10),
+      ("RCM_inertial1", 100)
     ]
 
     ap_party_messages = [
@@ -142,5 +144,6 @@ class CarState(CarStateBase):
 
     return {
       Bus.party: CANParser(DBC[CP.carFingerprint][Bus.party], party_messages, CANBUS.party),
-      Bus.ap_party: CANParser(DBC[CP.carFingerprint][Bus.party], ap_party_messages, CANBUS.autopilot_party)
+      Bus.ap_party: CANParser(DBC[CP.carFingerprint][Bus.party], ap_party_messages, CANBUS.autopilot_party),
+      Bus.radar: CANParser(DBC[CP.carFingerprint][Bus.radar], [], 1)
     }

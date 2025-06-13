@@ -44,6 +44,13 @@ BS_:
 
 BU_:  Autopilot Radar Diag
 
+BO_ 80 MSG_50: 8 XXX
+   SG_ SPEED : 0|12@1+ (0.07,-39) [0|255] "" XXX
+   SG_ GEAR : 14|3@0+ (1,0) [0|7] "" XXX
+   SG_ ACTIVE : 18|1@0+ (1,0) [0|1] "" XXX
+   SG_ COUNTER : 52|4@1+ (1,0) [0|15] "" XXX
+   SG_ CHECKSUM : 63|8@0+ (1,0) [0|255] "" XXX
+
 BO_ 1025 RadarStatus: 8 Radar
    SG_ carparkDetected : 29|1@1+ (1,0) [0|1] "" Autopilot
    SG_ decreaseBlockage : 25|1@1+ (1,0) [0|1] "" Autopilot
@@ -71,6 +78,7 @@ BO_ 1601 UDS_radcRequest: 8 Diag
       f.write(get_radar_point_definition(base_id, f"RadarPoint{i}"))
 
     f.write("""
+VAL_ 80 GEAR 4 "D" 3 "N" 2 "R" 1 "P" 0 "INVALID";
 VAL_ 1025 lowPowerMode 1 "COMMANDED_LOW_POWER" 0 "DEFAULT_LOW_POWER" 2 "NORMAL_POWER" 3 "SNA";""")
 
     for base_id in list(POINT_RANGE):

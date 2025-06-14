@@ -45,7 +45,7 @@ BS_:
 BU_:  Autopilot Radar Diag
 
 BO_ 80 MSG_50: 8 XXX
-   SG_ Speed : 0|12@1+ (0.07,-39) [0|255] "" XXX
+   SG_ SPEED : 0|12@1+ (0.02,-11.18) [0|255] "m/s" XXX
    SG_ Gear : 14|3@0+ (1,0) [0|7] "" XXX
    SG_ Active : 18|1@0+ (1,0) [0|1] "" XXX
    SG_ Counter : 52|4@1+ (1,0) [0|15] "" XXX

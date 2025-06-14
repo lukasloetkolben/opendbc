@@ -45,11 +45,14 @@ BS_:
 BU_:  Autopilot Radar Diag
 
 BO_ 80 MSG_50: 8 XXX
-   SG_ SPEED : 0|12@1+ (0.07,-39) [0|255] "" XXX
-   SG_ GEAR : 14|3@0+ (1,0) [0|7] "" XXX
-   SG_ ACTIVE : 18|1@0+ (1,0) [0|1] "" XXX
-   SG_ COUNTER : 52|4@1+ (1,0) [0|15] "" XXX
-   SG_ CHECKSUM : 63|8@0+ (1,0) [0|255] "" XXX
+   SG_ Speed : 0|12@1+ (0.07,-39) [0|255] "" XXX
+   SG_ Gear : 14|3@0+ (1,0) [0|7] "" XXX
+   SG_ Active : 18|1@0+ (1,0) [0|1] "" XXX
+   SG_ Counter : 52|4@1+ (1,0) [0|15] "" XXX
+   SG_ Checksum : 63|8@0+ (1,0) [0|255] "" XXX
+
+BO_ 81 MSG_51: 8 XXX
+ SG_ Angle : 24|20@1+ (0.001,-512) [0|255] "deg" XXX
 
 BO_ 1025 RadarStatus: 8 Radar
    SG_ carparkDetected : 29|1@1+ (1,0) [0|1] "" Autopilot

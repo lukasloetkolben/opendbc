@@ -56,7 +56,9 @@ BO_ 80 SpeedInformation: 8 XXX
    SG_ Checksum : 63|8@0+ (1,0) [0|255] "" XXX
 
 BO_ 81 YawRateInformation: 8 XXX
- SG_ YawRate : 24|20@1+ (0.001,-512) [0|255] "deg/s" XXX
+   SG_ YawRate : 24|20@1+ (0.001,-512) [0|255] "deg/s" XXX
+   SG_ Counter : 52|4@1+ (1,0) [0|15] "" XXX
+   SG_ Checksum : 63|8@0+ (1,0) [0|255] "" XXX
 
 BO_ 1025 RadarStatus: 8 Radar
    SG_ carparkDetected : 29|1@1+ (1,0) [0|1] "" Autopilot

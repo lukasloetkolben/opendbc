@@ -8,6 +8,7 @@ from opendbc.car.tesla.values import CAR, TeslaSafetyFlags, PLATFORM_3Y
 class CarInterface(CarInterfaceBase):
   CarState = CarState
   CarController = CarController
+  # RadarInterface = RadarInterface todo
 
   @staticmethod
   def _get_params(ret: structs.CarParams, candidate, fingerprint, car_fw, alpha_long, docs) -> structs.CarParams:
@@ -36,7 +37,7 @@ class CarInterface(CarInterfaceBase):
     ret.alphaLongitudinalAvailable = True
     if alpha_long or (candidate == CAR.TESLA_MODEL_S_RAVEN):
       ret.openpilotLongitudinalControl = True
-      ret.safetyConfigs[0].safetyParam |= TeslaSafetyFlags.LONG_CONTROL.value
+      ret.safetyConfigs[1].safetyParam |= TeslaSafetyFlags.LONG_CONTROL.value
 
       ret.vEgoStopping = 0.1
       ret.vEgoStarting = 0.1

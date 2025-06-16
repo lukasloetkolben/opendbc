@@ -48,6 +48,15 @@ BO_ 637 APS_eacMonitor: 3 APS
   SG_ APS_eacMonitorCounter : 8|4@1+ (1,0) [0|0] "" EPAS3P
   SG_ APS_eacMonitorChecksum : 16|8@1+ (1,0) [0|0] "" EPAS3P
 
+BO_ 264 DI_torque1: 8 DI
+ SG_ DI_torqueDriver : 0|13@1- (0.25,0) [-750|750] "Nm"  NEO
+ SG_ DI_torque1Counter : 13|3@1+ (1,0) [0|0] ""  NEO
+ SG_ DI_torqueMotor : 16|13@1- (0.25,0) [-750|750] "Nm"  NEO
+ SG_ DI_soptState : 29|3@1+ (1,0) [0|0] ""  NEO
+ SG_ DI_motorRPM : 32|16@1- (1,0) [-17000|17000] "RPM"  NEO
+ SG_ DI_pedalPos : 48|8@1+ (0.4,0) [0|100] "%"  NEO
+ SG_ DI_torque1Checksum : 56|8@1+ (1,0) [0|0] ""  NEO
+
 BO_ 880 EPAS_sysStatus: 8 EPAS
   SG_ EPAS_steeringRackForce : 1|10@0+ (50,-25575) [-25575|25575] "N" Vector__XXX
   SG_ EPAS_steeringFault : 2|1@0+ (1,0) [0|1] "" APS,APP

@@ -3,11 +3,13 @@ from opendbc.car.interfaces import CarInterfaceBase
 from opendbc.car.tesla.carcontroller import CarController
 from opendbc.car.tesla.carstate import CarState
 from opendbc.car.tesla.values import CAR, TeslaSafetyFlags, PLATFORM_3Y
+from opendbc.car.tesla.radar_interface import RadarInterface
 
 
 class CarInterface(CarInterfaceBase):
   CarState = CarState
   CarController = CarController
+  RadarInterface = RadarInterface
 
   @staticmethod
   def _get_params(ret: structs.CarParams, candidate, fingerprint, car_fw, alpha_long, docs) -> structs.CarParams:
@@ -17,29 +19,24 @@ class CarInterface(CarInterfaceBase):
     # ret.dashcamOnly = True
 
     flags = 0
-    if candidate in PLATFORM_3Y:
-      ret.safetyConfigs = [get_safety_config(structs.CarParams.SafetyModel.tesla, flags)]
-    else:
-      flags |= TeslaSafetyFlags.RAVEN.value
-      ret.safetyConfigs = [
-        get_safety_config(structs.CarParams.SafetyModel.tesla, flags),
-        get_safety_config(structs.CarParams.SafetyModel.tesla, flags | TeslaSafetyFlags.POWERTRAIN.value),
-      ]
+    ret.safetyConfigs = [
+      get_safety_config(structs.CarParams.SafetyModel.tesla, flags),
+      get_safety_config(structs.CarParams.SafetyModel.tesla, flags | TeslaSafetyFlags.POWERTRAIN.value),
+    ]
 
     ret.steerLimitTimer = 1.0
     ret.steerActuatorDelay = 0.1
     ret.steerAtStandstill = True
 
     ret.steerControlType = structs.CarParams.SteerControlType.angle
-    ret.radarUnavailable = candidate in PLATFORM_3Y
+    ret.radarUnavailable = False
 
     ret.alphaLongitudinalAvailable = True
-    if alpha_long or (candidate == CAR.TESLA_MODEL_S_RAVEN):
-      ret.openpilotLongitudinalControl = True
-      ret.safetyConfigs[0].safetyParam |= TeslaSafetyFlags.LONG_CONTROL.value
+    ret.openpilotLongitudinalControl = True
+    ret.safetyConfigs[1].safetyParam |= TeslaSafetyFlags.LONG_CONTROL.value
 
-      ret.vEgoStopping = 0.1
-      ret.vEgoStarting = 0.1
-      ret.stoppingDecelRate = 0.3
+    ret.vEgoStopping = 0.1
+    ret.vEgoStarting = 0.1
+    ret.stoppingDecelRate = 0.3
 
     return ret

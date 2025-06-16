@@ -12,13 +12,22 @@ class TeslaCAN:
     if not self.is_3Y:
       self.packers[CANBUS.powertrain] = CANPacker(dbc_names[Bus.pt])
 
-  def create_steering_control(self, angle, enabled):
+  @staticmethod
+  def checksum(msg_id, dat):
+    ret = (msg_id & 0xFF) + ((msg_id >> 8) & 0xFF)
+    ret += sum(dat)
+    return ret & 0xFF
+
+  def create_steering_control(self, counter, angle, enabled):
     values = {
       "DAS_steeringAngleRequest": -angle,
       "DAS_steeringHapticRequest": 0,
       "DAS_steeringControlType": 1 if enabled else 0,
+      "DAS_steeringControlCounter": counter
     }
 
+    data = self.packers[CANBUS.party].make_can_msg("DAS_steeringControl", CANBUS.party, values)[1]
+    values["DAS_steeringControlChecksum"] = self.checksum(0x488, data[:3])
     return self.packers[CANBUS.party].make_can_msg("DAS_steeringControl", CANBUS.party, values)
 
   def create_longitudinal_command(self, acc_state, accel, counter, v_ego, active):
@@ -39,11 +48,19 @@ class TeslaCAN:
     }
 
     # TODO: this might need the other checksum address (0x2b9) on Raven too
-    return self.packers[CANBUS.party if self.is_3Y else CANBUS.powertrain].make_can_msg("DAS_control", CANBUS.party, values)
+    if self.is_3Y:
+      return self.packers[CANBUS.party].make_can_msg("DAS_control", CANBUS.party, values)
+    else:
+      data = self.packers[CANBUS.powertrain].make_can_msg("DAS_control", CANBUS.party, values)[1]
+      values["DAS_controlChecksum"] = self.checksum(0x2b9, data[:-1])
+      return self.packers[CANBUS.powertrain].make_can_msg("DAS_control", CANBUS.powertrain, values)
 
-  def create_steering_allowed(self):
+  def create_steering_allowed(self, counter):
     values = {
       "APS_eacAllow": 1,
+      "APS_eacMonitorCounter": counter
     }
 
+    data = self.packers[CANBUS.party].make_can_msg("APS_eacMonitor", CANBUS.party, values)[1]
+    values["APS_eacMonitorChecksum"] = self.checksum(0x27d, data[:2])
     return self.packers[CANBUS.party].make_can_msg("APS_eacMonitor", CANBUS.party, values)

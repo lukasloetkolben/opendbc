@@ -53,7 +53,7 @@ class CAR(Platforms):
     [
       TeslaCarDocsHW3("Tesla Model Y (with HW3) 2020-23"),
       TeslaCarDocsHW4("Tesla Model Y (with HW4) 2024"),
-     ],
+    ],
     CarSpecs(mass=2072., wheelbase=2.890, steerRatio=12.0),
     {Bus.party: 'tesla_model3_party'},
   )
@@ -67,6 +67,7 @@ class CAR(Platforms):
       Bus.radar: 'tesla_radar_continental_generated',
     },
   )
+
 
 PLATFORM_3Y = (CAR.TESLA_MODEL_3, CAR.TESLA_MODEL_Y)
 
@@ -105,15 +106,16 @@ class CANBUS:
   chassis = 5
   autopilot_powertrain = 6
 
+
 DOORS = ["DOOR_STATE_FL", "DOOR_STATE_FR", "DOOR_STATE_RL", "DOOR_STATE_RR", "DOOR_STATE_FrontTrunk", "BOOT_STATE"]
 
 GEAR_MAP = {
-  "DI_GEAR_INVALID": CarState.GearShifter.unknown,
-  "DI_GEAR_P": CarState.GearShifter.park,
-  "DI_GEAR_R": CarState.GearShifter.reverse,
-  "DI_GEAR_N": CarState.GearShifter.neutral,
-  "DI_GEAR_D": CarState.GearShifter.drive,
-  "DI_GEAR_SNA": CarState.GearShifter.unknown,
+  0: CarState.GearShifter.unknown,
+  1: CarState.GearShifter.park,
+  2: CarState.GearShifter.reverse,
+  3: CarState.GearShifter.neutral,
+  4: CarState.GearShifter.drive,
+  7: CarState.GearShifter.unknown,
 }
 
 
@@ -129,7 +131,7 @@ class CarControllerParams:
   )
 
   STEER_STEP = 2  # Angle command is sent at 50 Hz
-  ACCEL_MAX = 2.0    # m/s^2
+  ACCEL_MAX = 2.0  # m/s^2
   ACCEL_MIN = -3.48  # m/s^2
   JERK_LIMIT_MAX = 4.9  # m/s^3, ACC faults at 5.0
   JERK_LIMIT_MIN = -4.9  # m/s^3, ACC faults at 5.0
@@ -138,8 +140,6 @@ class CarControllerParams:
 class TeslaSafetyFlags(IntFlag):
   LONG_CONTROL = 1
   POWERTRAIN = 2
-  RAVEN = 4
-
 
 class TeslaFlags(IntFlag):
   LONG_CONTROL = 1

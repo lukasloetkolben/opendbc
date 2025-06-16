@@ -21,14 +21,16 @@ class CarController(CarControllerBase):
     lat_active = CC.latActive and CS.hands_on_level < 3
 
     if self.frame % 2 == 0:
+      cntr = (self.frame // 2) % 16
       # Angular rate limit based on speed
       self.apply_angle_last = apply_std_steer_angle_limits(actuators.steeringAngleDeg, self.apply_angle_last, CS.out.vEgo,
                                                            CS.out.steeringAngleDeg, lat_active, CarControllerParams.ANGLE_LIMITS)
 
-      can_sends.append(self.tesla_can.create_steering_control(self.apply_angle_last, lat_active))
+      can_sends.append(self.tesla_can.create_steering_control(cntr, self.apply_angle_last, lat_active))
 
     if self.frame % 10 == 0:
-      can_sends.append(self.tesla_can.create_steering_allowed())
+      cntr = (self.frame // 10) % 16
+      can_sends.append(self.tesla_can.create_steering_allowed(cntr))
 
     # Longitudinal control
     if self.CP.openpilotLongitudinalControl:

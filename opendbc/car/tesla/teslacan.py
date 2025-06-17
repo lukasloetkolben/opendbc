@@ -83,14 +83,15 @@ class TeslaCAN:
   def create_radar_yaw_rate(self, counter, cs):
       values = {
               "Acceleration": cs.aEgo,
-              "YawRate": cs.yawRate * CV.RAD_TO_DEG,
+              "yawRate": cs.yawRate * CV.RAD_TO_DEG,
               "Counter": counter % 16,
+              "UNKOWN": 21,
               "SETME_15": 15,
-              "SETME_7": 7,
+              "SETME_6": 6,
+              "SETME_3": 3,
               "Checksum": 0,
       }
 
       data = self.radar_packer.make_can_msg("YawRateInformation", CANBUS.party, values)[1]
       values["Checksum"] = self.checksum(0x51, data[:-1])
       return self.radar_packer.make_can_msg("YawRateInformation", 1, values)
-

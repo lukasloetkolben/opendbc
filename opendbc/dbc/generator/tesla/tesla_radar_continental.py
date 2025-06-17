@@ -56,10 +56,23 @@ BO_ 80 SpeedInformation: 8 XXX
    SG_ Checksum : 56|8@1+ (1,0) [0|255] "" XXX
 
 BO_ 81 YawRateInformation: 8 XXX
-   SG_ Acceleration : 15|13@0+ (0.01,-40.85) [-20|20] "m/s^2" XXX
-   SG_ YawRate : 31|16@0+ (0.01,-327.68) [-327.68|327.66] "deg/s" XXX
-   SG_ SETME_7 : 43|4@0+ (1,0) [0|15] "" XXX
+   SG_ Acceleration : 0|16@1+ (0.001,-32.766) [-32|32] "m/s^2" XXX
+   SG_ SETME_6 : 18|3@0+ (1,0) [0|7] "" XXX
+   SG_ UNKOWN : 19|5@1+ (1,0) [0|31] "" XXX
+   SG_ yawRate : 24|20@1+ (0.0002,-102.4254) [-327.68|327.66] "deg/s" XXX
    SG_ SETME_15 : 44|4@1+ (1,0) [0|15] "" XXX
+   SG_ SETME_3 : 51|4@0+ (1,0) [0|15] "" XXX
+   SG_ Counter : 52|4@1+ (1,0) [0|15] "" XXX
+   SG_ Checksum : 56|8@1+ (1,0) [0|255] "" XXX
+
+BO_ 82 NEW_MSG_52: 8 XXX
+   SG_ Speed : 32|20@1+ (0.000317,0) [0|65535] "" XXX
+   SG_ Counter : 55|4@0+ (1,0) [0|15] "" XXX
+   SG_ Checksum : 56|8@1+ (1,0) [0|255] "" XXX
+
+BO_ 83 NEW_MSG_53: 8 XXX
+   SG_ NEW_SIGNAL_1 : 0|14@1+ (0.01,-81.92) [0|65535] "" XXX
+   SG_ NEW_SIGNAL_2 : 16|14@1+ (0.01,-81.92) [0|65535] "" XXX
    SG_ Counter : 52|4@1+ (1,0) [0|15] "" XXX
    SG_ Checksum : 56|8@1+ (1,0) [0|255] "" XXX
 

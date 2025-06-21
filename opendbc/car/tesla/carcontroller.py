@@ -104,7 +104,8 @@ class CarController(CarControllerBase):
 
     # Radar
     cntr = self.frame % 16
-    can_sends.append(self.tesla_can.create_radar_speed(cntr, CS.out))
+    can_sends.append(self.tesla_can.create_speed_information(cntr, CS.out))
+    can_sends.append(self.tesla_can.create_speed_information2(cntr, CS.out))
     can_sends.append(self.tesla_can.create_radar_yaw_rate(cntr, CS.out))
 
     # TODO: HUD control

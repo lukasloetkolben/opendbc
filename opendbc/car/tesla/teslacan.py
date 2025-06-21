@@ -47,7 +47,7 @@ class TeslaCAN:
 
     return self.packer.make_can_msg("APS_eacMonitor", CANBUS.party, values)
 
-  def create_radar_speed(self, counter, cs):
+  def create_speed_information(self, counter, cs):
     gear = cs.gearShifter
 
     GEAR_MAP = {
@@ -79,11 +79,21 @@ class TeslaCAN:
     values["Checksum"] = self.checksum(0x50, data[:-1])
     return self.radar_packer.make_can_msg("SpeedInformation", 1, values)
 
+  def create_speed_information2(self, counter, cs):
+    values = {
+      "Speed": cs.vEgo,
+      "Counter": counter % 16,
+      "Checksum": 0
+    }
+
+    data = self.radar_packer.make_can_msg("SpeedInformation2", CANBUS.party, values)[1]
+    values["Checksum"] = self.checksum(0x52, data[:-1])
+    return self.radar_packer.make_can_msg("SpeedInformation2", 1, values)
 
   def create_radar_yaw_rate(self, counter, cs):
       values = {
               "Acceleration": cs.aEgo,
-              "yawRate": cs.yawRate * CV.RAD_TO_DEG,
+              "YawRate": cs.yawRate * CV.RAD_TO_DEG,
               "Counter": counter % 16,
               "UNKOWN": 21,
               "SETME_15": 15,

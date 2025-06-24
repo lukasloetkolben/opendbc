@@ -254,7 +254,6 @@ static safety_config tesla_init(uint16_t param) {
 
   const int TESLA_FLAG_LONGITUDINAL_CONTROL = 1;
   const int TESLA_FLAG_POWERTRAIN = 2;
-  const int TESLA_FLAG_RAVEN = 4;
   tesla_longitudinal = GET_FLAG(param, TESLA_FLAG_LONGITUDINAL_CONTROL);
   tesla_powertrain = GET_FLAG(param, TESLA_FLAG_POWERTRAIN);
 

@@ -114,7 +114,7 @@ static void tesla_rx_hook(const CANPacket_t *to_push) {
 
   if ((tesla_powertrain && (bus == 0) && (addr == 0x1f8)) ||
      (!tesla_powertrain && (bus == 1) && (addr == 0x20a))) {
-    brake_pressed = (((GET_BYTE(to_push, 0) & 0x0CU) >> 2) != 1U);
+    brake_pressed = ((GET_BYTE(to_push, 0) & 0x0CU) >> 2) != 1U;
   }
 
   if ((tesla_powertrain && (bus == 0) && (addr == 0x256)) ||
@@ -184,7 +184,7 @@ static bool tesla_tx_hook(const CANPacket_t *to_send) {
   }
 
   // DAS_control: longitudinal control message
-  if (tesla_powertrain && tesla_longitudinal && (addr == 0x2bf)) {
+  if (tesla_powertrain && (addr == 0x2bf)) {
     // No AEB events may be sent by openpilot
     int aeb_event = GET_BYTE(to_send, 2) & 0x03U;
     if (aeb_event != 0) {

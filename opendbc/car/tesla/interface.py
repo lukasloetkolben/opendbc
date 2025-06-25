@@ -21,7 +21,6 @@ class CarInterface(CarInterfaceBase):
     if candidate in PLATFORM_3Y:
       ret.safetyConfigs = [get_safety_config(structs.CarParams.SafetyModel.tesla, flags)]
     else:
-      flags |= TeslaSafetyFlags.RAVEN.value
       ret.safetyConfigs = [
         get_safety_config(structs.CarParams.SafetyModel.tesla, flags),
         get_safety_config(structs.CarParams.SafetyModel.tesla, flags | TeslaSafetyFlags.POWERTRAIN.value),

@@ -44,15 +44,12 @@ class RadarInterface(RadarInterfaceBase):
     ret = car.RadarData.new_message()
 
     # Errors
-    errors = []
     if not self.rcp.can_valid:
-      errors.append('canError')
+      ret.errors.canError = True
 
     radar_status = self.rcp.vl['RadarStatus']
     if radar_status['sensorBlocked'] or radar_status['shortTermUnavailable'] or radar_status['vehDynamicsError']:
-      errors.append('fault')
-
-    ret.errors = errors
+      ret.errors.radarFault = True
 
     # Radar tracks
     for i in range(self.num_points):

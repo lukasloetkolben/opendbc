@@ -32,12 +32,11 @@ class CarInterface(CarInterfaceBase):
     ret.radarUnavailable = False
 
     ret.alphaLongitudinalAvailable = True
-    if alpha_long or (candidate == CAR.TESLA_MODEL_S_RAVEN):
-      ret.openpilotLongitudinalControl = True
-      ret.safetyConfigs[1].safetyParam |= TeslaSafetyFlags.LONG_CONTROL.value
+    ret.openpilotLongitudinalControl = True
+    ret.safetyConfigs[1].safetyParam |= TeslaSafetyFlags.LONG_CONTROL.value
 
-      ret.vEgoStopping = 0.1
-      ret.vEgoStarting = 0.1
-      ret.stoppingDecelRate = 0.3
+    ret.vEgoStopping = 0.1
+    ret.vEgoStarting = 0.1
+    ret.stoppingDecelRate = 0.3
 
     return ret

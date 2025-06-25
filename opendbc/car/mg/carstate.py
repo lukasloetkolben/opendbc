@@ -41,7 +41,7 @@ class CarState(CarStateBase):
     ret.steerFaultTemporary = cp_cam.vl["FVCM_HSC2_FrP02"]["LDWSysFltStsHSC2"] != 0 # TODO: validate
 
     # Cruise state
-    ret.cruiseState.enabled = cp.vl["GW_HSC2_ECM_FrP27"]["SpdAstSysStsECMHSC2"] == 1  # TJAICASysStsHSC2 / SpdAstReqStsCamrHSC2
+    ret.cruiseState.enabled = cp.vl["GW_HSC2_ECM_FrP27"]["ACCStsHSC2"] == 1
     ret.cruiseState.speed = cp_cam.vl["FVCM_HSC2_FrP02"]["TrgtSpdReqCamrHSC2"] * CV.KPH_TO_MS
 
     ret.cruiseState.available = True

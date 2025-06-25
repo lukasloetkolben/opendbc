@@ -43,6 +43,7 @@ BO_ 175 GW_HSC2_HCU_FrP00: 8 GW
  SG_ EPTStCmdOn_h1HSC2 : 17|1@0+ (1,0) [0|1] ""  FVCM
 
 BO_ 251 GW_HSC2_ECM_FrP27: 8 GW
+ SG_ ACCStsHSC2 : 2|1@0+ (1,0) [0|1] "" XXX
  SG_ SpdAstMdECMHSC2 : 52|2@0+ (1,0) [0|3] ""  FVCM
  SG_ SpdAstSysStsECMHSC2 : 18|3@0+ (1,0) [0|7] ""  FVCM
  SG_ SpdAstSysTrgtSpdHSC2 : 30|15@0+ (0.015625,0) [0|511.984] ""  FVCM

@@ -35,7 +35,7 @@ static void mg_rx_hook(const CANPacket_t *to_push) {
   if (bus == 0) {
     // Cruise state
     if (addr == 0xfb) {
-      pcm_cruise_check(GET_BIT(to_push, 22));
+      pcm_cruise_check(GET_BIT(to_push, 2));
     }
   }
 }

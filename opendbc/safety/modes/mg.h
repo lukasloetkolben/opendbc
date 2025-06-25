@@ -22,7 +22,7 @@ static void mg_rx_hook(const CANPacket_t *to_push) {
 
     // Driver torque
     if (addr == 0x1ec) {
-      int torque_driver_new = ((((GET_BYTE(to_push, 0) & 0x07U) << 8) | GET_BYTE(to_push, 1))) - 1024U;
+      int torque_driver_new = ((((GET_BYTE(to_push, 4) & 0x07U) << 8) | GET_BYTE(to_push, 5))) - 1024U;
       update_sample(&torque_driver, torque_driver_new);
     }
 
@@ -30,12 +30,11 @@ static void mg_rx_hook(const CANPacket_t *to_push) {
     if (addr == 0xaf) {
       brake_pressed = GET_BIT(to_push, 31U);
     }
-  }
 
-  if (bus == 0) {
     // Cruise state
     if (addr == 0xfb) {
-      pcm_cruise_check(GET_BIT(to_push, 2));
+      bool cruise_engaged = GET_BIT(to_push, 2);
+      pcm_cruise_check(cruise_engaged);
     }
   }
 }
@@ -79,7 +78,7 @@ static safety_config mg_init(uint16_t param) {
     {.msg = {{0x353, 0, 8, .frequency = 10U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},   // SCS_HSC2_FrP15 (speed)
     {.msg = {{0xaf,  0, 8, .frequency = 100U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},  // GW_HSC2_HCU_FrP00 (brake & gas pedal)
     {.msg = {{0x1ec, 0, 8, .frequency = 50U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},   // EPS_HSC2_FrP03 (driver torque)
-    {.msg = {{0xfb,  2, 8, .frequency = 100U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},  // GW_HSC2_ECM_FrP27 (cruise state)
+    {.msg = {{0xfb,  0, 8, .frequency = 100U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},  // GW_HSC2_ECM_FrP27 (cruise state)
   };
   UNUSED(param);
 

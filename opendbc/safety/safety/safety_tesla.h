@@ -8,76 +8,6 @@ static bool tesla_longitudinal = false;
 static bool tesla_powertrain = false;  // Are we the second panda intercepting the powertrain bus?
 static bool tesla_stock_aeb = false;
 
-static uint8_t tesla_get_counter(const CANPacket_t *to_push) {
-  int addr = GET_ADDR(to_push);
-
-  uint8_t cnt = 0;
-  if (addr == 0x2b9) {
-    // Signal: DAS_controlCounter
-    cnt = GET_BYTE(to_push, 6) >> 5;
-  } else if (addr == 0x488) {
-    // Signal: DAS_steeringControlCounter
-    cnt = GET_BYTE(to_push, 2) & 0x0FU;
-  } else if ((addr == 0x257) || (addr == 0x118) || (addr == 0x39d) || (addr == 0x286) || (addr == 0x311)) {
-    // Signal: DI_speedCounter, DI_systemStatusCounter, IBST_statusCounter, DI_locStatusCounter, UI_warningCounter
-    cnt = GET_BYTE(to_push, 1) & 0x0FU;
-  } else if (addr == 0x155) {
-    // Signal: ESP_wheelRotationCounter
-    cnt = GET_BYTE(to_push, 6) >> 4;
-  } else if (addr == 0x370) {
-    // Signal: EPAS3S_sysStatusCounter
-    cnt = GET_BYTE(to_push, 6) & 0x0FU;
-  } else {
-  }
-  return cnt;
-}
-
-static int _tesla_get_checksum_byte(const int addr) {
-  int checksum_byte = -1;
-  if ((addr == 0x370) || (addr == 0x2b9) || (addr == 0x155)) {
-    // Signal: EPAS3S_sysStatusChecksum, DAS_controlChecksum, ESP_wheelRotationChecksum
-    checksum_byte = 7;
-  } else if (addr == 0x488) {
-    // Signal: DAS_steeringControlChecksum
-    checksum_byte = 3;
-  } else if ((addr == 0x257) || (addr == 0x118) || (addr == 0x39d) || (addr == 0x286) || (addr == 0x311)) {
-    // Signal: DI_speedChecksum, DI_systemStatusChecksum, IBST_statusChecksum, DI_locStatusChecksum, UI_warningChecksum
-    checksum_byte = 0;
-  } else {
-  }
-  return checksum_byte;
-}
-
-static uint32_t tesla_get_checksum(const CANPacket_t *to_push) {
-  uint8_t chksum = 0;
-  int checksum_byte = _tesla_get_checksum_byte(GET_ADDR(to_push));
-  if (checksum_byte != -1) {
-    chksum = GET_BYTE(to_push, checksum_byte);
-  }
-  return chksum;
-}
-
-static uint32_t tesla_compute_checksum(const CANPacket_t *to_push) {
-  unsigned int addr = GET_ADDR(to_push);
-
-  uint8_t chksum = 0;
-  int checksum_byte = _tesla_get_checksum_byte(addr);
-  if(addr == 0x2bf && tesla_powertrain) {
-        addr = 0x2b9;
-  }
-
-  if (checksum_byte != -1) {
-    chksum = (uint8_t)((addr & 0xFFU) + ((addr >> 8) & 0xFFU));
-    int len = GET_LEN(to_push);
-    for (int i = 0; i < len; i++) {
-      if (i != checksum_byte) {
-        chksum += GET_BYTE(to_push, i);
-      }
-    }
-  }
-  return chksum;
-}
-
 static void tesla_rx_hook(const CANPacket_t *to_push) {
   int bus = GET_BUS(to_push);
   int addr = GET_ADDR(to_push);
@@ -109,7 +39,7 @@ static void tesla_rx_hook(const CANPacket_t *to_push) {
 
   if ((tesla_powertrain && (bus == 0) && (addr == 0x106)) ||
      (!tesla_powertrain && (bus == 2) && (addr == 0x108))) {
-    gas_pressed = GET_BYTE(to_push, 6) != 0U;
+    gas_pressed = (GET_BYTE(to_push, 6) != 0U);
   }
 
   if ((tesla_powertrain && (bus == 0) && (addr == 0x1f8)) ||
@@ -289,7 +219,4 @@ const safety_hooks tesla_hooks = {
   .rx = tesla_rx_hook,
   .tx = tesla_tx_hook,
   .fwd = tesla_fwd_hook,
-  .get_counter = tesla_get_counter,
-  .get_checksum = tesla_get_checksum,
-  .compute_checksum = tesla_compute_checksum,
 };

@@ -44,7 +44,7 @@ class CarState(CarStateBase):
     ret.vEgo, ret.aEgo = self.update_speed_kf(ret.vEgoRaw)
 
     # Gas pedal
-    pedal_status = cp_ap_party.vl["DI_torque1"]["DI_pedalPos"]
+    pedal_status = cp_pt.vl["DI_torque1"]["DI_pedalPos"]
     ret.gas = pedal_status / 100.0
     ret.gasPressed = pedal_status > 0
 
@@ -118,10 +118,10 @@ class CarState(CarStateBase):
 
     ap_party_messages = [
       ("DAS_steeringControl", 50),
-      ("DI_torque1", 100),
     ]
 
     pt_messages = [
+      ("DI_torque1", 100),
     ]
 
     ap_pt_messages = [

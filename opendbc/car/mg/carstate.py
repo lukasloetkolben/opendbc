@@ -1,5 +1,5 @@
-import copy
 from opendbc.can.parser import CANParser
+from opendbc.can.can_define import CANDefine
 from opendbc.car import Bus, structs
 from opendbc.car.interfaces import CarStateBase
 from opendbc.car.mg.values import DBC, GEAR_MAP
@@ -11,7 +11,7 @@ GearShifter = structs.CarState.GearShifter
 class CarState(CarStateBase):
   def __init__(self, CP):
     super().__init__(CP)
-    self.cruise_enabled = False
+    self.can_define = CANDefine(DBC[CP.carFingerprint][Bus.pt])
 
   def update(self, can_parsers) -> structs.CarState:
     cp = can_parsers[Bus.pt]
@@ -43,20 +43,11 @@ class CarState(CarStateBase):
     ret.steerFaultTemporary = cp_cam.vl["FVCM_HSC2_FrP02"]["LDWSysFltStsHSC2"] != 0 # TODO: validate
 
     # Cruise state
-    acc_req = cp.vl["CruiseControl"]["AccReqst"]
-    if acc_req == 3:
-      self.cruise_enabled = True
-    elif acc_req == 2:
-      self.cruise_enabled = False
-
-    if ret.brakePressed:
-      self.cruise_enabled = False
-
-    ret.cruiseState.enabled = self.cruise_enabled
-    ret.cruiseState.speed = cp_cam.vl["FVCM_HSC2_FrP02"]["TrgtSpdReqCamrHSC2"] * CV.KPH_TO_MS
-
+    cruise_state = self.can_define.dv["RADAR_HSC2_FrP00"]["ACCSysSts_RadarHSC2"].get(int(cp.vl["RADAR_HSC2_FrP00"]["ACCSysSts_RadarHSC2"]), None)
+    ret.cruiseState.enabled = cruise_state in ("Active", "Override")
     ret.cruiseState.available = True
     ret.cruiseState.standstill = False  # TODO
+    ret.cruiseState.speed = cp_cam.vl["RADAR_HSC2_FrP02"]["ACCDrvrSelTrgtSpd_RadarHSC2"] * CV.KPH_TO_MS
 
     ret.accFaulted = cp_cam.vl["FVCM_HSC2_FrP02"]["TJAICASysFltStsHSC2"] != 0  # TODO: validate
 
@@ -95,7 +86,8 @@ class CarState(CarStateBase):
       ("GW_HSC2_ECM_FrP04", 50),
       ("GW_HSC2_SDM_FrP00", 50),
       ("SCS_HSC2_FrP09", 20),
-      ("CruiseControl", 50),
+      ("RADAR_HSC2_FrP02", 50),
+      ("ACCSysSts_RadarHSC2", 50),
     ]
 
     cam_messages = [

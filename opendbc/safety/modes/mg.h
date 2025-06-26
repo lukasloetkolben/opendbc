@@ -1,7 +1,6 @@
 #pragma once
 
 #include "opendbc/safety/safety_declarations.h"
-static bool cruise_enabled = false;
 
 static void mg_rx_hook(const CANPacket_t *to_push) {
   int bus = GET_BUS(to_push);
@@ -36,14 +35,11 @@ static void mg_rx_hook(const CANPacket_t *to_push) {
     }
 
     // Cruise state
-    if (addr == 0x246) {
-      int acc_req = (GET_BYTE(to_push, 2) & 0x30U) >> 4;
-      if (acc_req == 3) {
-        cruise_enabled = true;
-      } else if (acc_req == 2) {
-        cruise_enabled = false;
-      }
-      pcm_cruise_check(cruise_enabled);
+    if (addr == 0x242) {
+      int cruise_state = (GET_BYTE(to_push, 5) >> 3) & 0x03U;
+      bool cruise_engaged = (cruise_state == 2) ||  // Active
+                            (cruise_state == 3)     // Override
+      pcm_cruise_check(cruise_engaged);
     }
   }
 }
@@ -88,7 +84,7 @@ static safety_config mg_init(uint16_t param) {
     {.msg = {{0x353, 0, 8, .frequency = 10U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},   // SCS_HSC2_FrP15 (speed)
     {.msg = {{0xaf,  0, 8, .frequency = 100U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},  // GW_HSC2_HCU_FrP00 (brake & gas pedal)
     {.msg = {{0x1ec, 0, 8, .frequency = 50U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},   // EPS_HSC2_FrP03 (driver torque)
-    {.msg = {{0x246,  0, 8, .frequency = 50U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},  // CruiseControl (cruise state)
+    {.msg = {{0x242,  0, 8, .frequency = 50U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},  // RADAR_HSC2_FrP00 (cruise state)
   };
   UNUSED(param);
 

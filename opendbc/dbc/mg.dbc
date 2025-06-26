@@ -129,6 +129,21 @@ BO_ 532 SCS_HSC2_FrP09: 6 SCSABS
  SG_ BrkPdlDrvrAppdPrsAlvRCHSC2 : 2|2@0+ (1,0) [0|3] ""  FVCM
  SG_ BrkPdlDrvrAppdPrsVHSC2 : 0|1@0+ (1,0) [0|1] ""  FVCM
 
+BO_ 578 RADAR_HSC2_FrP00: 8 FDR
+ SG_ ACCAccReqValHSC2 : 2|11@0+ (0.005,-7.22) [-7.22|3.015] "" SCSABS
+ SG_ ACCSysAlvRlngCtr_SCSHSC2 : 6|4@0+ (1,0) [0|15] "" SCSABS
+ SG_ ACCMinBrkReqStsHSC2 : 7|1@0+ (1,0) [0|1] "" SCSABS
+ SG_ ACCAccReqValTolMaxHSC2 : 22|7@0+ (0.025,0) [0|3.175] "" SCSABS
+ SG_ ACCReqBrkPrfrdHSC2 : 23|1@0+ (1,0) [0|1] "" SCSABS
+ SG_ ACCAccReqStsHSC2 : 29|2@0+ (1,0) [0|3] "" GW,SCSABS
+ SG_ ACCGoReqHSC2 : 30|1@0+ (1,0) [0|1] "" SCSABS
+ SG_ ACCSysFltSts_SCSHSC2 : 42|3@0+ (1,0) [0|7] "" SCSABS
+ SG_ ACCSysSts_RadarHSC2 : 45|3@0+ (1,0) [0|7] "" GW,SCSABS
+ SG_ ChACCShtdwnMdHSC2 : 47|2@0+ (1,0) [0|3] "" SCSABS
+ SG_ ACCAccReqValTolMinHSC2 : 54|7@0+ (0.025,0) [0|3.175] "" SCSABS
+ SG_ ACCSdslReq_RadarHSC2 : 55|1@0+ (1,0) [0|1] "" SCSABS
+ SG_ ACCSysChksm_SCSHSC2 : 63|8@0+ (1,0) [0|255] "" SCSABS
+
 BO_ 582 RADAR_HSC2_FrP02: 8 FDR
  SG_ ACCDrvrSelTrgtSpd_RadarHSC2 : 6|15@0+ (0.015625,0) [0|511.984] "" GW
  SG_ ACCObjDet_RadarHSC2 : 7|1@0+ (1,0) [0|1] "" GW
@@ -207,6 +222,14 @@ VAL_ 509 LKASysStsHSC2 3 "Override" 2 "Active" 1 "Stand by" 0 "Off";
 VAL_ 509 LKAReqToqStsHSC2 3 "reserved" 2 "reserved" 1 "torque request" 0 "no request";
 VAL_ 509 LKASysFltStsHSC2 3 "service required" 2 "system temporary unavailable" 1 "performance degradation" 0 "no error";
 VAL_ 509 LKADrvrTkovReqHSC2 1 "True" 0 "False";
+VAL_ 578 ACCMinBrkReqStsHSC2 1 "no demand" 0 "demand";
+VAL_ 578 ACCReqBrkPrfrdHSC2 1 "no demand" 0 "demand";
+VAL_ 578 ACCAccReqStsHSC2 1 "ACC Acceleration Request" 0 "No Request";
+VAL_ 578 ACCGoReqHSC2 1 "Request" 0 "No Request";
+VAL_ 578 ACCSysFltSts_SCSHSC2 7 "Reserved" 6 "Reserved" 5 "Reserved" 4 "Reserved" 3 "Service Required" 2 "System Temporary Unvailable" 1 "Performance Degradation" 0 "No Error";
+VAL_ 578 ACCSysSts_RadarHSC2 7 "Reserved" 6 "Standstill Wait" 5 "Standstill Active" 4 "Brake Only" 3 "Override" 2 "Active" 1 "Stand By" 0 "Off";
+VAL_ 578 ChACCShtdwnMdHSC2 3 "immediate off" 2 "initial" 1 "fast off" 0 "soft off";
+VAL_ 578 ACCSdslReq_RadarHSC2 1 "request" 0 "no request";
 VAL_ 582 ACCObjDet_RadarHSC2 1 "TRUE" 0 "FALSE";
 VAL_ 582 AEBMsgReqHSC2 7 "reserved" 6 "Radar Error" 5 "AEB is switched off" 4 "AEB is switched on" 3 "AEB is in error mode" 2 "Active" 1 "unable to active AEB" 0 "No display";
 VAL_ 582 ACCMsgReqHSC2 15 "Reserved" 14 "Reserved" 13 "Reserved" 12 "Reserved" 11 "Reserved" 10 "Reserved" 9 "Radar Error" 8 "depress acceleration pedal or press resume switch to go" 7 "Driver Takeover Request" 6 "ACC is switched off" 5 "ACC is switched on" 4 "ACC is in error mode" 3 "Active" 2 "ACC is cancelled" 1 "unable to active ACC" 0 "No display";

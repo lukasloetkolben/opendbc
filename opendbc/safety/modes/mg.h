@@ -53,21 +53,20 @@ static bool mg_tx_hook(const CANPacket_t *to_send) {
   };
 
   bool tx = true;
-  int bus = GET_BUS(to_send);
+  int addr = GET_ADDR(to_send);
+  bool violation = false;
 
-  if (bus == 0) {
-    int addr = GET_ADDR(to_send);
+  // Steering control
+  if (addr == 0x1fd) {
+    int desired_torque = (((GET_BYTE(to_send, 0) & 0x7U) << 8) | GET_BYTE(to_send, 1) );
+    desired_torque = desired_torque - 1024U;
+    bool steer_req = GET_BIT(to_send, 35U);
 
-    // Steering control
-    if (addr == 0x1fd) {
-      int desired_torque = (((GET_BYTE(to_send, 0) & 0x7U) << 8) | GET_BYTE(to_send, 1) );
-      desired_torque = desired_torque - 1024U;
-      bool steer_req = GET_BIT(to_send, 35U);
+    violation |= steer_torque_cmd_checks(desired_torque, steer_req, MG_STEERING_LIMITS);
+  }
 
-      if (steer_torque_cmd_checks(desired_torque, steer_req, MG_STEERING_LIMITS)) {
-        tx = false;
-      }
-    }
+  if (violation) {
+    tx = false;
   }
 
   return tx;

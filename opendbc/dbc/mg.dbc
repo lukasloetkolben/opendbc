@@ -116,6 +116,21 @@ BO_ 532 SCS_HSC2_FrP09: 6 SCSABS
  SG_ BrkPdlDrvrAppdPrsAlvRCHSC2 : 2|2@0+ (1,0) [0|3] ""  FVCM
  SG_ BrkPdlDrvrAppdPrsVHSC2 : 0|1@0+ (1,0) [0|1] ""  FVCM
 
+BO_ 588 SCS_HSC2_FrP22: 8 SCSABS
+ SG_ BrkDiscTemStsHSC2 : 6|1@0+ (1,0) [0|1] ""  FDR
+ SG_ BrkPdlDrvrAppdPrsAlvRC_RadarHSC2 : 13|2@0+ (1,0) [0|3] ""  FDR
+ SG_ BrkPdlDrvrAppdPrsV_RadarHSC2 : 7|1@0+ (1,0) [0|1] ""  FDR
+ SG_ BrkPdlDrvrAppdPrs_RadarHSC2 : 23|8@0+ (75,0) [0|19125] "kPa"  FDR
+ SG_ LDrvnWhlRotlDircnHSC2 : 15|2@0+ (1,0) [0|3] ""  FDR,FVCM
+ SG_ RDrvnWhlRotlDircnHSC2 : 2|2@0+ (1,0) [0|3] ""  FDR,FVCM
+ SG_ WhlBrkPrsStsHSC2 : 5|1@0+ (1,0) [0|1] ""  FDR
+ SG_ WhlGndVelDrvnChksm_RadarHSC2 : 63|8@0+ (1,0) [0|255] ""  FDR
+ SG_ WhlGndVelDrvnRC_RadarHSC2 : 11|4@0+ (1,0) [0|15] ""  FDR
+ SG_ WhlGndVelLDrvnV_RadarHSC2 : 3|1@0+ (1,0) [0|1] ""  FDR
+ SG_ WhlGndVelLDrvn_RadarHSC2 : 45|14@0+ (0.03125,0) [0|511.969] "km/h"  FDR
+ SG_ WhlGndVelRDrvnV_RadarHSC2 : 4|1@0+ (1,0) [0|1] ""  FDR
+ SG_ WhlGndVelRDrvn_RadarHSC2 : 29|14@0+ (0.03125,0) [0|511.969] "km/h"  FDR
+
 BO_ 851 SCS_HSC2_FrP15: 8 SCSABS
  SG_ VehSpdAvgDrvnHSC2 : 6|15@0+ (0.015625,0) [0|511.984] "km/h"  FVCM
  SG_ VehSpdAvgDrvnVHSC2 : 7|1@0+ (1,0) [0|1] ""  FVCM
@@ -151,3 +166,32 @@ VAL_ 509 LKASysStsHSC2 3 "Override" 2 "Active" 1 "Stand by" 0 "Off";
 VAL_ 509 LKAReqToqStsHSC2 3 "reserved" 2 "reserved" 1 "torque request" 0 "no request";
 VAL_ 509 LKASysFltStsHSC2 3 "service required" 2 "system temporary unavailable" 1 "performance degradation" 0 "no error";
 VAL_ 509 LKADrvrTkovReqHSC2 1 "True" 0 "False";
+VAL_ 588 BrkDiscTemStsHSC2 1 "Temperature too high" 0 "Not high" ;
+VAL_ 588 BrkPdlDrvrAppdPrsV_RadarHSC2 1 "Invalid" 0 "Valid" ;
+VAL_ 588 LDrvnWhlRotlDircnHSC2 3 "Initial/Invalid" 2 "Backward" 1 "Forward" 0 "Unknown" ;
+VAL_ 588 RDrvnWhlRotlDircnHSC2 3 "Initial/Invalid" 2 "Backward" 1 "Forward" 0 "Unknown" ;
+VAL_ 588 WhlBrkPrsStsHSC2 1 "No brake force" 0 "Exist brake force" ;
+VAL_ 588 WhlGndVelLDrvnV_RadarHSC2 1 "Invalid" 0 "Valid" ;
+VAL_ 588 WhlGndVelRDrvnV_RadarHSC2 1 "Invalid" 0 "Valid" ;
+VAL_ 851 VehSpdAvgDrvnVHSC2 1 "Invalid" 0 "Valid" ;
+VAL_ 851 VehSpdAvgNonDrvnVHSC2 1 "Invalid" 0 "Valid" ;
+VAL_ 1130 BntOpenStsHSC2 3 "Reserved" 2 "Bonnet Switch Disconnect" 1 "Bonnet Open" 0 "Bonnet Closed" ;
+VAL_ 1130 DipdBeamLghtOnHSC2 1 "True" 0 "False" ;
+VAL_ 1130 DircnIndLampSwStsHSC2 3 "reserve" 2 "Right on" 1 "Left on" 0 "off" ;
+VAL_ 1130 DrvrDoorOpenStsHSC2 3 "Driver Door Full Open" 2 "Driver Door Ajar" 1 "Driver Door Open(For latch switch can't detect door ajar status)" 0 "Driver Door Closed" ;
+VAL_ 1130 DspMeasSysHSC2 1 "mph" 0 "kph" ;
+VAL_ 1130 FrtFogLghtOnHSC2 1 "True" 0 "False" ;
+VAL_ 1130 FrtPsngDoorOpenStsHSC2 3 "Front Passenger Door Full Open" 2 "Front Passenger Door Ajar" 1 "Front Passenger Open(latch switch cann¡®t detect door ajar statu" 0 "Front Passenger Door Closed" ;
+VAL_ 1130 FrtWiperParkPosAHSC2 1 "True" 0 "False" ;
+VAL_ 1130 FrtWshrPumpAHSC2 1 "True" 0 "False" ;
+VAL_ 1130 KeyDetIndxHSC2 7 "error" 6 "key 6 is detected" 5 "key 5 is detected" 4 "key 4 is detected" 3 "key 3 is detected" 2 "key 2 is detected" 1 "key 1 is detected" 0 "non key is detected" ;
+VAL_ 1130 LDircnIndLghtFHSC2 1 "True" 0 "False" ;
+VAL_ 1130 LDircnIOHSC2 1 "True" 0 "False" ;
+VAL_ 1130 LdspcOpenStsHSC2 3 "Reserved" 2 "Reserved" 1 "Load Space Open" 0 "Load Space Closed" ;
+VAL_ 1130 MainBeamLghtOnHSC2 1 "True" 0 "False" ;
+VAL_ 1130 RDircnIndLghtFHSC2 1 "True" 0 "False" ;
+VAL_ 1130 RDircnIOHSC2 1 "True" 0 "False" ;
+VAL_ 1130 RLDoorOpenStsHSC2 3 "Rear Left Door Full Open" 2 "Rear Left Door Ajar" 1 "Rear Left Door Open(latch switch cann't detect door ajar status" 0 "Rear Left Door Closed" ;
+VAL_ 1130 RRDoorOpenStsHSC2 3 "Rear Right Door Full Open" 2 "Rear Right Door Ajar" 1 "Rear Right Door Open(latch switch cann't detect door ajar status" 0 "Rear Right Door Closed" ;
+VAL_ 1130 RrFogLghtOnHSC2 1 "True" 0 "False" ;
+VAL_ 1130 VehSideLghtStsHSC2 3 "All side light and license plate light on" 2 "Right side light on only" 1 "Left side light on only" 0 "No side light on " ;

@@ -47,7 +47,7 @@ class CarState(CarStateBase):
     ret.cruiseState.enabled = cruise_state in ("Active", "Override")
     ret.cruiseState.available = True
     ret.cruiseState.standstill = False  # TODO
-    ret.cruiseState.speed = cp_cam.vl["RADAR_HSC2_FrP02"]["ACCDrvrSelTrgtSpd_RadarHSC2"] * CV.KPH_TO_MS
+    ret.cruiseState.speed = cp.vl["RADAR_HSC2_FrP02"]["ACCDrvrSelTrgtSpd_RadarHSC2"] * CV.KPH_TO_MS
 
     ret.accFaulted = cp_cam.vl["FVCM_HSC2_FrP02"]["TJAICASysFltStsHSC2"] != 0  # TODO: validate
 
@@ -87,7 +87,7 @@ class CarState(CarStateBase):
       ("GW_HSC2_SDM_FrP00", 50),
       ("SCS_HSC2_FrP09", 20),
       ("RADAR_HSC2_FrP02", 50),
-      ("ACCSysSts_RadarHSC2", 50),
+      ("RADAR_HSC2_FrP00", 50),
     ]
 
     cam_messages = [

@@ -91,6 +91,19 @@ BO_ 485 SAS_HSC2_FrP00: 8 EPS
  SG_ StrgWhlAngSnsrMultCapbHSC2 : 1|1@0+ (1,0) [0|1] ""  FVCM
  SG_ StrgWhlAngVHSC2 : 7|1@0+ (1,0) [0|1] ""  FVCM
 
+BO_ 481 GW_HSC2_FrP04: 7 GW
+ SG_ CCSwStsSwDataIntgty_h2HSC2 : 1|2@0+ (1,0) [0|3] "" FDR
+ SG_ CCSwStsSpdDecSwA_h2HSC2 : 2|1@0+ (1,0) [0|1] "" FDR
+ SG_ CCSwStsSpdIncSwA_h2HSC2 : 3|1@0+ (1,0) [0|1] "" FDR
+ SG_ CCSwStsSetSwA_h2HSC2 : 4|1@0+ (1,0) [0|1] "" FDR
+ SG_ CCSwStsRsmSwA_h2HSC2 : 5|1@0+ (1,0) [0|1] "" FDR
+ SG_ CCSwStsOnSwA_h2HSC2 : 6|1@0+ (1,0) [0|1] "" FDR
+ SG_ CCSwStsCanclSwA_h2HSC2 : 7|1@0+ (1,0) [0|1] "" FDR
+ SG_ CCSwStsPV_h2HSC2 : 15|8@0+ (1,0) [0|255] "" FDR
+ SG_ CCSwStsAlvRC_h2HSC2 : 17|2@0+ (1,0) [0|3] "" FDR
+ SG_ CCSwStsDistDecSwA_h2HSC2 : 18|1@0+ (1,0) [0|1] "" FDR
+ SG_ CCSwStsDistIncSwA_h2HSC2 : 19|1@0+ (1,0) [0|1] "" FDR
+
 BO_ 492 EPS_HSC2_FrP03: 8 EPS
  SG_ ChLKAAlvRCHSC2 : 7|4@0+ (1,0) [0|15] ""  FVCM
  SG_ ChLKACtrlStsHSC2 : 54|3@0+ (1,0) [0|7] ""  FVCM
@@ -116,8 +129,24 @@ BO_ 532 SCS_HSC2_FrP09: 6 SCSABS
  SG_ BrkPdlDrvrAppdPrsAlvRCHSC2 : 2|2@0+ (1,0) [0|3] ""  FVCM
  SG_ BrkPdlDrvrAppdPrsVHSC2 : 0|1@0+ (1,0) [0|1] ""  FVCM
 
-BO_ 582 CruiseControl: 8 XXX
- SG_ AccReqst : 20|2@1+ (1,0) [0|3] "" XXX
+BO_ 582 RADAR_HSC2_FrP02: 8 FDR
+ SG_ ACCDrvrSelTrgtSpd_RadarHSC2 : 6|15@0+ (0.015625,0) [0|511.984] "" GW
+ SG_ ACCObjDet_RadarHSC2 : 7|1@0+ (1,0) [0|1] "" GW
+ SG_ AEBMsgReqHSC2 : 19|4@0+ (1,0) [0|15] "" GW
+ SG_ ACCMsgReqHSC2 : 23|4@0+ (1,0) [0|15] "" GW
+ SG_ ACCDetObjDistLvl_RadarHSC2 : 26|3@0+ (1,0) [0|7] "" GW
+ SG_ ACCDrvrSeldTrgtDistLvl_RadarHSC2 : 29|3@0+ (1,0) [0|7] "" GW
+ SG_ ACCSysCanclReq_RadarHSC2 : 31|2@0+ (1,0) [0|3] "" GW
+ SG_ RdrCalPrgsReqHSC2 : 34|3@0+ (1,0) [0|7] "" GW
+ SG_ ACCGoNotfr_RadarHSC2 : 35|1@0+ (1,0) [0|1] "" GW
+ SG_ ACCSysFltSts_RadarHSC2 : 38|3@0+ (1,0) [0|7] "" GW
+ SG_ ACCDrvrTkovReqHSC2 : 39|1@0+ (1,0) [0|1] "" GW
+ SG_ FCWSysFltSts_RadarHSC2 : 42|3@0+ (1,0) [0|7] "" GW
+ SG_ FCWSnstvtLvl_RadarHSC2 : 45|3@0+ (1,0) [0|7] "" GW
+ SG_ AEBPedtrnDspCmdHSC2 : 47|2@0+ (1,0) [0|3] "" GW
+ SG_ FCWrnngSts_RadarHSC2 : 51|3@0+ (1,0) [0|7] "" GW
+ SG_ FCWDspCmd_RadarHSC2 : 53|2@0+ (1,0) [0|3] "" GW
+ SG_ AEBDspCmd_RadarHSC2 : 55|2@0+ (1,0) [0|3] "" GW
 
 BO_ 588 SCS_HSC2_FrP22: 8 SCSABS
  SG_ BrkDiscTemStsHSC2 : 6|1@0+ (1,0) [0|1] ""  FDR
@@ -163,12 +192,37 @@ VAL_ 404 TrEstdGearHSC2 15 "Park Gear" 14 "Reverse Gear" 13 "Neutral Gear" 8 "Ei
 VAL_ 404 TrEstdGearVHSC2 1 "Invalid" 0 "Valid";
 VAL_ 404 TrShftLvrPos_h1HSC2 15 "Lever Position Unknown" 11 "Forward Range H" 10 "Forward Range G" 9 "Forward Range F" 8 "Forward Range E" 7 "Forward Range D" 6 "Forward Range C" 5 "Forward Range B" 4 "Forward Range A" 3 "Neutral Range" 2 "Reverse Range" 1 "Park Range" 0 "Between Ranges";
 VAL_ 404 TrShftLvrPosV_h1HSC2 1 "Invalid" 0 "Valid";
+VAL_ 481 CCSwStsSwDataIntgty_h2HSC2 3 "Illegal Range" 2 "Failure Detected" 1 "Data Invalid" 0 "Data Valid";
+VAL_ 481 CCSwStsSpdDecSwA_h2HSC2 1 "True" 0 "False";
+VAL_ 481 CCSwStsSpdIncSwA_h2HSC2 1 "True" 0 "False";
+VAL_ 481 CCSwStsSetSwA_h2HSC2 1 "True" 0 "False";
+VAL_ 481 CCSwStsRsmSwA_h2HSC2 1 "True" 0 "False";
+VAL_ 481 CCSwStsOnSwA_h2HSC2 1 "True" 0 "False";
+VAL_ 481 CCSwStsCanclSwA_h2HSC2 1 "True" 0 "False";
+VAL_ 481 CCSwStsDistDecSwA_h2HSC2 1 "True" 0 "False";
+VAL_ 481 CCSwStsDistIncSwA_h2HSC2 1 "True" 0 "False";
 VAL_ 509 LKAReqToqVHSC2 1 "Invalid" 0 "Valid";
 VAL_ 509 LDWLKAVbnLvlReqHSC2 3 "Level 3" 2 "Level 2" 1 "Level 1" 0 "no request";
 VAL_ 509 LKASysStsHSC2 3 "Override" 2 "Active" 1 "Stand by" 0 "Off";
 VAL_ 509 LKAReqToqStsHSC2 3 "reserved" 2 "reserved" 1 "torque request" 0 "no request";
 VAL_ 509 LKASysFltStsHSC2 3 "service required" 2 "system temporary unavailable" 1 "performance degradation" 0 "no error";
 VAL_ 509 LKADrvrTkovReqHSC2 1 "True" 0 "False";
+VAL_ 582 ACCObjDet_RadarHSC2 1 "TRUE" 0 "FALSE";
+VAL_ 582 AEBMsgReqHSC2 7 "reserved" 6 "Radar Error" 5 "AEB is switched off" 4 "AEB is switched on" 3 "AEB is in error mode" 2 "Active" 1 "unable to active AEB" 0 "No display";
+VAL_ 582 ACCMsgReqHSC2 15 "Reserved" 14 "Reserved" 13 "Reserved" 12 "Reserved" 11 "Reserved" 10 "Reserved" 9 "Radar Error" 8 "depress acceleration pedal or press resume switch to go" 7 "Driver Takeover Request" 6 "ACC is switched off" 5 "ACC is switched on" 4 "ACC is in error mode" 3 "Active" 2 "ACC is cancelled" 1 "unable to active ACC" 0 "No display";
+VAL_ 582 ACCDetObjDistLvl_RadarHSC2 7 "reserved" 6 "reserved" 5 "distance level5" 4 "distance level4" 3 "distance level3" 2 "distance level2" 1 "distance level1" 0 "no gap set";
+VAL_ 582 ACCDrvrSeldTrgtDistLvl_RadarHSC2 7 "reserved" 6 "reserved" 5 "distance level5" 4 "distance level4" 3 "distance level3" 2 "distance level2" 1 "distance level1" 0 "no gap set";
+VAL_ 582 ACCSysCanclReq_RadarHSC2 3 "Reserved" 2 "ACC Condition Dissatisfy" 1 "Manual Cancel" 0 "No Cancel";
+VAL_ 582 RdrCalPrgsReqHSC2 5 "calibration failure" 4 "Calibration Finished, need Adjust" 3 "Calibration Finished, Succesful" 2 "Calibration in progress" 1 "Calibration Started" 0 "no request";
+VAL_ 582 ACCGoNotfr_RadarHSC2 1 "TRUE" 0 "FALSE";
+VAL_ 582 ACCSysFltSts_RadarHSC2 7 "Reserved" 6 "Reserved" 5 "Reserved" 4 "Reserved" 3 "Service Required" 2 "System Temporary Unvailable" 1 "Performance Degradation" 0 "No Error";
+VAL_ 582 ACCDrvrTkovReqHSC2 1 "True" 0 "False";
+VAL_ 582 FCWSysFltSts_RadarHSC2 7 "Reserved" 6 "Reserved" 5 "Reserved" 4 "Reserved" 3 "Service required" 2 "System temporary unvailable" 1 "Performance degradation" 0 "No error";
+VAL_ 582 FCWSnstvtLvl_RadarHSC2 7 "reserved" 6 "reserved" 5 "reserved" 4 "reserved" 3 "level3" 2 "level2" 1 "level1" 0 "Unavailable";
+VAL_ 582 AEBPedtrnDspCmdHSC2 3 "reserved" 2 "on" 1 "off" 0 "unavailable";
+VAL_ 582 FCWrnngSts_RadarHSC2 7 "reserved" 6 "reserved" 5 "reserved" 4 "reserved" 3 "level 3" 2 "level 2" 1 "level 1" 0 "no request";
+VAL_ 582 FCWDspCmd_RadarHSC2 3 "reserved" 2 "on" 1 "off" 0 "unavailable";
+VAL_ 582 AEBDspCmd_RadarHSC2 3 "reserved" 2 "on" 1 "off" 0 "unavailable";
 VAL_ 588 BrkDiscTemStsHSC2 1 "Temperature too high" 0 "Not high" ;
 VAL_ 588 BrkPdlDrvrAppdPrsV_RadarHSC2 1 "Invalid" 0 "Valid" ;
 VAL_ 588 LDrvnWhlRotlDircnHSC2 3 "Initial/Invalid" 2 "Backward" 1 "Forward" 0 "Unknown" ;

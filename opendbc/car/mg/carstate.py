@@ -11,6 +11,7 @@ GearShifter = structs.CarState.GearShifter
 class CarState(CarStateBase):
   def __init__(self, CP):
     super().__init__(CP)
+    self.cruise_enabled = False
 
   def update(self, can_parsers) -> structs.CarState:
     cp = can_parsers[Bus.pt]
@@ -42,7 +43,16 @@ class CarState(CarStateBase):
     ret.steerFaultTemporary = cp_cam.vl["FVCM_HSC2_FrP02"]["LDWSysFltStsHSC2"] != 0 # TODO: validate
 
     # Cruise state
-    ret.cruiseState.enabled = cp.vl["GW_HSC2_ECM_FrP27"]["ACCStsHSC2"] == 1
+    acc_req = cp.vl["CruiseControl"]["AccReqst"]
+    if acc_req == 3:
+      self.cruise_enabled = True
+    elif acc_req == 2:
+      self.cruise_enabled = False
+
+    if ret.brakePressed:
+      self.cruise_enabled = False
+
+    ret.cruiseState.enabled = self.cruise_enabled
     ret.cruiseState.speed = cp_cam.vl["FVCM_HSC2_FrP02"]["TrgtSpdReqCamrHSC2"] * CV.KPH_TO_MS
 
     ret.cruiseState.available = True
@@ -85,6 +95,7 @@ class CarState(CarStateBase):
       ("GW_HSC2_ECM_FrP04", 50),
       ("GW_HSC2_SDM_FrP00", 50),
       ("SCS_HSC2_FrP09", 20),
+      ("CruiseControl", 50),
     ]
 
     cam_messages = [

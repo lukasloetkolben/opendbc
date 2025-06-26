@@ -116,6 +116,9 @@ BO_ 532 SCS_HSC2_FrP09: 6 SCSABS
  SG_ BrkPdlDrvrAppdPrsAlvRCHSC2 : 2|2@0+ (1,0) [0|3] ""  FVCM
  SG_ BrkPdlDrvrAppdPrsVHSC2 : 0|1@0+ (1,0) [0|1] ""  FVCM
 
+BO_ 582 CruiseControl: 8 XXX
+ SG_ AccReqst : 20|2@1+ (1,0) [0|3] "" XXX
+
 BO_ 588 SCS_HSC2_FrP22: 8 SCSABS
  SG_ BrkDiscTemStsHSC2 : 6|1@0+ (1,0) [0|1] ""  FDR
  SG_ BrkPdlDrvrAppdPrsAlvRC_RadarHSC2 : 13|2@0+ (1,0) [0|3] ""  FDR

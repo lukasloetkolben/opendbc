@@ -1,7 +1,7 @@
 #pragma once
 
 #include "opendbc/safety/safety_declarations.h"
-
+static bool cruise_enabled = false;
 
 static void mg_rx_hook(const CANPacket_t *to_push) {
   int bus = GET_BUS(to_push);
@@ -30,12 +30,20 @@ static void mg_rx_hook(const CANPacket_t *to_push) {
     // Brake pressed
     if (addr == 0xaf) {
       brake_pressed = GET_BIT(to_push, 31U);
+      if(brake_pressed){
+        cruise_enabled = false;
+      }
     }
 
     // Cruise state
-    if (addr == 0xfb) {
-      bool cruise_engaged = GET_BIT(to_push, 2);
-      pcm_cruise_check(cruise_engaged);
+    if (addr == 0x246) {
+      int acc_req = (GET_BYTE(to_push, 2) & 0x30U) >> 4;
+      if (cruise_request == 3) {
+        cruise_enabled = true;
+      } else if (cruise_request == 2) {
+        cruise_enabled = false;
+      }
+      pcm_cruise_check(cruise_enabled);
     }
   }
 }
@@ -80,7 +88,7 @@ static safety_config mg_init(uint16_t param) {
     {.msg = {{0x353, 0, 8, .frequency = 10U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},   // SCS_HSC2_FrP15 (speed)
     {.msg = {{0xaf,  0, 8, .frequency = 100U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},  // GW_HSC2_HCU_FrP00 (brake & gas pedal)
     {.msg = {{0x1ec, 0, 8, .frequency = 50U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},   // EPS_HSC2_FrP03 (driver torque)
-    {.msg = {{0xfb,  0, 8, .frequency = 100U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},  // GW_HSC2_ECM_FrP27 (cruise state)
+    {.msg = {{0x246,  0, 8, .frequency = 50U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},  // CruiseControl (cruise state)
   };
   UNUSED(param);
 

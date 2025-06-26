@@ -29,16 +29,13 @@ static void mg_rx_hook(const CANPacket_t *to_push) {
     // Brake pressed
     if (addr == 0xaf) {
       brake_pressed = GET_BIT(to_push, 31U);
-      if(brake_pressed){
-        cruise_enabled = false;
-      }
     }
 
     // Cruise state
     if (addr == 0x242) {
       int cruise_state = (GET_BYTE(to_push, 5) >> 3) & 0x03U;
       bool cruise_engaged = (cruise_state == 2) ||  // Active
-                            (cruise_state == 3)     // Override
+                            (cruise_state == 3);    // Override
       pcm_cruise_check(cruise_engaged);
     }
   }

@@ -38,9 +38,9 @@ static void mg_rx_hook(const CANPacket_t *to_push) {
     // Cruise state
     if (addr == 0x246) {
       int acc_req = (GET_BYTE(to_push, 2) & 0x30U) >> 4;
-      if (cruise_request == 3) {
+      if (acc_req == 3) {
         cruise_enabled = true;
-      } else if (cruise_request == 2) {
+      } else if (acc_req == 2) {
         cruise_enabled = false;
       }
       pcm_cruise_check(cruise_enabled);

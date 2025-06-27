@@ -144,7 +144,7 @@ static bool rivian_tx_hook(const CANPacket_t *to_send) {
       int desired_angle = ((GET_BYTE(to_send, 2) << 7) | (GET_BYTE(to_send, 3) >> 1)) - 16384U;
       bool lka_active = GET_BIT(to_send, 12U);
 
-      if (steer_angle_cmd_checks(desired_angle, lka_active, RIVIAN_LONG_LIMITS)) {
+      if (steer_angle_cmd_checks(desired_angle, lka_active, RIVIAN_STEERING_LIMITS)) {
         tx = false;
       }
     }

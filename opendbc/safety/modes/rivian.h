@@ -114,19 +114,17 @@ static void rivian_rx_hook(const CANPacket_t *to_push) {
 
 static bool rivian_tx_hook(const CANPacket_t *to_send) {
   // Rivian utilizes more torque at low speed to maintain the same lateral accel
-  const TorqueSteeringLimits RIVIAN_STEERING_LIMITS = {
-    .max_torque = 350,
-    .dynamic_max_torque = true,
-    .max_torque_lookup = {
-      {9., 17., 17.},
-      {350, 250, 250},
+  const AngleSteeringLimits RIVIAN_STEERING_LIMITS = {
+    .max_angle = 60000,  // 600 deg, reasonable limit
+    .angle_deg_to_can = 100,
+    .angle_rate_up_lookup = {
+      {0., 5., 15.},
+      {5., .8, .15}
     },
-    .max_rate_up = 3,
-    .max_rate_down = 5,
-    .max_rt_delta = 125,
-    .driver_torque_multiplier = 2,
-    .driver_torque_allowance = 100,
-    .type = TorqueDriverLimited,
+    .angle_rate_down_lookup = {
+      {0., 5., 15.},
+      {5., 3.5, .4}
+    },
   };
 
   const LongitudinalLimits RIVIAN_LONG_LIMITS = {
@@ -142,11 +140,11 @@ static bool rivian_tx_hook(const CANPacket_t *to_send) {
     int addr = GET_ADDR(to_send);
 
     // Steering control
-    if (addr == 0x120) {
-      int desired_torque = ((GET_BYTE(to_send, 2) << 3U) | (GET_BYTE(to_send, 3) >> 5U)) - 1024U;
-      bool steer_req = GET_BIT(to_send, 28U);
+    if (addr == 0x110) {
+      int desired_angle = ((GET_BYTE(to_send, 2) << 7) | (GET_BYTE(to_send, 3) >> 1)) - 16384U;
+      bool lka_active = GET_BIT(to_send, 12U);
 
-      if (steer_torque_cmd_checks(desired_torque, steer_req, RIVIAN_STEERING_LIMITS)) {
+      if (steer_angle_cmd_checks(desired_angle, lka_active, RIVIAN_LONG_LIMITS)) {
         tx = false;
       }
     }
@@ -167,7 +165,7 @@ static safety_config rivian_init(uint16_t param) {
   // SCCM_WheelTouch: for hiding hold wheel alert
   // VDM_AdasSts: for canceling stock ACC
   // 0x120 = ACM_lkaHbaCmd, 0x321 = SCCM_WheelTouch, 0x162 = VDM_AdasSts
-  static const CanMsg RIVIAN_TX_MSGS[] = {{0x120, 0, 8, .check_relay = true}, {0x321, 2, 7, .check_relay = true}, {0x162, 2, 8, .check_relay = true}};
+  static const CanMsg RIVIAN_TX_MSGS[] = {{0x110, 0, 8, .check_relay = true}, {0x321, 2, 7, .check_relay = true}, {0x162, 2, 8, .check_relay = true}};
   // 0x160 = ACM_longitudinalRequest
   static const CanMsg RIVIAN_LONG_TX_MSGS[] = {{0x120, 0, 8, .check_relay = true}, {0x321, 2, 7, .check_relay = true}, {0x160, 0, 5, .check_relay = true}};
 

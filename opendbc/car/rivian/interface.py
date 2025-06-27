@@ -21,7 +21,7 @@ class CarInterface(CarInterfaceBase):
     ret.steerLimitTimer = 0.4
     CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
 
-    ret.steerControlType = structs.CarParams.SteerControlType.torque
+    ret.steerControlType = structs.CarParams.SteerControlType.angle
     ret.radarUnavailable = True
 
     # TODO: pending finding/handling missing set speed and fixing up radar parser

@@ -11,6 +11,18 @@ def checksum(data, poly, xor_output):
   return crc ^ xor_output
 
 
+def create_angle_steering(packer, frame, angle, active):
+  values = {
+    "ACM_SteeringControl_Counter": frame % 14,
+    "ACM_SteeringAngleRequest": angle,
+    "ACM_EacEnabled": active,
+    "ACM_HapticRequired": 0
+  }
+
+  data = packer.make_can_msg("ACM_SteeringControl", 0, values)[1]
+  values["ACM_SteeringControl_Checksum"] = checksum(data[1:], 0x1D, 0x41)
+  return packer.make_can_msg("ACM_SteeringControl", 0, values)
+
 def create_lka_steering(packer, frame, acm_lka_hba_cmd, apply_torque, enabled, active):
   # forward auto high beam and speed limit status and nothing else
   values = {s: acm_lka_hba_cmd[s] for s in (

@@ -1,7 +1,6 @@
 from dataclasses import dataclass, field
 from enum import StrEnum, IntFlag
-
-from opendbc.car import Bus, CarSpecs, DbcDict, PlatformConfig, Platforms, structs, uds
+from opendbc.car import Bus, CarSpecs, DbcDict, PlatformConfig, Platforms, structs, uds, AngleSteeringLimits
 from opendbc.car.docs_definitions import CarHarness, CarDocs, CarParts, Device
 from opendbc.car.fw_query_definitions import FwQueryConfig, Request, StdQueries, p16
 from opendbc.car.vin import Vin
@@ -123,6 +122,14 @@ class CarControllerParams:
   STEER_DRIVER_ALLOWANCE = 100  # allowed driver torque before start limiting
   STEER_DRIVER_MULTIPLIER = 2  # weight driver torque
   STEER_DRIVER_FACTOR = 100
+
+  ANGLE_LIMITS: AngleSteeringLimits = AngleSteeringLimits(
+    # When output steering Angle not within range -1311 and 1310,
+    #   CANPacker packs wrong angle output to be decoded by panda
+    600,  # deg, reasonable limit
+    ([0., 5., 15.], [5., .8, .15]),
+    ([0., 5., 15.], [5., 3.5, 0.4]),
+  )
 
   ACCEL_MIN = -3.5  # m/s^2
   ACCEL_MAX = 2.0  # m/s^2

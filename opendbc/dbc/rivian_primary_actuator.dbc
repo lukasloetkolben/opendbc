@@ -47,7 +47,6 @@ BO_ 64 SAS_Status: 8 SAS
 BO_ 256 ACM_Status: 8 ACM
  SG_ ACM_Status_Checksum : 7|8@0+ (1,0) [0|255] "-" EPAS_P,VDM
  SG_ ACM_Status_Counter : 11|4@0+ (1,0) [0|15] "-" EPAS_P,VDM
- SG_ ACM_Unkown1 : 18|1@0+ (1,0) [0|1] "" XXX
  SG_ ACM_FeatureStatus : 23|3@0+ (1,0) [0|7] "" EPAS_P,VDM
  SG_ ACM_FaultStatus : 26|3@0+ (1,0) [0|7] "" EPAS_P,VDM
  SG_ ACM_Unkown2 : 41|2@0+ (1,0) [0|3] "" XXX

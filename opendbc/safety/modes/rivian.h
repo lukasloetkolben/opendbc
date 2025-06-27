@@ -113,17 +113,17 @@ static void rivian_rx_hook(const CANPacket_t *to_push) {
 }
 
 static bool rivian_tx_hook(const CANPacket_t *to_send) {
-  // Rivian utilizes more torque at low speed to maintain the same lateral accel
-  const AngleSteeringLimits RIVIAN_STEERING_LIMITS = {
-    .max_angle = 60000,  // 600 deg, reasonable limit
-    .angle_deg_to_can = 100,
+  static const AngleSteeringLimits RIVIAN_STEERING_LIMITS = {
+    .max_angle = 3600,
+    .angle_deg_to_can = 10,
+    .frequency = 100U,
     .angle_rate_up_lookup = {
-      {0., 5., 15.},
-      {5., .8, .15}
+      {5., 25., 25.},
+      {0.3, 0.15, 0.15}
     },
     .angle_rate_down_lookup = {
-      {0., 5., 15.},
-      {5., 3.5, .4}
+      {5., 25., 25.},
+      {0.36, 0.26, 0.26}
     },
   };
 
@@ -165,9 +165,9 @@ static safety_config rivian_init(uint16_t param) {
   // SCCM_WheelTouch: for hiding hold wheel alert
   // VDM_AdasSts: for canceling stock ACC
   // 0x120 = ACM_lkaHbaCmd, 0x321 = SCCM_WheelTouch, 0x162 = VDM_AdasSts
-  static const CanMsg RIVIAN_TX_MSGS[] = {{0x110, 0, 8, .check_relay = true}, {0x321, 2, 7, .check_relay = true}, {0x162, 2, 8, .check_relay = true}};
+  static const CanMsg RIVIAN_TX_MSGS[] = {{0x110, 0, 8, .check_relay = true}, {0x100, 0, 8, .check_relay = true}, {0x321, 2, 7, .check_relay = true}, {0x162, 2, 8, .check_relay = true}};
   // 0x160 = ACM_longitudinalRequest
-  static const CanMsg RIVIAN_LONG_TX_MSGS[] = {{0x110, 0, 8, .check_relay = true}, {0x321, 2, 7, .check_relay = true}, {0x160, 0, 5, .check_relay = true}};
+  static const CanMsg RIVIAN_LONG_TX_MSGS[] = {{0x110, 0, 8, .check_relay = true}, {0x100, 0, 8, .check_relay = true}, {0x321, 2, 7, .check_relay = true}, {0x160, 0, 5, .check_relay = true}};
 
   static RxCheck rivian_rx_checks[] = {
     {.msg = {{0x208, 0, 8, .frequency = 50U, .max_counter = 14U}, { 0 }, { 0 }}},                                                             // ESP_Status (speed)

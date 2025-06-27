@@ -124,11 +124,15 @@ class CarControllerParams:
   STEER_DRIVER_FACTOR = 100
 
   ANGLE_LIMITS: AngleSteeringLimits = AngleSteeringLimits(
-    # When output steering Angle not within range -1311 and 1310,
-    #   CANPacker packs wrong angle output to be decoded by panda
-    600,  # deg, reasonable limit
-    ([0., 5., 15.], [5., .8, .15]),
-    ([0., 5., 15.], [5., 3.5, 0.4]),
+    # EPS ignores commands above this angle and causes PCS to fault
+    94.9461,  # deg
+    # Assuming a steering ratio of 13.7:
+    # Limit to ~2.0 m/s^3 up (7.5 deg/s), ~3.5 m/s^3 down (13 deg/s) at 75 mph
+    # Worst case, the low speed limits will allow ~4.0 m/s^3 up (15 deg/s) and ~4.9 m/s^3 down (18 deg/s) at 75 mph,
+    # however the EPS has its own internal limits at all speeds which are less than that:
+    # Observed internal torque rate limit on TSS 2.5 Camry and RAV4 is ~1500 units/sec up and down when using LTA
+    ([5, 25], [0.3, 0.15]),
+    ([5, 25], [0.36, 0.26]),
   )
 
   ACCEL_MIN = -3.5  # m/s^2

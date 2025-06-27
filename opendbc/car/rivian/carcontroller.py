@@ -2,7 +2,7 @@ import numpy as np
 from opendbc.can.packer import CANPacker
 from opendbc.car import Bus, apply_std_steer_angle_limits
 from opendbc.car.interfaces import CarControllerBase
-from opendbc.car.rivian.riviancan import create_angle_steering, create_longitudinal, create_wheel_touch, create_adas_status
+from opendbc.car.rivian.riviancan import create_angle_steering, create_acm_status, create_longitudinal, create_wheel_touch, create_adas_status
 from opendbc.car.rivian.values import CarControllerParams
 
 
@@ -22,6 +22,7 @@ class CarController(CarControllerBase):
                                                          CS.out.steeringAngleDeg, CC.latActive, CarControllerParams.ANGLE_LIMITS)
 
     can_sends.append(create_angle_steering(self.packer, self.frame, self.apply_angle_last, CC.latActive))
+    can_sends.append(create_acm_status(self.packer, self.frame, CC.enabled))
 
     if self.frame % 5 == 0:
       can_sends.append(create_wheel_touch(self.packer, CS.sccm_wheel_touch, CC.enabled))

@@ -11,9 +11,21 @@ def checksum(data, poly, xor_output):
   return crc ^ xor_output
 
 
+def create_acm_status(packer, frame, active):
+  values = {
+    "ACM_Status_Counter": frame % 15,
+    "ACM_FeatureStatus": 2 if active else 0,
+    "ACM_FaultStatus": 0,
+    "ACM_Unkown2": 0
+  }
+
+  data = packer.make_can_msg("ACM_Status", 0, values)[1]
+  values["ACM_Status_Checksum"] = checksum(data[1:], 0x1D, 0x5F)
+  return packer.make_can_msg("ACM_Status", 0, values)
+
 def create_angle_steering(packer, frame, angle, active):
   values = {
-    "ACM_SteeringControl_Counter": frame % 14,
+    "ACM_SteeringControl_Counter": frame % 15,
     "ACM_SteeringAngleRequest": angle,
     "ACM_EacEnabled": active,
     "ACM_HapticRequired": 0

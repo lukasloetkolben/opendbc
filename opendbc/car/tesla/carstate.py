@@ -65,22 +65,13 @@ class CarState(CarStateBase):
     ret.steerFaultPermanent = eac_status == "EAC_FAULT"
     ret.steerFaultTemporary = eac_status == "EAC_INHIBITED"
 
-    # FSD disengages using union of handsOnLevel (slow overrides) and high angle rate faults (fast overrides, high speed)
-    # TODO: implement in safety
-    eac_error_code = self.can_defines[f"EPAS_sysStatus"][f"EPAS_eacErrorCode"].get(int(epas_status[f"EPAS_eacErrorCode"]), None)
-    ret.steeringDisengage = self.hands_on_level >= 3 or (eac_status == "EAC_INHIBITED" and
-                                                         eac_error_code == "EAC_ERROR_HIGH_ANGLE_RATE_SAFETY")
-
     # Cruise state
     di_state = cp_chassis.vl["DI_state"]
 
     cruise_state = self.can_defines["DI_state"]["DI_cruiseState"].get(int(di_state["DI_cruiseState"]), None)
     speed_units = self.can_defines["DI_state"]["DI_speedUnits"].get(int(di_state["DI_speedUnits"]), None)
 
-    cruise_enabled = cruise_state in ("ENABLED", "STANDSTILL", "OVERRIDE", "PRE_FAULT", "PRE_CANCEL")
-
-    # Match panda safety cruise engaged logic
-    ret.cruiseState.enabled = cruise_enabled
+    ret.cruiseState.enabled = cruise_state in ("ENABLED", "STANDSTILL", "OVERRIDE", "PRE_FAULT", "PRE_CANCEL")
     if speed_units == "KPH":
       ret.cruiseState.speed = max(di_state["DI_digitalSpeed"] * CV.KPH_TO_MS, 1e-3)
     elif speed_units == "MPH":

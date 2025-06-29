@@ -18,12 +18,12 @@ class TeslaCAN:
     ret += sum(dat)
     return ret & 0xFF
 
-  def create_steering_control(self, counter, angle, enabled):
+  def create_steering_control(self, angle, enabled, counter):
     values = {
       "DAS_steeringAngleRequest": -angle,
       "DAS_steeringHapticRequest": 0,
       "DAS_steeringControlType": 1 if enabled else 0,
-      "DAS_steeringControlCounter": counter
+      "DAS_steeringControlCounter": counter,
     }
 
     data = self.packers[CANBUS.party].make_can_msg("DAS_steeringControl", CANBUS.party, values)[1]

@@ -33,7 +33,7 @@ class CarInterface(CarInterfaceBase):
 
     ret.alphaLongitudinalAvailable = True
     ret.openpilotLongitudinalControl = True
-    ret.safetyConfigs[1].safetyParam |= TeslaSafetyFlags.LONG_CONTROL.value
+    ret.safetyConfigs[0].safetyParam |= TeslaSafetyFlags.LONG_CONTROL.value
 
     ret.vEgoStopping = 0.1
     ret.vEgoStarting = 0.1

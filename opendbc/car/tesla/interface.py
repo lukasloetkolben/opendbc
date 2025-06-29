@@ -31,12 +31,13 @@ class CarInterface(CarInterfaceBase):
     ret.steerControlType = structs.CarParams.SteerControlType.angle
     ret.radarUnavailable = False
 
-    ret.alphaLongitudinalAvailable = True
-    ret.openpilotLongitudinalControl = True
-    ret.safetyConfigs[1].safetyParam |= TeslaSafetyFlags.LONG_CONTROL.value
+    ret.experimentalLongitudinalAvailable = True
+    if False and alpha_long:
+      ret.openpilotLongitudinalControl = True
+      ret.safetyConfigs[0].safetyParam |= TeslaSafetyFlags.LONG_CONTROL.value
 
-    ret.vEgoStopping = 0.1
-    ret.vEgoStarting = 0.1
-    ret.stoppingDecelRate = 0.3
+      ret.vEgoStopping = 0.1
+      ret.vEgoStarting = 0.1
+      ret.stoppingDecelRate = 0.3
 
     return ret

@@ -97,6 +97,13 @@ static void rivian_rx_hook(const CANPacket_t *to_push) {
       update_sample(&torque_driver, torque_driver_new);
     }
 
+    // Steering angle: (0.1 * val) - 819.2 in deg.
+    if (addr == 0x390) {
+      // Store it 1/10 deg to match steering request
+      const int angle_meas_new = ((GET_BYTE(to_push, 5) << 6) | (GET_BYTE(to_push, 6) >> 2)) - 8192U;
+      update_sample(&angle_meas, angle_meas_new);
+    }
+
     // Brake pressed
     if (addr == 0x38f) {
       brake_pressed = GET_BIT(to_push, 23U);
@@ -117,6 +124,7 @@ static bool rivian_tx_hook(const CANPacket_t *to_send) {
     .max_angle = 3600,
     .angle_deg_to_can = 10,
     .frequency = 100U,
+    .max_angle_error = 100,
     .angle_rate_up_lookup = {
       {5., 25., 25.},
       {0.3, 0.15, 0.15}
@@ -173,6 +181,7 @@ static safety_config rivian_init(uint16_t param) {
     {.msg = {{0x208, 0, 8, .frequency = 50U, .max_counter = 14U}, { 0 }, { 0 }}},                                                             // ESP_Status (speed)
     {.msg = {{0x150, 0, 7, .frequency = 50U, .max_counter = 14U}, { 0 }, { 0 }}},                                                             // VDM_PropStatus (gas pedal & 2nd speed)
     {.msg = {{0x380, 0, 5, .frequency = 100U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},  // EPAS_SystemStatus (driver torque)
+    {.msg = {{0x390, 0, 7, .frequency = 100U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},  // EPAS_AdasStatus (steering angle)
     {.msg = {{0x38f, 0, 6, .frequency = 50U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},   // iBESP2 (brakes)
     {.msg = {{0x100, 2, 8, .frequency = 100U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},  // ACM_Status (cruise state)
   };

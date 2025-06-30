@@ -4,7 +4,6 @@
 
 // TODO merge with non-Raven
 
-static bool tesla_longitudinal = false;
 static bool tesla_powertrain = false;  // Are we the second panda intercepting the powertrain bus?
 static bool tesla_stock_aeb = false;
 
@@ -12,13 +11,11 @@ static void tesla_rx_hook(const CANPacket_t *to_push) {
   int bus = GET_BUS(to_push);
   int addr = GET_ADDR(to_push);
 
-  if (!tesla_powertrain) {
-    if((addr == 0x370) && (bus == 0)) {
-      // Steering angle: (0.1 * val) - 819.2 in deg.
-      // Store it 1/10 deg to match steering request
-      int angle_meas_new = (((GET_BYTE(to_push, 4) & 0x3FU) << 8) | GET_BYTE(to_push, 5)) - 8192U;
-      update_sample(&angle_meas, angle_meas_new);
-    }
+  if(!tesla_powertrain && (bus == 0) && (addr == 0x370)) {
+    // Steering angle: (0.1 * val) - 819.2 in deg.
+    // Store it 1/10 deg to match steering request
+    int angle_meas_new = (((GET_BYTE(to_push, 4) & 0x3FU) << 8) | GET_BYTE(to_push, 5)) - 8192U;
+    update_sample(&angle_meas, angle_meas_new);
   }
 
   if ((tesla_powertrain && (bus == 0) && (addr == 0x116)) ||
@@ -26,13 +23,12 @@ static void tesla_rx_hook(const CANPacket_t *to_push) {
     // DI_torque2: DI_vehicleSpeed
     // Vehicle speed: ((0.05 * val) - 25) * MPH_TO_MPS
     float speed = (((((GET_BYTE(to_push, 3) & 0x0FU) << 8) | (GET_BYTE(to_push, 2))) * 0.05) - 25) * 0.447;
-    vehicle_moving = ABS(speed) > 0.1;
     UPDATE_VEHICLE_SPEED(speed);
   }
 
   if ((tesla_powertrain && (bus == 0) && (addr == 0x106)) ||
      (!tesla_powertrain && (bus == 1) && (addr == 0x108))) {
-    gas_pressed = (GET_BYTE(to_push, 6) != 0U);
+    gas_pressed = GET_BYTE(to_push, 6) != 0U;
   }
 
   if ((tesla_powertrain && (bus == 0) && (addr == 0x1f8)) ||
@@ -49,11 +45,13 @@ static void tesla_rx_hook(const CANPacket_t *to_push) {
                           (cruise_state == 4) ||  // OVERRIDE
                           (cruise_state == 6) ||  // PRE_FAULT
                           (cruise_state == 7);    // PRE_CANCEL
+
+    vehicle_moving = cruise_state != 3; // STANDSTILL
     pcm_cruise_check(cruise_engaged);
   }
 
   if (bus == 2) {
-    if (tesla_powertrain && tesla_longitudinal && (addr == 0x2bf)) {
+    if (tesla_powertrain && (addr == 0x2bf)) {
       // "AEB_ACTIVE"
       tesla_stock_aeb = ((GET_BYTE(to_push, 2) & 0x03U) == 1U);
     }
@@ -109,34 +107,20 @@ static bool tesla_tx_hook(const CANPacket_t *to_send) {
 
     int raw_accel_max = ((GET_BYTE(to_send, 6) & 0x1FU) << 4) | (GET_BYTE(to_send, 5) >> 4);
     int raw_accel_min = ((GET_BYTE(to_send, 5) & 0x0FU) << 5) | (GET_BYTE(to_send, 4) >> 3);
-    int acc_state = GET_BYTE(to_send, 1) >> 4;
 
-    if (tesla_longitudinal) {
-      // Don't send messages when the stock AEB system is active
-      if (tesla_stock_aeb) {
-        violation = true;
-      }
-
-      // Prevent both acceleration from being negative, as this could cause the car to reverse after coming to standstill
-      if ((raw_accel_max < TESLA_LONG_LIMITS.inactive_accel) && (raw_accel_min < TESLA_LONG_LIMITS.inactive_accel)) {
-        violation = true;
-      }
-
-      // Don't allow any acceleration limits above the safety limits
-      violation |= longitudinal_accel_checks(raw_accel_max, TESLA_LONG_LIMITS);
-      violation |= longitudinal_accel_checks(raw_accel_min, TESLA_LONG_LIMITS);
-    } else {
-      // does allowing cancel here disrupt stock AEB? TODO: find out and add safety or remove comment
-      // Can only send cancel longitudinal messages when not controlling longitudinal
-      if (acc_state != 13) {  // ACC_CANCEL_GENERIC_SILENT
-        violation = true;
-      }
-
-      // No actuation is allowed when not controlling longitudinal
-      if ((raw_accel_max != TESLA_LONG_LIMITS.inactive_accel) || (raw_accel_min != TESLA_LONG_LIMITS.inactive_accel)) {
-        violation = true;
-      }
+    // Don't send messages when the stock AEB system is active
+    if (tesla_stock_aeb) {
+      violation = true;
     }
+
+    // Prevent both acceleration from being negative, as this could cause the car to reverse after coming to standstill
+    if ((raw_accel_max < TESLA_LONG_LIMITS.inactive_accel) && (raw_accel_min < TESLA_LONG_LIMITS.inactive_accel)) {
+      violation = true;
+    }
+
+    // Don't allow any acceleration limits above the safety limits
+    violation |= longitudinal_accel_checks(raw_accel_max, TESLA_LONG_LIMITS);
+    violation |= longitudinal_accel_checks(raw_accel_min, TESLA_LONG_LIMITS);
   }
 
   if (violation) {
@@ -151,7 +135,7 @@ static bool tesla_fwd_hook(int bus_num, int addr) {
 
   if (bus_num == 2) {
     // DAS_control
-    if (tesla_powertrain && tesla_longitudinal && (addr == 0x2bf) && !tesla_stock_aeb) {
+    if (tesla_powertrain && (addr == 0x2bf) && !tesla_stock_aeb) {
       block_msg = true;
     }
   }
@@ -169,9 +153,7 @@ static safety_config tesla_init(uint16_t param) {
     {0x2bf, 0, 8, .check_relay = true, .disable_static_blocking = true},  // DAS_control
   };
 
-  const int TESLA_FLAG_LONGITUDINAL_CONTROL = 1;
-  const int TESLA_FLAG_POWERTRAIN = 2;
-  tesla_longitudinal = GET_FLAG(param, TESLA_FLAG_LONGITUDINAL_CONTROL);
+  const int TESLA_FLAG_POWERTRAIN = 1;
   tesla_powertrain = GET_FLAG(param, TESLA_FLAG_POWERTRAIN);
 
   tesla_stock_aeb = false;

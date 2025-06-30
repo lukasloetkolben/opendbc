@@ -46,7 +46,7 @@ class CarState(CarStateBase):
     # Gas pedal
     pedal_status = cp_pt.vl["DI_torque1"]["DI_pedalPos"]
     ret.gas = pedal_status / 100.0
-    ret.gasPressed = pedal_status > 0
+    ret.gasPressed = (pedal_status > 0) or (cp_chassis.vl["DI_torque1"]["DI_pedalPos"] > 0) # cp_pt is ~1 Frame behind cp_chassis
 
     # Brake pedal
     ret.brake = 0
@@ -120,6 +120,7 @@ class CarState(CarStateBase):
     ]
 
     chassis_messages = [
+      ("DI_torque1", 100),
       ("DI_torque2", 100),
       ("DI_state", 10),
       ("GTW_carState", 10),

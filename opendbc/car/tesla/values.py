@@ -138,8 +138,7 @@ class CarControllerParams:
 
 
 class TeslaSafetyFlags(IntFlag):
-  LONG_CONTROL = 1
-  POWERTRAIN = 2
+  POWERTRAIN = 1
 
 class TeslaFlags(IntFlag):
   LONG_CONTROL = 1

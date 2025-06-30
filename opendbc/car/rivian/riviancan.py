@@ -14,7 +14,7 @@ def checksum(data, poly, xor_output):
 def create_acm_status(packer, frame, active):
   values = {
     "ACM_Status_Counter": frame % 15,
-    "ACM_FeatureStatus": 4 if active else 0,
+    "ACM_FeatureStatus": 3 if active else 0,
     "ACM_FaultStatus": 0,
     "ACM_Unkown2": 0
   }

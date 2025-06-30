@@ -35,31 +35,36 @@ def create_angle_steering(packer, frame, angle, active):
   values["ACM_SteeringControl_Checksum"] = checksum(data[1:], 0x1D, 0x41)
   return packer.make_can_msg("ACM_SteeringControl", 0, values)
 
-def create_lka_steering(packer, frame, acm_lka_hba_cmd, apply_torque, enabled, active):
+def create_lka_steering(packer, frame, acm_lka_hba_cmd, active):
   # forward auto high beam and speed limit status and nothing else
   values = {s: acm_lka_hba_cmd[s] for s in (
-    "ACM_hbaSysState",
-    "ACM_hbaLamp",
-    "ACM_hbaOnOffState",
-    "ACM_slifOnOffState",
+    "ACM_hbaSysState", # 1
+    "ACM_hbaLamp", # 1
+    "ACM_hbaOnOffState", # 1
+    "ACM_slifOnOffState", #1
   )}
 
   values |= {
     "ACM_lkaHbaCmd_Counter": frame % 15,
-    "ACM_lkaStrToqReq": apply_torque,
-    "ACM_lkaActToi": active,
+    "ACM_lkaStrToqReq" : 0,
+    "ACM_lkaActToi": 0,
 
-    "ACM_lkaLaneRecogState": 3 if enabled else 0,
-    "ACM_lkaSymbolState": 3 if enabled else 0,
+    "ACM_lkaLaneRecogState": 3 if active else 0,
+    "ACM_lkaSymbolState": 2 if active else 0,
 
     # static values
+    "ACM_ldwLHWarning": 0,
+    "ACM_HapticRequest": 0,
+    "ACM_lkaToiFlt": 0,
     "ACM_lkaElkRequest": 0,
     "ACM_ldwlkaOnOffState": 2,  # 2=LKAS+LDW on
     "ACM_elkOnOffState": 1,  # 1=LKAS on
     # TODO: what are these used for?
-    "ACM_ldwWarnTypeState": 2,  # always 2
-    "ACM_ldwWarnTimingState": 1,  # always 1
-    #"ACM_lkaHandsoffDisplayWarning": 1,  # TODO: we can send this when openpilot wants you to pay attention
+    "ACM_ldwWarnTypeState": 1,
+    "ACM_ldwWarnTimingState": 2,  # always 1
+    "ACM_lkaHandsoffSoundWarning": 0,
+    "ACM_lkaHandsoffDisplayWarning": 0,  # TODO: we can send this when openpilot wants you to pay attention
+    "ACM_ldwRHWarning": 0,
   }
 
   data = packer.make_can_msg("ACM_lkaHbaCmd", 0, values)[1]

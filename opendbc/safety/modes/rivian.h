@@ -124,7 +124,7 @@ static bool rivian_tx_hook(const CANPacket_t *to_send) {
     .max_angle = 3600,
     .angle_deg_to_can = 10,
     .frequency = 100U,
-    .max_angle_error = 100,
+    .inactive_angle_is_zero = true,
     .angle_rate_up_lookup = {
       {5., 25., 25.},
       {0.3, 0.15, 0.15}

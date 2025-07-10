@@ -1,7 +1,7 @@
 from opendbc.can.parser import CANParser
 from opendbc.car import Bus, structs
 from opendbc.car.interfaces import RadarInterfaceBase
-from opendbc.car.tesla.values import DBC, CAR
+from opendbc.car.tesla.values import DBC, CAR, CANBUS
 
 class RadarInterface(RadarInterfaceBase):
   def __init__(self, CP):
@@ -21,7 +21,7 @@ class RadarInterface(RadarInterfaceBase):
         (f'RadarPoint{i}_B', 16),
       ])
 
-    self.rcp = CANParser(DBC[CP.carFingerprint][Bus.radar], messages, 1)
+    self.rcp = CANParser(DBC[CP.carFingerprint][Bus.radar], messages, CANBUS.radar)
     self.updated_messages = set()
     self.track_id = 0
 

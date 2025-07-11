@@ -179,8 +179,8 @@ class CarState(CarStateBase):
                                                          eac_error_code == "EAC_ERROR_HIGH_ANGLE_RATE_SAFETY")
 
     # Cruise state
-    cruise_state = self.can_defines["DI_state"]["DI_cruiseState"].get(int(cp_chassis.vl["DI_state"]["DI_cruiseState"]), None)
-    speed_units = self.can_defines["DI_state"]["DI_speedUnits"].get(int(cp_chassis.vl["DI_state"]["DI_speedUnits"]), None)
+    cruise_state = self.can_defines["DI_state"]["DI_cruiseState"].get(int(cp_pt.vl["DI_state"]["DI_cruiseState"]), None)
+    speed_units = self.can_defines["DI_state"]["DI_speedUnits"].get(int(cp_pt.vl["DI_state"]["DI_speedUnits"]), None)
 
     cruise_enabled = cruise_state in ("ENABLED", "STANDSTILL", "OVERRIDE", "PRE_FAULT", "PRE_CANCEL")
 

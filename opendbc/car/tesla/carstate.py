@@ -179,17 +179,17 @@ class CarState(CarStateBase):
                                                          eac_error_code == "EAC_ERROR_HIGH_ANGLE_RATE_SAFETY")
 
     # Cruise state
-    cruise_state = self.can_defines["DI_state"]["DI_cruiseState"].get(int(cp_pt.vl["DI_state"]["DI_cruiseState"]), None)
-    speed_units = self.can_defines["DI_state"]["DI_speedUnits"].get(int(cp_pt.vl["DI_state"]["DI_speedUnits"]), None)
+    cruise_state = self.can_defines["DI_state"]["DI_cruiseState"].get(int(cp_chassis.vl["DI_state"]["DI_cruiseState"]), None)
+    speed_units = self.can_defines["DI_state"]["DI_speedUnits"].get(int(cp_chassis.vl["DI_state"]["DI_speedUnits"]), None)
 
     cruise_enabled = cruise_state in ("ENABLED", "STANDSTILL", "OVERRIDE", "PRE_FAULT", "PRE_CANCEL")
 
     # Match panda safety cruise engaged logic
     ret.cruiseState.enabled = cruise_enabled and not self.autopark
     if speed_units == "KPH":
-      ret.cruiseState.speed = max(cp_pt.vl["DI_state"]["DI_digitalSpeed"] * CV.KPH_TO_MS, 1e-3)
+      ret.cruiseState.speed = max(cp_chassis.vl["DI_state"]["DI_digitalSpeed"] * CV.KPH_TO_MS, 1e-3)
     elif speed_units == "MPH":
-      ret.cruiseState.speed = max(cp_pt.vl["DI_state"]["DI_digitalSpeed"] * CV.MPH_TO_MS, 1e-3)
+      ret.cruiseState.speed = max(cp_chassis.vl["DI_state"]["DI_digitalSpeed"] * CV.MPH_TO_MS, 1e-3)
     ret.cruiseState.available = cruise_state == "STANDBY" or ret.cruiseState.enabled
     ret.cruiseState.standstill = False  # This needs to be false, since we can resume from stop without sending anything special
     ret.standstill = cruise_state == "STANDSTILL"
@@ -271,7 +271,6 @@ class CarState(CarStateBase):
 
     pt_messages = [
       ("DI_torque1", 100),
-      ("DI_state", 10),
     ]
 
     ap_pt_messages = [
@@ -283,6 +282,7 @@ class CarState(CarStateBase):
       # ("DriverSeat", 20),
       ("SDM1", 10),
       ("DI_torque2", 100),
+      ("DI_state", 10),
     ]
 
     parsers = {

@@ -37,6 +37,11 @@ FW_VERSIONS = {
       b'TeMYG4_SingleECU_0.0.0 (33),Y4S002.26',
     ],
   },
+  CAR.TESLA_MODEL_Y_JUNIPER: {
+    (Ecu.eps, 0x730, None): [
+      b'\x01\x0113\x04\x00\x01\x00\x00\x00\t\x00\x00\x00\x01\x00\x00\xff\xff'
+    ],
+  },
   CAR.TESLA_MODEL_X: {
     (Ecu.eps, 0x730, None): [
       b'TeM3_SP_XP002p2_0.0.0 (23),XPR003.6.0',

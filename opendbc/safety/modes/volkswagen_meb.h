@@ -31,16 +31,16 @@ static safety_config volkswagen_meb_init(uint16_t param) {
   return BUILD_SAFETY_CFG(volkswagen_meb_rx_checks, VOLKSWAGEN_MEB_STOCK_TX_MSGS);
 }
 
-static void volkswagen_meb_rx_hook(const CANPacket_t *to_push) {
-  if (GET_BUS(to_push) == 0U) {
-    int addr = GET_ADDR(to_push);
+static void volkswagen_meb_rx_hook(const CANPacket_t *msg) {
+  if (GET_BUS(msg) == 0U) {
+    int addr = GET_ADDR(msg);
 
     // Update in-motion state by sampling wheel speeds
     if (addr == MSG_ESC_51) {
-      uint32_t fl = GET_BYTES(to_push, 8, 2);
-      uint32_t fr = GET_BYTES(to_push, 10, 2);
-      uint32_t rl = GET_BYTES(to_push, 12, 2);
-      uint32_t rr = GET_BYTES(to_push, 14, 2);
+      uint32_t fl = GET_BYTES(msg, 8, 2);
+      uint32_t fr = GET_BYTES(msg, 10, 2);
+      uint32_t rl = GET_BYTES(msg, 12, 2);
+      uint32_t rr = GET_BYTES(msg, 14, 2);
 
       vehicle_moving = (fl + fr + rl + rr) > 0U;
 
@@ -51,8 +51,8 @@ static void volkswagen_meb_rx_hook(const CANPacket_t *to_push) {
     // Signal: LH_EPS_03.EPS_Lenkmoment (absolute torque)
     // Signal: LH_EPS_03.EPS_VZ_Lenkmoment (direction)
     if (addr == MSG_LH_EPS_03) {
-      int torque_driver_new = GET_BYTES(to_push, 5, 2) & 0x1FFFU;
-      int sign = (GET_BYTE(to_push, 6) & 0x80U) >> 7;
+      int torque_driver_new = GET_BYTES(msg, 5, 2) & 0x1FFFU;
+      int sign = (msg->data[6] & 0x80U) >> 7;
       if (sign == 1) {
         torque_driver_new *= -1;
       }
@@ -60,9 +60,9 @@ static void volkswagen_meb_rx_hook(const CANPacket_t *to_push) {
     }
 
     if (addr == MSG_QFK_01) {
-      int current_curvature = GET_BYTES(to_push, 4, 2) & 0x7FFFU;
+      int current_curvature = GET_BYTES(msg, 4, 2) & 0x7FFFU;
 
-      bool current_curvature_sign = GET_BIT(to_push, 55U);
+      bool current_curvature_sign = GET_BIT(msg, 55U);
       if (current_curvature_sign) {
         current_curvature *= -1;
       }
@@ -74,7 +74,7 @@ static void volkswagen_meb_rx_hook(const CANPacket_t *to_push) {
     if (addr == MSG_Motor_51) {
       // When using stock ACC, enter controls on rising edge of stock ACC engage, exit on disengage
       // Always exit controls on main switch off
-      int acc_status = (GET_BYTE(to_push, 11U) & 0x07U);
+      int acc_status = (msg->data[11] & 0x07U);
       bool cruise_engaged = (acc_status == 3) || (acc_status == 4) || (acc_status == 5);
       acc_main_on = cruise_engaged || (acc_status == 2);
 
@@ -87,12 +87,12 @@ static void volkswagen_meb_rx_hook(const CANPacket_t *to_push) {
 
     // update brake pedal
     if (addr == MSG_MOTOR_14) {
-      brake_pressed = GET_BIT(to_push, 28U);
+      brake_pressed = GET_BIT(msg, 28U);
     }
 
     // update accel pedal
     if (addr == MSG_Motor_54) {
-      int accel_pedal_value = GET_BYTE(to_push, 21U) - 37U;
+      int accel_pedal_value = msg->data[21] - 37U;
       gas_pressed = accel_pedal_value != 0;
     }
   }
@@ -126,21 +126,21 @@ static bool volkswagen_curvature_cmd_checks(int steer_power, int steer_curvature
   return violation;
 }
 
-static bool volkswagen_meb_tx_hook(const CANPacket_t *to_send) {
-  int addr = GET_ADDR(to_send);
+static bool volkswagen_meb_tx_hook(const CANPacket_t *msg) {
+  int addr = GET_ADDR(msg);
   bool tx = true;
 
   // Safety check for HCA_03 Heading Control Assist curvature
   if (addr == MSG_HCA_03) {
-    int steer_curvature = GET_BYTES(to_send, 3, 2) & 0x7FFFU;
+    int steer_curvature = GET_BYTES(msg, 3, 2) & 0x7FFFU;
 
-    bool sign = GET_BIT(to_send, 39U);
+    bool sign = GET_BIT(msg, 39U);
     if (!sign) {
       steer_curvature *= -1;
     }
 
-    bool steer_req = ((GET_BYTE(to_send, 1) >> 4) & 0x7U) == 4U;
-    int steer_power = GET_BYTE(to_send, 2U) * 0.4;
+    bool steer_req = ((msg->data[1] >> 4) & 0x7U) == 4U;
+    int steer_power = GET_BYTE(msg, 2U) * 0.4;
 
     if (volkswagen_curvature_cmd_checks(steer_power, steer_curvature, steer_req)) {
       // tx = false;
@@ -155,7 +155,7 @@ static bool volkswagen_meb_tx_hook(const CANPacket_t *to_send) {
   // This avoids unintended engagements while still allowing resume spam
   if ((addr == MSG_GRA_ACC_01) && !controls_allowed) {
     // disallow resume and set: bits 16 and 19
-    if ((GET_BYTE(to_send, 2) & 0x9U) != 0U) {
+    if ((msg->data[2] & 0x9U) != 0U) {
       tx = false;
     }
   }

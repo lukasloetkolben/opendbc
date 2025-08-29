@@ -32,11 +32,10 @@ static safety_config volkswagen_meb_init(uint16_t param) {
 }
 
 static void volkswagen_meb_rx_hook(const CANPacket_t *msg) {
-  if (GET_BUS(msg) == 0U) {
-    int addr = GET_ADDR(msg);
+  if (msg->bus == 0U) {
 
     // Update in-motion state by sampling wheel speeds
-    if (addr == MSG_ESC_51) {
+    if (msg->addr == MSG_ESC_51) {
       uint32_t fl = GET_BYTES(msg, 8, 2);
       uint32_t fr = GET_BYTES(msg, 10, 2);
       uint32_t rl = GET_BYTES(msg, 12, 2);
@@ -50,7 +49,7 @@ static void volkswagen_meb_rx_hook(const CANPacket_t *msg) {
     // Update driver input torque samples
     // Signal: LH_EPS_03.EPS_Lenkmoment (absolute torque)
     // Signal: LH_EPS_03.EPS_VZ_Lenkmoment (direction)
-    if (addr == MSG_LH_EPS_03) {
+    if (msg->addr == MSG_LH_EPS_03) {
       int torque_driver_new = GET_BYTES(msg, 5, 2) & 0x1FFFU;
       int sign = (msg->data[6] & 0x80U) >> 7;
       if (sign == 1) {
@@ -59,7 +58,7 @@ static void volkswagen_meb_rx_hook(const CANPacket_t *msg) {
       update_sample(&torque_driver, torque_driver_new);
     }
 
-    if (addr == MSG_QFK_01) {
+    if (msg->addr == MSG_QFK_01) {
       int current_curvature = GET_BYTES(msg, 4, 2) & 0x7FFFU;
 
       bool current_curvature_sign = GET_BIT(msg, 55U);
@@ -71,7 +70,7 @@ static void volkswagen_meb_rx_hook(const CANPacket_t *msg) {
     }
 
     // Update cruise state
-    if (addr == MSG_Motor_51) {
+    if (msg->addr == MSG_Motor_51) {
       // When using stock ACC, enter controls on rising edge of stock ACC engage, exit on disengage
       // Always exit controls on main switch off
       int acc_status = (msg->data[11] & 0x07U);
@@ -86,12 +85,12 @@ static void volkswagen_meb_rx_hook(const CANPacket_t *msg) {
     }
 
     // update brake pedal
-    if (addr == MSG_MOTOR_14) {
+    if (msg->addr == MSG_MOTOR_14) {
       brake_pressed = GET_BIT(msg, 28U);
     }
 
     // update accel pedal
-    if (addr == MSG_Motor_54) {
+    if (msg->addr == MSG_Motor_54) {
       int accel_pedal_value = msg->data[21] - 37U;
       gas_pressed = accel_pedal_value != 0;
     }
@@ -127,11 +126,10 @@ static bool volkswagen_curvature_cmd_checks(int steer_power, int steer_curvature
 }
 
 static bool volkswagen_meb_tx_hook(const CANPacket_t *msg) {
-  int addr = GET_ADDR(msg);
   bool tx = true;
 
   // Safety check for HCA_03 Heading Control Assist curvature
-  if (addr == MSG_HCA_03) {
+  if (msg->addr == MSG_HCA_03) {
     int steer_curvature = GET_BYTES(msg, 3, 2) & 0x7FFFU;
 
     bool sign = GET_BIT(msg, 39U);
@@ -140,7 +138,7 @@ static bool volkswagen_meb_tx_hook(const CANPacket_t *msg) {
     }
 
     bool steer_req = ((msg->data[1] >> 4) & 0x7U) == 4U;
-    int steer_power = GET_BYTE(msg, 2U) * 0.4;
+    int steer_power = msg->data[2] * 0.4;
 
     if (volkswagen_curvature_cmd_checks(steer_power, steer_curvature, steer_req)) {
       // tx = false;
@@ -153,7 +151,7 @@ static bool volkswagen_meb_tx_hook(const CANPacket_t *msg) {
 
   // FORCE CANCEL: ensuring that only the cancel button press is sent when controls are off.
   // This avoids unintended engagements while still allowing resume spam
-  if ((addr == MSG_GRA_ACC_01) && !controls_allowed) {
+  if ((msg->addr == MSG_GRA_ACC_01) && !controls_allowed) {
     // disallow resume and set: bits 16 and 19
     if ((msg->data[2] & 0x9U) != 0U) {
       tx = false;

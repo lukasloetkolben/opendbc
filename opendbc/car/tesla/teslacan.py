@@ -75,20 +75,9 @@ class TeslaCAN:
       "Checksum": 0
     }
 
-    data = self.radar_packer.make_can_msg("SpeedInformation", CANBUS.party, values)[1]
+    data = self.radar_packer.make_can_msg("SpeedInformation", 1, values)[1]
     values["Checksum"] = self.checksum(0x50, data[:-1])
     return self.radar_packer.make_can_msg("SpeedInformation", 1, values)
-
-  def create_speed_information2(self, counter, cs):
-    values = {
-      "Speed": cs.vEgo,
-      "Counter": counter % 16,
-      "Checksum": 0
-    }
-
-    data = self.radar_packer.make_can_msg("SpeedInformation2", CANBUS.party, values)[1]
-    values["Checksum"] = self.checksum(0x52, data[:-1])
-    return self.radar_packer.make_can_msg("SpeedInformation2", 1, values)
 
   def create_radar_yaw_rate(self, counter, cs):
       values = {
@@ -102,6 +91,28 @@ class TeslaCAN:
               "Checksum": 0,
       }
 
-      data = self.radar_packer.make_can_msg("YawRateInformation", CANBUS.party, values)[1]
+      data = self.radar_packer.make_can_msg("YawRateInformation", 1, values)[1]
       values["Checksum"] = self.checksum(0x51, data[:-1])
       return self.radar_packer.make_can_msg("YawRateInformation", 1, values)
+
+  def create_speed_information2(self, counter, cs):
+    values = {
+      "Speed": cs.vEgo,
+      "Counter": counter % 16,
+      "Checksum": 0
+    }
+
+    data = self.radar_packer.make_can_msg("SpeedInformation2", 1, values)[1]
+    values["Checksum"] = self.checksum(0x52, data[:-1])
+    return self.radar_packer.make_can_msg("SpeedInformation2", 1, values)
+
+  def create_radar_lateral_information(self, counter, cs):
+      values = {
+              "steeringWheelAngle": cs.steeringAngleDeg,
+              "Counter": counter % 16,
+              "Checksum": 0,
+      }
+
+      data = self.radar_packer.make_can_msg("LateralInformation", 1, values)[1]
+      values["Checksum"] = self.checksum(0x53, data[:-1])
+      return self.radar_packer.make_can_msg("LateralInformation", 1, values)

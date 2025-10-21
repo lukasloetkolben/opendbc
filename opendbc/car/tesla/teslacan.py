@@ -97,7 +97,10 @@ class TeslaCAN:
 
   def create_speed_information2(self, counter, cs):
     values = {
-      "Speed": cs.vEgo,
+      "wheelSpeedFrL": cs.vEgo * 3.6,
+      "wheelSpeedFrR": cs.vEgo * 3.6,
+      "wheelSpeedReL": cs.vEgo * 3.6,
+      "wheelSpeedReR": cs.vEgo * 3.6,
       "Counter": counter % 16,
       "Checksum": 0
     }
@@ -109,6 +112,7 @@ class TeslaCAN:
   def create_radar_lateral_information(self, counter, cs):
       values = {
               "steeringWheelAngle": cs.steeringAngleDeg,
+              "NEW_SIGNAL_2": 0,
               "Counter": counter % 16,
               "Checksum": 0,
       }

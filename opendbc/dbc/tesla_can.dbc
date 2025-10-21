@@ -196,7 +196,7 @@ BO_ 341 ESP_B: 8 ESP
  SG_ ESP_wheelPulseCountReL : 23|8@0+ (1,0) [0|254] "" NEO,EPAS
  SG_ ESP_wheelPulseCountReR : 31|8@0+ (1,0) [0|254] "" NEO,EPAS
  SG_ ESP_BChecksum : 39|8@0+ (1,0) [0|255] "" NEO,EPAS
- SG_ ESP_vehicleSpeed : 47|16@0+ (0.00999999978,0) [0|0] "kph" NEO,EPAS
+ SG_ ESP_vehicleSpeed : 47|16@0+ (0.01,0) [0|0] "kph" NEO,EPAS
  SG_ ESP_vehicleSpeedQF : 57|2@0+ (1,0) [1|2] "" NEO,EPAS
  SG_ ESP_BCounter : 62|4@0+ (1,0) [1|15] "" NEO,EPAS
 

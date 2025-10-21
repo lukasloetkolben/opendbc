@@ -111,8 +111,8 @@ class TeslaCAN:
 
   def create_radar_lateral_information(self, counter, cs):
       values = {
-              "steeringWheelAngle": cs.steeringAngleDeg,
-              "NEW_SIGNAL_2": 0,
+              "steeringWheelAngle": -cs.steeringAngleDeg,
+              "steeringAngleSpeed": -cs.steeringRateDeg,
               "Counter": counter % 16,
               "Checksum": 0,
       }

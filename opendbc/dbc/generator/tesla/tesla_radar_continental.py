@@ -74,8 +74,8 @@ BO_ 82 SpeedInformation2: 8 XXX
    SG_ Checksum : 56|8@1+ (1,0) [0|255] "" XXX
 
 BO_ 83 LateralInformation: 8 XXX
-   SG_ steeringWheelAngle : 0|14@1+ (0.1,-819.2) [0|65535] "" XXX
-   SG_ NEW_SIGNAL_2 : 16|14@1+ (0.01,-81.92) [0|65535] "" XXX
+   SG_ steeringWheelAngle : 0|14@1+ (0.1,-819.2) [0|65535] "deg" XXX
+   SG_ steeringAngleSpeed : 16|14@1+ (0.5,-4096) [0|65535] "deg/s" XXX
    SG_ Counter : 52|4@1+ (1,0) [0|15] "" XXX
    SG_ Checksum : 56|8@1+ (1,0) [0|255] "" XXX
 

@@ -14,6 +14,7 @@ class TeslaCAN:
   def __init__(self, CP, packer, radar_packer):
     self.CP = CP
     self.packer = packer
+    self.yaw_rate_filtered = 0.0
     self.radar_packer = radar_packer
 
   @staticmethod
@@ -83,6 +84,7 @@ class TeslaCAN:
       "Gear": GEAR_MAP[gear],
       "Active": 1,
       "wheelDirectionFrL": direction,
+      "vehicleStopping": 1 if cs.standstill else 0,
       "wheelDirectionFrR": direction,
       "wheelDirectionReL": direction,
       "wheelDirectionReR": direction,
@@ -95,13 +97,16 @@ class TeslaCAN:
     return self.radar_packer.make_can_msg("SpeedInformation", 1, values)
 
   def create_radar_yaw_rate(self, counter, cs):
+      # Low-pass filter yaw rate to avoid noisy LSBs triggering vehDynamicsError
+      # Reference car changes by max ±1 raw count per message (0.0002 deg/s step)
+      alpha = 0.15  # filter coefficient (lower = smoother)
+      self.yaw_rate_filtered += alpha * (cs.yawRate * CV.RAD_TO_DEG - self.yaw_rate_filtered)
+
       values = {
               "Acceleration": cs.aEgo,
-              "YawRate": cs.yawRate * CV.RAD_TO_DEG,
+              "YawRate": self.yaw_rate_filtered,
               "Counter": counter % 16,
-              "UNKOWN": 21,
               "SETME_15": 15,
-              "SETME_6": 6,
               "SETME_3": 3,
               "Checksum": 0,
       }

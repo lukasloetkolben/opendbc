@@ -65,6 +65,16 @@ BO_ 257 RCM_inertial1: 8 CH
  SG_ RCM_yawRate : 0|16@1- (0.0001,0) [0|0] "rad/s" X
  SG_ RCM_yawRateQF : 48|1@1+ (1,0) [0|0] "" X
 
+BO_ 273 RCM_inertial2: 8 CH
+ SG_ RCM_inertial2Checksum : 56|8@1+ (1,0) [0|255] "" X
+ SG_ RCM_inertial2Counter : 52|4@1+ (1,0) [0|15] "" X
+ SG_ RCM_lateralAccel : 16|16@1- (0.00125,0) [-40.9575|40.9575] "m/s^2" X
+ SG_ RCM_lateralAccelQF : 49|1@1+ (1,0) [0|1] "" X
+ SG_ RCM_longitudinalAccel : 0|16@1- (0.00125,0) [-40.9575|40.9575] "m/s^2" X
+ SG_ RCM_longitudinalAccelQF : 48|1@1+ (1,0) [0|1] "" X
+ SG_ RCM_verticalAccel : 32|16@1- (0.00125,0) [-40.9575|40.9575] "m/s^2" X
+ SG_ RCM_verticalAccelQF : 50|1@1+ (1,0) [0|1] "" X
+
 BO_ 264 DI_torque: 8 PARTY
  SG_ DI_axleSpeed : 40|16@1- (0.1,0.0) [-2750|2750] "RPM"  epas3s
  SG_ DI_torqueActual : 27|13@1- (2,0) [-7500|7500] "Nm"  X

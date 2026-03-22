@@ -45,7 +45,7 @@ static uint8_t tesla_get_counter(const CANPacket_t *msg) {
   } else if ((msg->addr == 0x257U) || (msg->addr == 0x118U) || (msg->addr == 0x145U) || (msg->addr == 0x286U) || (msg->addr == 0x311U)) {
     // Signal: DI_speedCounter, DI_systemStatusCounter, ESP_statusCounter, DI_locStatusCounter, UI_warningCounter
     cnt = msg->data[1] & 0x0FU;
-  } else if ((msg->addr == 0x155U) || (msg->addr == 0x50U) || (msg->addr == 0x51U) || (msg->addr == 0x52U) || (msg->addr == 0x53U) ) {
+  } else if (msg->addr == 0x155U) {
     // Signal: ESP_wheelRotationCounter
     cnt = msg->data[6] >> 4;
   } else if (msg->addr == 0x370U) {
@@ -58,7 +58,7 @@ static uint8_t tesla_get_counter(const CANPacket_t *msg) {
 
 static int _tesla_get_checksum_byte(const int addr) {
   int checksum_byte = -1;
-  if ((addr == 0x370) || (addr == 0x2b9) || (addr == 0x155) || (addr == 0x50) || (addr == 0x51) || (addr == 0x52) || (addr == 0x53) ) {
+  if ((addr == 0x370) || (addr == 0x2b9) || (addr == 0x155)) {
     // Signal: EPAS3S_sysStatusChecksum, DAS_controlChecksum, ESP_wheelRotationChecksum
     checksum_byte = 7;
   } else if (addr == 0x488) {

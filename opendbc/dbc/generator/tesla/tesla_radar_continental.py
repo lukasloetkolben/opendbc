@@ -44,22 +44,22 @@ BU_:  Autopilot Radar Diag
 
 BO_ 80 SpeedInformation: 8 XXX
    SG_ Speed : 0|12@1+ (0.02,-11.18) [0|255] "m/s" XXX
-   SG_ Gear : 14|3@0+ (1,0) [0|7] "" XXX
-   SG_ Active : 18|1@0+ (1,0) [0|1] "" XXX
-   SG_ wheelDirectionFrL : 22|2@0+ (1,0) [0|3] "" XXX
-   SG_ wheelDirectionFrR : 25|2@0+ (1,0) [0|3] "" XXX
-   SG_ wheelDirectionReL : 27|2@0+ (1,0) [0|3] "" XXX
-   SG_ wheelDirectionReR : 29|2@0+ (1,0) [0|3] "" XXX
+   SG_ Gear : 12|3@1+ (1,0) [0|7] "" XXX
+   SG_ Active : 18|1@1+ (1,0) [0|1] "" XXX
+   SG_ wheelDirectionFrL : 20|2@1+ (1,0) [0|3] "" XXX
+   SG_ vehicleStopping : 22|2@1+ (1,0) [0|3] "" XXX
+   SG_ wheelDirectionFrR : 24|2@1+ (1,0) [0|3] "" XXX
+   SG_ wheelDirectionReL : 26|2@1+ (1,0) [0|3] "" XXX
+   SG_ wheelDirectionReR : 28|2@1+ (1,0) [0|3] "" XXX
    SG_ Counter : 52|4@1+ (1,0) [0|15] "" XXX
    SG_ Checksum : 56|8@1+ (1,0) [0|255] "" XXX
 
 BO_ 81 YawRateInformation: 8 XXX
    SG_ Acceleration : 0|16@1+ (0.001,-32.766) [-32|32] "m/s^2" XXX
-   SG_ SETME_6 : 18|3@0+ (1,0) [0|7] "" XXX
-   SG_ UNKOWN : 19|5@1+ (1,0) [0|31] "" XXX
-   SG_ YawRate : 24|20@1+ (0.0002,-102.4254) [-327.68|327.66] "deg/s" XXX
+   SG_ Unknown1 : 16|8@1+ (1,0) [0|255] "" XXX
+   SG_ YawRate : 24|20@1+ (0.0002,-102.4254) [-102.43|107.08] "deg/s" XXX
    SG_ SETME_15 : 44|4@1+ (1,0) [0|15] "" XXX
-   SG_ SETME_3 : 51|4@0+ (1,0) [0|15] "" XXX
+   SG_ SETME_3 : 48|4@1+ (1,0) [0|15] "" XXX
    SG_ Counter : 52|4@1+ (1,0) [0|15] "" XXX
    SG_ Checksum : 56|8@1+ (1,0) [0|255] "" XXX
 
@@ -74,6 +74,7 @@ BO_ 82 SpeedInformation2: 8 XXX
 BO_ 83 LateralInformation: 8 XXX
    SG_ steeringWheelAngle : 0|14@1+ (0.1,-819.2) [0|65535] "deg" XXX
    SG_ steeringAngleSpeed : 16|14@1+ (0.5,-4096) [0|65535] "deg/s" XXX
+   SG_ SETME_3 : 30|22@1+ (1,0) [0|4194303] "" XXX
    SG_ Counter : 52|4@1+ (1,0) [0|15] "" XXX
    SG_ Checksum : 56|8@1+ (1,0) [0|255] "" XXX
 
@@ -105,10 +106,11 @@ BO_ 1601 UDS_radcRequest: 8 Diag
 
   parts.append("""
 VAL_ 80 Gear 4 "D" 3 "N" 2 "R" 1 "P" 0 "INVALID";
-VAL_ 80 wheelDirectionFrL 0 "forward" 1 "backward" 2 "standstill" 3 "transition";
-VAL_ 80 wheelDirectionFrR 0 "forward" 1 "backward" 2 "standstill" 3 "transition";
-VAL_ 80 wheelDirectionReL 0 "forward" 1 "backward" 2 "standstill" 3 "transition";
-VAL_ 80 wheelDirectionReR 0 "forward" 1 "backward" 2 "standstill" 3 "transition";
+VAL_ 80 wheelDirectionFrL 0 "forward" 2 "standstill" 3 "starting";
+VAL_ 80 vehicleStopping 0 "MOVING" 1 "STOPPING";
+VAL_ 80 wheelDirectionFrR 0 "forward" 2 "standstill" 3 "starting";
+VAL_ 80 wheelDirectionReL 0 "forward" 2 "standstill" 3 "starting";
+VAL_ 80 wheelDirectionReR 0 "forward" 2 "standstill" 3 "starting";
 VAL_ 1025 lowPowerMode 1 "COMMANDED_LOW_POWER" 0 "DEFAULT_LOW_POWER" 2 "NORMAL_POWER" 3 "SNA";""")
 
   for base_id in list(POINT_RANGE):

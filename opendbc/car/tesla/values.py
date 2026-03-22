@@ -42,7 +42,7 @@ class TeslaCarHW4ModelSXDocs(TeslaCarDocsHW4):
 
 @dataclass
 class TeslaPlatformConfig(PlatformConfig):
-  dbc_dict: DbcDict = field(default_factory=lambda: {Bus.party: 'tesla_model3_party', Bus.adas: 'tesla_model3_vehicle'})
+  dbc_dict: DbcDict = field(default_factory=lambda: {Bus.party: 'tesla_model3_party', Bus.radar: 'tesla_radar_continental_generated', Bus.adas: 'tesla_model3_vehicle'})
 
 
 class CAR(Platforms):

@@ -18,7 +18,7 @@ class CarControllerParams:
   STEER_STEP = 2  # Angle command is sent at 50 Hz
 
   ANGLE_LIMITS: AngleSteeringLimits = AngleSteeringLimits(
-    360,  # deg
+    390,  # deg
     # BYD uses a vehicle model instead, check carcontroller.py for details
     ([], []),
     ([], []),

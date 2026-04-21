@@ -186,6 +186,16 @@ class LongitudinalAccelSafetyTest(SafetyTestBase, abc.ABC):
             should_tx = False
           self.assertEqual(should_tx, self._tx(self._accel_msg(accel)))
 
+  def test_accel_allowed_while_gas_pressed(self):
+    # In-envelope accel must not be blocked by safety while gas is pressed
+    if not self.LONGITUDINAL:
+      raise unittest.SkipTest
+    self._rx(self._user_gas_msg(0))
+    self.safety.set_controls_allowed(True)
+    self._rx(self._user_gas_msg(self.GAS_PRESSED_THRESHOLD + 1))
+    for accel in (self.MIN_ACCEL, 0, self.MAX_ACCEL, self.INACTIVE_ACCEL):
+      self.assertTrue(self._tx(self._accel_msg(round(accel, 2))), f"tx blocked for accel={accel} while gas pressed")
+
 
 class LongitudinalGasBrakeSafetyTest(SafetyTestBase, abc.ABC):
 
@@ -1027,14 +1037,11 @@ class CarSafetyTest(SafetyTest):
     self.assertTrue(self.safety.get_controls_allowed())
 
   def test_no_disengage_on_gas(self):
+    # Gas press must not inhibit lateral or longitudinal at the safety layer
     self._rx(self._user_gas_msg(0))
     self.safety.set_controls_allowed(True)
     self._rx(self._user_gas_msg(self.GAS_PRESSED_THRESHOLD + 1))
-    # Test we allow lateral, but not longitudinal
     self.assertTrue(self.safety.get_controls_allowed())
-    self.assertFalse(self.safety.get_longitudinal_allowed())
-    # Make sure we can re-gain longitudinal actuation
-    self._rx(self._user_gas_msg(0))
     self.assertTrue(self.safety.get_longitudinal_allowed())
 
   def test_prev_user_brake(self, _user_brake_msg=None, get_brake_pressed_prev=None):

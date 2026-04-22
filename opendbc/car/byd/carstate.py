@@ -53,6 +53,10 @@ class CarState(CarStateBase):
     ret.leftBlinker = bool(cp.vl["STALKS"]["LEFT_BLINKER"])
     ret.rightBlinker = bool(cp.vl["STALKS"]["RIGHT_BLINKER"])
 
+    # blind spot monitor
+    ret.leftBlindspot = cp.vl["BSD_RADAR"]["LEFT_APPROACH"] != 0
+    ret.rightBlindspot = cp.vl["BSD_RADAR"]["RIGHT_APPROACH"] != 0
+
     # doors / belt
     ret.doorOpen = any((
       cp.vl["METER_CLUSTER"]["FRONT_LEFT_DOOR"],

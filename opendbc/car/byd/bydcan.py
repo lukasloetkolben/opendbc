@@ -29,17 +29,11 @@ def create_buttons(packer, cancel: bool):
   return packer.make_can_msg("PCM_BUTTONS", 0, values)
 
 
-def create_lkas_hud(packer, lat_active: bool, counter: int):
-  values = {
-    # TODO: test STEER_ACTIVE_1_1 to 3 individual
-    "STEER_ACTIVE_1_1": 1 if lat_active else 0,
-    "STEER_ACTIVE_1_2": 1 if lat_active else 0,
-    "STEER_ACTIVE_1_3": 1 if lat_active else 0,
-    "STEER_ACTIVE_ACTIVE_LOW": 0 if lat_active else 1,
-    "LSS_STATE": 2 if lat_active else 0,
-    "SET_ME_1_2": 1,
-    "SET_ME_X5F": 0x5F,
-    "SET_ME_XFF": 0xFF,
-    "COUNTER": counter,
-  }
+def create_lkas_hud(packer, lat_active: bool, counter: int, stock_lkas_hud: dict):
+  values = {**stock_lkas_hud, "COUNTER": counter, "HANDS_ON_WHEEL_REQ": 0}
+  if lat_active:
+    values["LKS_MODE"] = 2
+    values["LKAS_STATE"] = 2
+    values["LEFT_LANE_STATE"] = 2
+    values["RIGHT_LANE_STATE"] = 2
   return packer.make_can_msg("LKAS_HUD_ADAS", 0, values)

@@ -31,7 +31,7 @@ class CarController(CarControllerBase):
 
       cntr = (self.frame // 2) % 16
       can_sends.append(bydcan.create_steering_control(self.packer, self.apply_angle_last, CC.latActive, cntr))
-      can_sends.append(bydcan.create_lkas_hud(self.packer, CC.latActive, cntr))
+      can_sends.append(bydcan.create_lkas_hud(self.packer, CC.latActive, cntr, CS.lkas_hud))
 
     if CC.cruiseControl.cancel and self.frame % 10 == 0:
       can_sends.append(bydcan.create_buttons(self.packer, cancel=True))

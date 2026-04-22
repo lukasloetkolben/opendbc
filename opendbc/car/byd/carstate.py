@@ -1,3 +1,5 @@
+import copy
+
 from opendbc.car import Bus, structs
 from opendbc.can.parser import CANParser
 from opendbc.car.common.conversions import Conversions as CV
@@ -16,6 +18,10 @@ GEAR_MAP = {
 
 
 class CarState(CarStateBase):
+  def __init__(self, CP):
+    super().__init__(CP)
+    self.lkas_hud = {}
+
   def update(self, can_parsers) -> structs.CarState:
     cp = can_parsers[Bus.pt]
     cp_cam = can_parsers[Bus.cam]
@@ -63,6 +69,9 @@ class CarState(CarStateBase):
     ret.cruiseState.available = acc_state in (2, 3, 5)
     ret.cruiseState.enabled = acc_state in (3, 5)
     ret.cruiseState.standstill = bool(cp_cam.vl["ACC_CMD"]["STANDSTILL_STATE"])
+
+    # forward stock LKAS HUD
+    self.lkas_hud = copy.copy(cp_cam.vl["LKAS_HUD_ADAS"])
 
     return ret
 

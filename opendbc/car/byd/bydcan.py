@@ -33,7 +33,7 @@ def create_lkas_hud(packer, lat_active: bool, counter: int, stock_lkas_hud: dict
   values = {**stock_lkas_hud, "COUNTER": counter, "HANDS_ON_WHEEL_REQ": 0}
   if lat_active:
     values["LKS_MODE"] = 2
-    values["LKAS_STATE"] = 2
-    values["LEFT_LANE_STATE"] = 2
-    values["RIGHT_LANE_STATE"] = 2
+    values["LKAS_STATE"] = 2 # Maybe 0 to turn the lanes green?
+    values["LEFT_LANE_STATE"] = 1
+    values["RIGHT_LANE_STATE"] = 1
   return packer.make_can_msg("LKAS_HUD_ADAS", 0, values)

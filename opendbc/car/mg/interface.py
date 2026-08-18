@@ -15,12 +15,13 @@ class CarInterface(CarInterfaceBase):
   @staticmethod
   def _get_params(ret: structs.CarParams, candidate, fingerprint, car_fw, alpha_long, is_release, docs) -> structs.CarParams:
     ret.brand = "mg"
-    ret.dashcamOnly = True
 
     if candidate == CAR.MG_4_EV:
+      ret.dashcamOnly = False
       # passthrough mode for reverse-engineering: split the camera and car buses
       ret.safetyConfigs = [get_safety_config(structs.CarParams.SafetyModel.allOutput, ALLOUTPUT_PARAM_PASSTHROUGH)]
     else:
+      ret.dashcamOnly = True
       ret.safetyConfigs = [get_safety_config(structs.CarParams.SafetyModel.mg)]
 
     ret.steerActuatorDelay = 0.3

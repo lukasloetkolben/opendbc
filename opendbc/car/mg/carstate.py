@@ -1,7 +1,7 @@
 from opendbc.can.parser import CANParser
 from opendbc.car import Bus, structs
 from opendbc.car.interfaces import CarStateBase
-from opendbc.car.mg.values import DBC
+from opendbc.car.mg.values import DBC, MgFlags
 from opendbc.car.common.conversions import Conversions as CV
 
 GearShifter = structs.CarState.GearShifter
@@ -14,9 +14,19 @@ GEAR_MAP = {
   **{i: GearShifter.drive for i in range(1, 9)},
 }
 
+# TODO: neutral not yet observed in logs
+GEAR_MAP_CANFD = {
+  1: GearShifter.park,
+  2: GearShifter.reverse,
+  4: GearShifter.drive,
+}
+
 
 class CarState(CarStateBase):
   def update(self, can_parsers) -> structs.CarState:
+    if self.CP.flags & MgFlags.CANFD:
+      return self.update_canfd(can_parsers)
+
     cp = can_parsers[Bus.pt]
     cp_cam = can_parsers[Bus.cam]
     ret = structs.CarState()
@@ -67,8 +77,70 @@ class CarState(CarStateBase):
 
     return ret
 
+  def update_canfd(self, can_parsers) -> structs.CarState:
+    cp = can_parsers[Bus.pt]
+    ret = structs.CarState()
+
+    # Vehicle speed
+    self.parse_wheel_speeds(ret,
+      cp.vl["ESP_ACCEL"]["WhlSpdFL"],
+      cp.vl["ESP_ACCEL"]["WhlSpdFR"],
+      cp.vl["ESP_ACCEL"]["WhlSpdRL"],
+      cp.vl["ESP_ACCEL"]["WhlSpdRR"],
+    )
+    ret.standstill = cp.vl["ESP_SPEED"]["Standstill"] == 1
+
+    # Gas pedal
+    ret.gasPressed = cp.vl["GAS_PEDAL"]["GasPdlPos"] > 0
+
+    # Brake pedal
+    ret.brakePressed = cp.vl["BRAKE"]["BrkPdlAppd"] == 1
+
+    # Steering wheel
+    ret.steeringAngleDeg = cp.vl["STEER_ANGLE"]["StrgWhlAng"]
+    ret.steeringRateDeg = cp.vl["STEER_ANGLE"]["StrgWhlAngRate"]
+    # TODO: not found on the powertrain bus yet, likely needs the body/gateway bus
+    # ret.steeringTorque = cp.vl["EPS"]["DrvrStrgDlvrdToq"]
+    # ret.steeringTorqueEps = cp.vl["EPS"]["LKARespToq"]
+    # ret.steeringPressed = self.update_steering_pressed(abs(ret.steeringTorque) > 1.0, 5)
+
+    # TODO: find fault signals
+    # ret.steerFaultTemporary = ...
+    # ret.accFaulted = ...
+
+    # Cruise state
+    acc_sts = cp.vl["ACC_STATE"]["AccSts"]
+    ret.cruiseState.enabled = acc_sts in (2, 3, 4)  # Active, Active+Standby, Override
+    ret.cruiseState.available = acc_sts != 0
+    ret.cruiseState.standstill = False
+    # TODO: set speed not found yet, only shown in cluster?
+    # ret.cruiseState.speed = ...
+
+    # Gear
+    ret.gearShifter = GEAR_MAP_CANFD.get(int(cp.vl["GEAR"]["ShftLvrPos"]), GearShifter.unknown)
+
+    # Blinkers
+    ret.leftBlinker = cp.vl["TURN_SIGNALS"]["TurnIndLeft"] == 1
+    ret.rightBlinker = cp.vl["TURN_SIGNALS"]["TurnIndRight"] == 1
+
+    # Seatbelt
+    ret.seatbeltUnlatched = cp.vl["ESP_SPEED"]["DrvrSbltUnbuckled"] == 1
+
+    # Doors
+    ret.doorOpen = any([cp.vl["DOORS"]["DrvrDoorOpen"],
+                        cp.vl["DOORS"]["FrontPsngDoorOpen"],
+                        cp.vl["DOORS"]["RearLeftDoorOpen"],
+                        cp.vl["DOORS"]["RearRightDoorOpen"]])
+
+    return ret
+
   @staticmethod
   def get_can_parsers(CP):
+    if CP.flags & MgFlags.CANFD:
+      return {
+        Bus.pt: CANParser(DBC[CP.carFingerprint][Bus.pt], [], 0),
+      }
+
     return {
       Bus.pt: CANParser(DBC[CP.carFingerprint][Bus.pt], [], 0),
       Bus.cam: CANParser(DBC[CP.carFingerprint][Bus.pt], [], 2),

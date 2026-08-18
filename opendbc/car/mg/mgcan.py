@@ -1,3 +1,13 @@
+def mg4_lka_checksum(dat: bytes) -> int:
+  # CRC8, SAE J1850 poly 0x1D
+  crc = 0
+  for b in dat:
+    crc ^= b
+    for _ in range(8):
+      crc = ((crc << 1) ^ 0x1D) & 0xFF if (crc & 0x80) else (crc << 1) & 0xFF
+  return crc
+
+
 def calc_checksum(values):
   lka_req_toq = values['LKAReqToqHSC2'] + 0x400
   lka_req_toq_sts = values['LKAReqToqStsHSC2']

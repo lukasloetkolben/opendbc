@@ -1,8 +1,13 @@
 from dataclasses import dataclass, field
+from enum import IntFlag
 
 from opendbc.car import Bus, CarSpecs, DbcDict, PlatformConfig, Platforms
 from opendbc.car.docs_definitions import CarHarness, CarDocs, CarParts
 from opendbc.car.fw_query_definitions import FwQueryConfig, Request, StdQueries
+
+
+class MgFlags(IntFlag):
+  CANFD = 1
 
 
 @dataclass
@@ -17,6 +22,12 @@ class MgPlatformConfig(PlatformConfig):
 
 
 class CAR(Platforms):
+  MG_4_EV = MgPlatformConfig(
+    [MgCarDocs("MG4 EV 2022-25")],
+    CarSpecs(mass=1655., wheelbase=2.705, steerRatio=15.3),
+    {Bus.pt: 'mg4'},
+    flags=MgFlags.CANFD,
+  )
   MG_5_EV = MgPlatformConfig([MgCarDocs("MG 5 EV 2021")], CarSpecs(mass=1640., wheelbase=2.66, steerRatio=15.8))
 
 

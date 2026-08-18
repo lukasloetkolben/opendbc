@@ -1,0 +1,180 @@
+VERSION ""
+
+
+NS_ :
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_: XXX
+
+BO_ 70 GAS_PEDAL: 48 XXX
+ SG_ BrkPdlSw : 237|1@0+ (1,0) [0|1] "" XXX
+ SG_ GasPdlPos : 247|8@0+ (0.392157,0) [0|100] "%" XXX
+ SG_ GasPdlPos2 : 271|8@0+ (0.392157,0) [0|100] "%" XXX
+
+BO_ 137 LKA_CMD: 24 XXX
+ SG_ LKACmdChksm : 39|8@0+ (1,0) [0|255] "" XXX
+ SG_ LKACmdRC : 43|4@0+ (1,0) [0|14] "" XXX
+ SG_ LKACmdSts : 47|4@0+ (1,0) [0|15] "" XXX
+ SG_ LKACmd : 55|16@0+ (1,-32600) [-32600|32935] "" XXX
+
+BO_ 165 BRAKE_PRESSURE: 12 XXX
+ SG_ BrkPdlDrvrAppdPrs : 79|8@0+ (75,0) [0|19125] "kPa" XXX
+
+BO_ 171 STEER_ANGLE: 48 XXX
+ SG_ StrgWhlAng : 55|16@0+ (0.0625,-2048) [-2048|2047.94] "deg" XXX
+ SG_ AccActive : 71|1@0+ (1,0) [0|1] "" XXX
+ SG_ StrgWhlAngRate : 263|16@0+ (0.0625,-2048) [-2048|2047.94] "deg/s" XXX
+
+BO_ 192 TURN_SIGNALS: 24 XXX
+ SG_ TurnIndRight : 134|1@0+ (1,0) [0|1] "" XXX
+ SG_ TurnIndLeft : 135|1@0+ (1,0) [0|1] "" XXX
+
+BO_ 318 ESP_SPEED: 64 XXX
+ SG_ Standstill : 149|1@0+ (1,0) [0|1] "" XXX
+ SG_ VehSpdAvg : 246|15@0+ (0.015625,0) [0|511.98] "km/h" XXX
+ SG_ DrvrSbltUnbuckled : 435|1@0+ (1,0) [0|1] "" XXX
+ SG_ DrvrSbltBuckled : 439|1@0+ (1,0) [0|1] "" XXX
+
+BO_ 319 ESP_ACCEL: 48 XXX
+ SG_ LatAccel : 55|16@0+ (0.0009765625,-32) [-32|31.999] "m/s2" XXX
+ SG_ WhlSpdFR : 151|16@0+ (0.03125,0) [0|2047.97] "km/h" XXX
+ SG_ WhlSpdFL : 167|16@0+ (0.0078125,0) [0|511.99] "km/h" XXX
+ SG_ WhlSpdRR : 343|16@0+ (0.0078125,0) [0|511.99] "km/h" XXX
+ SG_ WhlSpdRL : 359|16@0+ (0.0078125,0) [0|511.99] "km/h" XXX
+
+BO_ 337 MSG_151: 12 XXX
+
+BO_ 343 MSG_157: 24 XXX
+
+BO_ 366 BRAKE: 48 XXX
+ SG_ BrkPdlAppd : 47|1@0+ (1,0) [0|1] "" XXX
+
+BO_ 376 MSG_178: 20 XXX
+
+BO_ 404 GEAR: 12 XXX
+ SG_ ShftLvrPos : 59|4@0+ (1,0) [0|15] "" XXX
+
+BO_ 451 CLUSTER_SPEED: 24 XXX
+ SG_ VehSpdDisplay : 55|8@0+ (1,0) [0|255] "km/h" XXX
+
+BO_ 474 ACC_STATE: 48 XXX
+ SG_ AccSts : 143|3@0+ (1,0) [0|7] "" XXX
+
+BO_ 481 MSG_1E1: 12 XXX
+
+BO_ 497 MSG_1F1: 48 XXX
+
+BO_ 555 MSG_22B: 12 XXX
+
+BO_ 725 MSG_2D5: 12 XXX
+
+BO_ 812 DOORS: 48 XXX
+ SG_ FrontPsngDoorOpen : 332|1@0+ (1,0) [0|1] "" XXX
+ SG_ DrvrDoorOpen : 334|1@0+ (1,0) [0|1] "" XXX
+ SG_ TrunkOpen : 342|1@0+ (1,0) [0|1] "" XXX
+ SG_ RearRightDoorOpen : 368|1@0+ (1,0) [0|1] "" XXX
+ SG_ RearLeftDoorOpen : 370|1@0+ (1,0) [0|1] "" XXX
+
+BO_ 814 MSG_32E: 48 XXX
+
+BO_ 857 MSG_359: 48 XXX
+
+BO_ 921 MSG_399: 48 XXX
+
+BO_ 924 MSG_39C: 24 XXX
+
+BO_ 988 MSG_3DC: 64 XXX
+
+BO_ 1008 MSG_3F0: 12 XXX
+
+BO_ 1011 MSG_3F3: 48 XXX
+
+BO_ 1019 BCM: 24 XXX
+ SG_ DircnIndSwSts : 139|2@0+ (1,0) [0|3] "" XXX
+
+BO_ 1142 MSG_476: 24 XXX
+
+BO_ 1147 MSG_47B: 12 XXX
+
+BO_ 1216 MSG_4C0: 8 XXX
+
+BO_ 1228 MSG_4CC: 8 XXX
+
+BO_ 1229 MSG_4CD: 8 XXX
+
+BO_ 1254 MSG_4E6: 8 XXX
+
+BO_ 1255 MSG_4E7: 8 XXX
+
+BO_ 1352 MSG_548: 48 XXX
+
+BO_ 1358 MSG_54E: 12 XXX
+
+BO_ 1808 Diag_PhysReq_GWM: 8 XXX
+
+BO_ 1816 Diag_PhysResp_GWM: 8 XXX
+
+BO_ 1842 Diag_PhysReq_ECU732: 8 XXX
+
+BO_ 1843 Diag_PhysReq_FVCM: 8 XXX
+
+BO_ 1844 Diag_PhysReq_RADAR: 8 XXX
+
+BO_ 1850 Diag_PhysResp_ECU732: 8 XXX
+
+BO_ 1851 Diag_PhysResp_FVCM: 8 XXX
+
+BO_ 1852 Diag_PhysResp_RADAR: 8 XXX
+
+BO_ 1878 Diag_PhysReq_ECU756: 8 XXX
+
+BO_ 1886 Diag_PhysResp_ECU756: 8 XXX
+
+BO_ 2015 Diag_FuncReq_OBD: 8 XXX
+
+BO_ 2028 Diag_PhysResp_EVCC: 8 XXX
+
+BO_ 2029 Diag_PhysResp_BMS: 8 XXX
+
+CM_ "CAN FD frames tunnel classic CAN messages as chunks: 4-byte header (16-bit inner id, subid, dlc) followed by dlc data bytes, zero-padded at the end. Chunk order is fixed per address. Within each chunk data: byte 0 checksum, byte 1 low nibble rolling counter (0-14).";
+CM_ SG_ 171 StrgWhlAngRate "reads 0 while the wheel is held steady; a steady angle is echoed on bytes 30-31 (unused copy of StrgWhlAng)";
+CM_ SG_ 137 LKACmd "frozen at 0 while LKACmdSts is 0, tracks steering angle at ~16 counts/deg while stock LKA is active; angle vs torque request and scale unverified";
+CM_ SG_ 137 LKACmdChksm "CRC8 poly 0x1D, init 0x00, no reflection/xorout, over chunk data bytes 1-7 (LKACmdRC/LKACmdSts byte through byte 7)";
+CM_ SG_ 318 DrvrSbltBuckled "complementary pair with DrvrSbltUnbuckled, both zero when ignition is off";
+CM_ SG_ 319 WhlSpdFR "front/rear axle assignment unverified, left/right verified via turns";
+CM_ SG_ 1019 DircnIndSwSts "stalk state, no direction; use TURN_SIGNALS for direction";
+CM_ BO_ 1808 "GWM/EVCC/BMS addresses from OBDb MG-MG4 signalset, possibly only reachable via the OBD-II port.";
+CM_ BO_ 1842 "0x732/0x733/0x734/0x756 answered the VIN query (22 F190) on bus 0; FVCM/RADAR naming assumed from the MG5 FW query config, other ECUs unidentified.";
+VAL_ 137 LKACmdSts 0 "OFF" 4 "ACTIVE";
+VAL_ 404 ShftLvrPos 1 "P" 2 "R" 4 "D";
+VAL_ 474 AccSts 0 "OFF" 1 "STANDBY" 2 "ACTIVE" 4 "OVERRIDE";
+VAL_ 1019 DircnIndSwSts 0 "OFF" 1 "TAP" 2 "LATCHED";

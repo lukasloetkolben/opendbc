@@ -40,10 +40,13 @@ class RivianPlatformConfig(PlatformConfig):
 
 class RivianFlags(IntFlag):
   GEN2 = 1
+  # R1TS_v4.5.1+ firmware moved VDM_AdasSts (0x162 -> 0x161) and ACM_longitudinalRequest (0x160 -> 0x82)
+  ALT_ADAS_MESSAGES = 2
 
 
 class RivianSafetyFlags(IntFlag):
   LONG_CONTROL = 1
+  ALT_ADAS_MESSAGES = 2
 
 
 class CAR(Platforms):

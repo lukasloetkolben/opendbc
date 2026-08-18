@@ -135,6 +135,15 @@ static bool rivian_tx_hook(const CANPacket_t *msg) {
         tx = false;
       }
     }
+
+    // Longitudinal control (ALT_ADAS_MESSAGES firmware): same 11-bit accel field shifted +2 bytes,
+    // the 5 bits after it are extra precision below the limit granularity
+    if (msg->addr == 0x82U) {
+      int raw_accel = ((msg->data[4] << 3) | (msg->data[5] >> 5)) - 1024U;
+      if (longitudinal_accel_checks(raw_accel, RIVIAN_LONG_LIMITS)) {
+        tx = false;
+      }
+    }
   }
 
   return tx;
@@ -148,6 +157,10 @@ static safety_config rivian_init(uint16_t param) {
   // 0x160 = ACM_longitudinalRequest
   static const CanMsg RIVIAN_LONG_TX_MSGS[] = {{0x120, 0, 8, .check_relay = true}, {0x321, 2, 7, .check_relay = true}, {0x160, 0, 5, .check_relay = true}};
 
+  // ALT_ADAS_MESSAGES firmware (R1TS_v4.5.1+): 0x161 = VDM_AdasSts, 0x82 = ACM_longitudinalRequest
+  static const CanMsg RIVIAN_ALT_TX_MSGS[] = {{0x120, 0, 8, .check_relay = true}, {0x321, 2, 7, .check_relay = true}, {0x161, 2, 8, .check_relay = true}};
+  static const CanMsg RIVIAN_ALT_LONG_TX_MSGS[] = {{0x120, 0, 8, .check_relay = true}, {0x321, 2, 7, .check_relay = true}, {0x82, 0, 8, .check_relay = true}};
+
   static RxCheck rivian_rx_checks[] = {
     {.msg = {{0x208, 0, 8, 50U, .max_counter = 14U}, { 0 }, { 0 }}},                                                             // ESP_Status (speed)
     {.msg = {{0x150, 0, 7, 50U, .max_counter = 14U}, { 0 }, { 0 }}},                                                             // VDM_PropStatus (gas pedal & 2nd speed)
@@ -158,17 +171,26 @@ static safety_config rivian_init(uint16_t param) {
 
   bool rivian_longitudinal = false;
 
-  SAFETY_UNUSED(param);
+  const int FLAG_RIVIAN_ALT_ADAS_MESSAGES = 2;
+  const bool rivian_alt_adas = GET_FLAG(param, FLAG_RIVIAN_ALT_ADAS_MESSAGES);
+
   #ifdef ALLOW_DEBUG
     const int FLAG_RIVIAN_LONG_CONTROL = 1;
     rivian_longitudinal = GET_FLAG(param, FLAG_RIVIAN_LONG_CONTROL);
   #endif
 
+  safety_config ret;
   // FIXME: cppcheck thinks that rivian_longitudinal is always false. This is not true
   // if ALLOW_DEBUG is defined but cppcheck is run without ALLOW_DEBUG
   // cppcheck-suppress knownConditionTrueFalse
-  return rivian_longitudinal ? BUILD_SAFETY_CFG(rivian_rx_checks, RIVIAN_LONG_TX_MSGS) : \
-                               BUILD_SAFETY_CFG(rivian_rx_checks, RIVIAN_TX_MSGS);
+  if (rivian_longitudinal) {
+    ret = rivian_alt_adas ? BUILD_SAFETY_CFG(rivian_rx_checks, RIVIAN_ALT_LONG_TX_MSGS) : \
+                            BUILD_SAFETY_CFG(rivian_rx_checks, RIVIAN_LONG_TX_MSGS);
+  } else {
+    ret = rivian_alt_adas ? BUILD_SAFETY_CFG(rivian_rx_checks, RIVIAN_ALT_TX_MSGS) : \
+                            BUILD_SAFETY_CFG(rivian_rx_checks, RIVIAN_TX_MSGS);
+  }
+  return ret;
 }
 
 const safety_hooks rivian_hooks = {

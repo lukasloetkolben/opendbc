@@ -21,6 +21,11 @@ class CarInterface(CarInterfaceBase):
     if 0x321 not in fingerprint[0]:
       ret.flags |= RivianFlags.GEN2.value
 
+    # R1TS_v4.5.1+ firmware moved VDM_AdasSts (0x162 -> 0x161) and ACM_longitudinalRequest (0x160 -> 0x82)
+    if 0x161 in fingerprint[0]:
+      ret.flags |= RivianFlags.ALT_ADAS_MESSAGES.value
+      ret.safetyConfigs[0].safetyParam |= RivianSafetyFlags.ALT_ADAS_MESSAGES.value
+
     ret.steerActuatorDelay = 0.15
     ret.steerLimitTimer = 0.4
     CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)

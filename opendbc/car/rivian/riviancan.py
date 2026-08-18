@@ -1,3 +1,6 @@
+from opendbc.car.rivian.values import RivianFlags
+
+
 def checksum(data, poly, xor_output):
   crc = 0
   for byte in data:
@@ -63,22 +66,34 @@ def create_wheel_touch(packer, sccm_wheel_touch, enabled):
   return packer.make_can_msg("SCCM_WheelTouch", 2, values)
 
 
-def create_longitudinal(packer, frame, accel, enabled):
+def create_longitudinal(packer, frame, accel, enabled, CP):
+  alt_adas = CP.flags & RivianFlags.ALT_ADAS_MESSAGES
+  msg_name = "ACM_longitudinalRequest_2" if alt_adas else "ACM_longitudinalRequest"
   values = {
     "ACM_longitudinalRequest_Counter": frame % 15,  # 0-14 counter (15 states), so % 15 is correct despite the 4-bit field
     "ACM_AccelerationRequest": accel,
-    "ACM_PrndRequest": 0,
-    "ACM_longInterfaceEnable": 1 if enabled else 0,
-    "ACM_VehicleHoldRequest": 0,
   }
 
-  data = packer.make_can_msg("ACM_longitudinalRequest", 0, values)[1]
-  values["ACM_longitudinalRequest_Checksum"] = checksum(data[1:], 0x1D, 0x12)
-  return packer.make_can_msg("ACM_longitudinalRequest", 0, values)
+  if alt_adas:
+    # TODO: ACM_longInterfaceEnable, ACM_PrndRequest and ACM_VehicleHoldRequest positions are unknown on this firmware,
+    #  so longitudinal control cannot engage yet
+    values["ACM_ProtocolVersion"] = 1
+  else:
+    values |= {
+      "ACM_PrndRequest": 0,
+      "ACM_longInterfaceEnable": 1 if enabled else 0,
+      "ACM_VehicleHoldRequest": 0,
+    }
+
+  data = packer.make_can_msg(msg_name, 0, values)[1]
+  values["ACM_longitudinalRequest_Checksum"] = checksum(data[1:], 0x1D, 0x3A if alt_adas else 0x12)
+  return packer.make_can_msg(msg_name, 0, values)
 
 
-def create_adas_status(packer, vdm_adas_status, interface_status):
-  values = {s: vdm_adas_status[s] for s in (
+def create_adas_status(packer, vdm_adas_status, interface_status, CP):
+  alt_adas = CP.flags & RivianFlags.ALT_ADAS_MESSAGES
+  msg_name = "VDM_AdasSts_2" if alt_adas else "VDM_AdasSts"
+  sigs = [
     "VDM_AdasStatus_Checksum",
     "VDM_AdasStatus_Counter",
     "VDM_AdasDecelLimit",
@@ -87,14 +102,18 @@ def create_adas_status(packer, vdm_adas_status, interface_status):
     "VDM_AdasAccelLimit",
     "VDM_AdasDriverModeStatus",
     "VDM_AdasUnkown1",
-    "VDM_AdasInterfaceStatus",
-    "VDM_AdasVehicleHoldStatus",
     "VDM_UserAdasRequest",
-  )}
+  ]
+  if alt_adas:
+    sigs.append("VDM_AdasProtocolVersion")
+  else:
+    sigs += ["VDM_AdasInterfaceStatus", "VDM_AdasVehicleHoldStatus"]
+  values = {s: vdm_adas_status[s] for s in sigs}
 
-  if interface_status is not None:
+  # TODO: VDM_AdasInterfaceStatus position is unknown on ALT_ADAS_MESSAGES firmware, so stock ACC cancel is not supported yet
+  if interface_status is not None and not alt_adas:
     values["VDM_AdasInterfaceStatus"] = interface_status
 
-  data = packer.make_can_msg("VDM_AdasSts", 2, values)[1]
-  values["VDM_AdasStatus_Checksum"] = checksum(data[1:], 0x1D, 0xD1)
-  return packer.make_can_msg("VDM_AdasSts", 2, values)
+  data = packer.make_can_msg(msg_name, 2, values)[1]
+  values["VDM_AdasStatus_Checksum"] = checksum(data[1:], 0x1D, 0x7E if alt_adas else 0xD1)
+  return packer.make_can_msg(msg_name, 2, values)

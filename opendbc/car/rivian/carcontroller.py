@@ -37,7 +37,7 @@ class CarController(CarControllerBase):
     # Longitudinal control
     if self.CP.openpilotLongitudinalControl:
       accel = float(np.clip(actuators.accel, CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX))
-      can_sends.append(create_longitudinal(self.packer, self.frame, accel, CC.enabled))
+      can_sends.append(create_longitudinal(self.packer, self.frame, accel, CC.enabled, self.CP))
     else:
       interface_status = None
       if CC.cruiseControl.cancel:
@@ -49,7 +49,7 @@ class CarController(CarControllerBase):
         self.cancel_frames = 0
 
       for msg in CS.vdm_adas_status:
-        can_sends.append(create_adas_status(self.packer, msg, interface_status))
+        can_sends.append(create_adas_status(self.packer, msg, interface_status, self.CP))
 
     new_actuators = actuators.as_builder()
     new_actuators.torque = apply_torque / steer_max

@@ -45,6 +45,7 @@ BO_ 137 LKA_CMD: 24 XXX
  SG_ LKACmdRC : 43|4@0+ (1,0) [0|14] "" XXX
  SG_ LKACmdSts : 47|4@0+ (1,0) [0|15] "" XXX
  SG_ LKACmd : 55|16@0+ (1,-32600) [-32600|32935] "" XXX
+ SG_ LKATorqueCmd : 143|14@0- (1,0) [-8192|8191] "" XXX
 
 BO_ 165 BRAKE_PRESSURE: 12 XXX
  SG_ BrkPdlDrvrAppdPrs : 79|8@0+ (75,0) [0|19125] "kPa" XXX
@@ -169,6 +170,7 @@ CM_ "CAN FD frames tunnel classic CAN messages as chunks: 4-byte header (16-bit 
 CM_ SG_ 171 StrgWhlAngRate "reads 0 while the wheel is held steady; a steady angle is echoed on bytes 30-31 (unused copy of StrgWhlAng)";
 CM_ SG_ 137 LKACmd "frozen at 0 while LKACmdSts is 0, tracks steering angle at ~16 counts/deg while stock LKA is active; angle vs torque request and scale unverified";
 CM_ SG_ 137 LKACmdChksm "CRC8 poly 0x1D, init 0x00, no reflection/xorout, over chunk data bytes 1-7 (LKACmdRC/LKACmdSts byte through byte 7)";
+CM_ SG_ 137 LKATorqueCmd "14-bit gated LKA command field, active only, does not move the wheel in highway data. Same message family as MG5 FVCM_HSC2_FrP03 (11-bit LKAReqToq torque + 14-bit LKAReqToqPV checksum): width matches the PV, but it holds ~89% of frames and ignores the counter, so it is not a counter-inclusive PV either. Torque vs PV unresolved; needs a curvy/active LKA drive";
 CM_ SG_ 318 DrvrSbltBuckled "complementary pair with DrvrSbltUnbuckled, both zero when ignition is off";
 CM_ SG_ 319 WhlSpdFR "front/rear axle assignment unverified, left/right verified via turns";
 CM_ SG_ 1019 DircnIndSwSts "stalk state, no direction; use TURN_SIGNALS for direction";

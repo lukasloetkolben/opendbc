@@ -75,9 +75,14 @@ def create_longitudinal(packer, frame, accel, enabled, CP):
   }
 
   if alt_adas:
-    # TODO: ACM_longInterfaceEnable, ACM_PrndRequest and ACM_VehicleHoldRequest positions are unknown on this firmware,
-    #  so longitudinal control cannot engage yet
-    values["ACM_ProtocolVersion"] = 1
+    # TODO: no ACM_PrndRequest/ACM_VehicleHoldRequest equivalents found yet (no ACC standstill data)
+    values |= {
+      "ACM_longInterfaceStatus": 4 if enabled else 1,
+      # constant on stock traffic regardless of ACC state
+      "ACM_Unkown1": 0x2B,
+      "ACM_Unkown2": 0xEA,
+      "ACM_Unkown3": 0x60,
+    }
   else:
     values |= {
       "ACM_PrndRequest": 0,
@@ -96,22 +101,20 @@ def create_adas_status(packer, vdm_adas_status, interface_status, CP):
   sigs = [
     "VDM_AdasStatus_Checksum",
     "VDM_AdasStatus_Counter",
-    "VDM_AdasDecelLimit",
-    "VDM_AdasDriverAccelPriorityStatus",
+    "VDM_AdasInterfaceStatus",
     "VDM_AdasFaultStatus",
     "VDM_AdasAccelLimit",
-    "VDM_AdasDriverModeStatus",
     "VDM_AdasUnkown1",
-    "VDM_UserAdasRequest",
   ]
   if alt_adas:
-    sigs.append("VDM_AdasProtocolVersion")
+    sigs += ["VDM_AdasLongActive", "VDM_AdasUnkown2", "VDM_AdasUnkown3"]
   else:
-    sigs += ["VDM_AdasInterfaceStatus", "VDM_AdasVehicleHoldStatus"]
+    sigs += ["VDM_AdasDecelLimit", "VDM_AdasDriverAccelPriorityStatus", "VDM_AdasDriverModeStatus",
+             "VDM_UserAdasRequest", "VDM_AdasVehicleHoldStatus"]
   values = {s: vdm_adas_status[s] for s in sigs}
 
-  # TODO: VDM_AdasInterfaceStatus position is unknown on ALT_ADAS_MESSAGES firmware, so stock ACC cancel is not supported yet
-  if interface_status is not None and not alt_adas:
+  # TODO: cancel spoof is untested on ALT_ADAS_MESSAGES firmware
+  if interface_status is not None:
     values["VDM_AdasInterfaceStatus"] = interface_status
 
   data = packer.make_can_msg(msg_name, 2, values)[1]

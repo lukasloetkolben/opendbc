@@ -115,6 +115,13 @@ static bool rivian_tx_hook(const CANPacket_t *msg) {
     .inactive_accel = 0,
   };
 
+  // ALT_ADAS_MESSAGES accel is ~1149 counts per m/s^2 (0.00087 factor), zero at raw 30106
+  const LongitudinalLimits RIVIAN_ALT_LONG_LIMITS = {
+    .max_accel = 2299,   // 2.0 m/s^2
+    .min_accel = -4023,  // -3.5 m/s^2
+    .inactive_accel = 0,
+  };
+
   bool tx = true;
 
   if (msg->bus == 0U) {
@@ -136,11 +143,10 @@ static bool rivian_tx_hook(const CANPacket_t *msg) {
       }
     }
 
-    // Longitudinal control (ALT_ADAS_MESSAGES firmware): same 11-bit accel field shifted +2 bytes,
-    // the 5 bits after it are extra precision below the limit granularity
+    // Longitudinal control (ALT_ADAS_MESSAGES firmware): 16-bit accel field in bytes 4-5
     if (msg->addr == 0x82U) {
-      int raw_accel = ((msg->data[4] << 3) | (msg->data[5] >> 5)) - 1024U;
-      if (longitudinal_accel_checks(raw_accel, RIVIAN_LONG_LIMITS)) {
+      int raw_accel = (int)((msg->data[4] << 8) | msg->data[5]) - 30106;
+      if (longitudinal_accel_checks(raw_accel, RIVIAN_ALT_LONG_LIMITS)) {
         tx = false;
       }
     }

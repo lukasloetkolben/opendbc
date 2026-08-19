@@ -195,9 +195,7 @@ BO_ 353 VDM_AdasSts_2: 8 VDM
  SG_ VDM_AdasLongActive : 16|1@0+ (1,0) [0|1] "" ACM
  SG_ VDM_AdasUnkown2 : 17|1@0+ (1,0) [0|1] "" XXX
  SG_ VDM_AdasFaultStatus : 23|4@0+ (1,0) [0|15] "" ACM
- SG_ VDM_AdasAccelLimit : 33|15@0+ (0.00087,-26.19222) [-26.19|2.31] "m/s^2" ACM
- SG_ VDM_AdasUnkown3 : 39|6@0+ (1,0) [0|63] "" XXX
- SG_ VDM_AdasUnkown1 : 50|3@0+ (1,0) [0|7] "" XXX
+ SG_ VDM_AdasAccelStatus : 34|16@0+ (0.00087,-26.19222) [-26.19|30.83] "m/s^2" ACM
 
 BO_ 354 VDM_AdasSts: 8 VDM
  SG_ VDM_AdasStatus_Checksum : 7|8@0+ (1,0) [0|0] "" ACM
@@ -590,7 +588,7 @@ CM_ SG_ 64 SAS_Status_AngleSpeedSafe "Actual steering wheel angle from the actua
 CM_ SG_ 64 SAS_StatusQ "Actual steering wheel angle from the actual centre position of the steering wheel. The signal value is a signed value from zero (at centre steering wheel position) where a left turn (counterclockwise from steering wheel centre position) is represented by positive values and right turn (clockwise from steering wheel centre position) will have negative value.  Qf for steering wheel sensor information";
 CM_ BO_ 130 "ACM_longitudinalRequest on firmware R1TS_v4.5.1(69)+, replaces 0x160 (352). Checksum is CRC-8 poly 0x1D over bytes 1-7, XOR 0x3A. ACM_Unkown1/2/3 are constant 0x2B, 0xEA, 0x60 regardless of ACC state; no separate ACM_PrndRequest/ACM_VehicleHoldRequest fields found (no ACC standstill observed yet).";
 CM_ SG_ 130 ACM_longInterfaceStatus "1 when ACC is off, 4 when ACC is engaged. Leads the VDM_AdasSts engagement handshake by ~20ms. Replaces ACM_longInterfaceEnable.";
-CM_ SG_ 130 ACM_AccelerationRequest "Acceleration Request command from the ACM. Scale/offset fitted against an ACC-engaged drive (integrated delta-v regression): 0 m/s^2 = raw 30106, ~1149 counts per m/s^2; exact factory encoding unknown.";
+CM_ SG_ 130 ACM_AccelerationRequest "Acceleration Request command from the ACM. Scale/offset fitted against an ACC-engaged drive (integrated delta-v regression): 0 m/s^2 = raw 30106, ~1149 counts per m/s^2; exact original encoding unknown.";
 CM_ SG_ 256 ACM_Status_Checksum "Checksum signal for frame";
 CM_ SG_ 256 ACM_Status_Counter "Message counter signal for frame";
 CM_ SG_ 256 ACM_FeatureStatus "Current active ADAS feature";
@@ -635,11 +633,11 @@ CM_ SG_ 352 ACM_AccelerationRequest "Acceleration Request command from the ACM";
 CM_ SG_ 352 ACM_PrndRequest "Gear state Request command from the ACM";
 CM_ SG_ 352 ACM_longInterfaceEnable "Acceleration Interface Enable Request from the ACM";
 CM_ SG_ 352 ACM_VehicleHoldRequest "Vehicle hold request from ACM";
-CM_ BO_ 353 "VDM_AdasSts on firmware R1TS_v4.5.1(69)+, replaces 0x162 (354). Checksum is CRC-8 poly 0x1D over bytes 1-7, XOR 0x7E. VDM_AdasVehicleHoldStatus position unknown (no ACC standstill observed yet). VDM_AdasFaultStatus position carried over from 0x162 but unverified (0 in all data); byte 4 (VDM_AdasUnkown3) may be the real fault status: 0 normally, 1 during hard driver braking events.";
-CM_ SG_ 353 VDM_AdasInterfaceStatus "1 when ACC is available, 2 when ACC is engaged (follows ACM_longInterfaceStatus 1->4 by ~30ms).";
-CM_ SG_ 353 VDM_AdasLongActive "0->1 ~20ms after ACM_longInterfaceStatus goes 1->4 on engagement.";
+CM_ BO_ 353 "VDM_AdasSts on firmware R1TS_v4.5.1(69)+, replaces 0x162 (354). Checksum is CRC-8 poly 0x1D over bytes 1-7, XOR 0x7E. VDM_AdasVehicleHoldStatus position unknown (no ACC standstill observed yet). VDM_AdasFaultStatus position carried over from 0x162 but unverified (0 in all data).";
+CM_ SG_ 353 VDM_AdasInterfaceStatus "1 when ACC is available, 2 when ACC is engaged, matching the VDM_AdasInterfaceStatus enum on 0x162. Follows ACM_longInterfaceStatus 1->4 by ~30ms on engagement.";
+CM_ SG_ 353 VDM_AdasLongActive "0->1 ~20ms after ACM_longInterfaceStatus goes 1->4 on engagement. Stays 1 during driver gas override, so not a driver-priority flag.";
 CM_ SG_ 353 VDM_AdasUnkown2 "Constant 1.";
-CM_ SG_ 353 VDM_AdasAccelLimit "Tracks ACM_AccelerationRequest with ~140ms lag when engaged (r=0.996); saturates at 0 and 32767 raw when disengaged. Same empirical encoding as the request.";
+CM_ SG_ 353 VDM_AdasAccelStatus "Same encoding as ACM_AccelerationRequest. Tracks the request with ~140ms lag when engaged (r=0.99); tracks actual vehicle accel when disengaged (e.g. +3.5 m/s^2 under hard driver gas).";
 CM_ SG_ 354 VDM_AdasStatus_Checksum "VDM_AdasSts message j1850 checksum.";
 CM_ SG_ 354 VDM_AdasStatus_Counter "VDM_AdasSts message counter.";
 CM_ SG_ 354 VDM_AdasFaultStatus "Fault status of ADAS requests from VDM.";

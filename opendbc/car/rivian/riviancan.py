@@ -103,14 +103,12 @@ def create_adas_status(packer, vdm_adas_status, interface_status, CP):
     "VDM_AdasStatus_Counter",
     "VDM_AdasInterfaceStatus",
     "VDM_AdasFaultStatus",
-    "VDM_AdasAccelLimit",
-    "VDM_AdasUnkown1",
   ]
   if alt_adas:
-    sigs += ["VDM_AdasLongActive", "VDM_AdasUnkown2", "VDM_AdasUnkown3"]
+    sigs += ["VDM_AdasLongActive", "VDM_AdasUnkown2", "VDM_AdasAccelStatus"]
   else:
-    sigs += ["VDM_AdasDecelLimit", "VDM_AdasDriverAccelPriorityStatus", "VDM_AdasDriverModeStatus",
-             "VDM_UserAdasRequest", "VDM_AdasVehicleHoldStatus"]
+    sigs += ["VDM_AdasDecelLimit", "VDM_AdasDriverAccelPriorityStatus", "VDM_AdasAccelLimit", "VDM_AdasDriverModeStatus",
+             "VDM_AdasUnkown1", "VDM_UserAdasRequest", "VDM_AdasVehicleHoldStatus"]
   values = {s: vdm_adas_status[s] for s in sigs}
 
   # TODO: cancel spoof is untested on ALT_ADAS_MESSAGES firmware

@@ -99,10 +99,8 @@ class CarState(CarStateBase):
     # Steering wheel
     ret.steeringAngleDeg = cp.vl["STEER_ANGLE"]["StrgWhlAng"]
     ret.steeringRateDeg = cp.vl["STEER_ANGLE"]["StrgWhlAngRate"]
-    # TODO: not found on the powertrain bus yet, likely needs the body/gateway bus
-    # ret.steeringTorque = cp.vl["EPS"]["DrvrStrgDlvrdToq"]
-    # ret.steeringTorqueEps = cp.vl["EPS"]["LKARespToq"]
-    # ret.steeringPressed = self.update_steering_pressed(abs(ret.steeringTorque) > 1.0, 5)
+    # Driver steering torque is not on any captured bus (the EPS handles override internally), so
+    # steeringTorque/steeringPressed can't be populated from CAN here.
 
     # TODO: find fault signals
     # ret.steerFaultTemporary = ...

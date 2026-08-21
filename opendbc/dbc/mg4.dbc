@@ -36,36 +36,55 @@ BS_:
 BU_: XXX
 
 BO_ 70 GAS_PEDAL: 48 XXX
+ SG_ GasPedalChecksum : 39|8@0+ (1,0) [0|255] "" XXX
+ SG_ GasPedalCounter : 43|4@0+ (1,0) [0|15] "" XXX
  SG_ BrkPdlSw : 237|1@0+ (1,0) [0|1] "" XXX
  SG_ GasPdlPos : 247|8@0+ (0.392157,0) [0|100] "%" XXX
  SG_ GasPdlPos2 : 271|8@0+ (0.392157,0) [0|100] "%" XXX
 
+BO_ 80 SECOC_SYNC: 32 XXX
+ SG_ SecOcChecksum : 7|16@0+ (1,0) [0|65535] "" XXX
+ SG_ SecOcCounter : 23|8@0+ (1,0) [0|255] "" XXX
+ SG_ SecOcResetCnt : 55|8@0+ (1,0) [0|255] "" XXX
+ SG_ SecOcCounter2 : 87|8@0+ (1,0) [0|255] "" XXX
+
 BO_ 137 LKA_CMD: 24 XXX
- SG_ LKACmdChksm : 39|8@0+ (1,0) [0|255] "" XXX
- SG_ LKACmdRC : 43|4@0+ (1,0) [0|14] "" XXX
+ SG_ LkaCmdChecksum : 39|8@0+ (1,0) [0|255] "" XXX
+ SG_ LkaCmdCounter : 43|4@0+ (1,0) [0|15] "" XXX
  SG_ LKACmdSts : 47|4@0+ (1,0) [0|15] "" XXX
- SG_ LKACmd : 55|16@0+ (1,-32600) [-32600|32935] "" XXX
- SG_ LKATorqueCmd : 143|14@0- (1,0) [-8192|8191] "" XXX
+ SG_ LKACmd : 55|16@0+ (0.0625,-2037.5) [-2037.5|2058.44] "deg" XXX
+ SG_ LKAReqToq : 135|8@0+ (1,0) [0|255] "" XXX
+ SG_ LKACmdPV : 143|14@0+ (1,0) [0|16383] "" XXX
 
 BO_ 165 BRAKE_PRESSURE: 12 XXX
+ SG_ BrakePressureChecksum : 39|8@0+ (1,0) [0|255] "" XXX
+ SG_ BrakePressureCounter : 43|4@0+ (1,0) [0|15] "" XXX
  SG_ BrkPdlDrvrAppdPrs : 79|8@0+ (75,0) [0|19125] "kPa" XXX
 
 BO_ 171 STEER_ANGLE: 48 XXX
+ SG_ SteerAngleChecksum : 39|8@0+ (1,0) [0|255] "" XXX
+ SG_ SteerAngleCounter : 43|4@0+ (1,0) [0|15] "" XXX
  SG_ StrgWhlAng : 55|16@0+ (0.0625,-2048) [-2048|2047.94] "deg" XXX
  SG_ AccActive : 71|1@0+ (1,0) [0|1] "" XXX
  SG_ StrgWhlAngRate : 263|16@0+ (0.0625,-2048) [-2048|2047.94] "deg/s" XXX
 
 BO_ 192 TURN_SIGNALS: 24 XXX
+ SG_ TurnSignalsChecksum : 39|8@0+ (1,0) [0|255] "" XXX
+ SG_ TurnSignalsCounter : 43|4@0+ (1,0) [0|15] "" XXX
  SG_ TurnIndRight : 134|1@0+ (1,0) [0|1] "" XXX
  SG_ TurnIndLeft : 135|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 318 ESP_SPEED: 64 XXX
+ SG_ EspSpeedChecksum : 39|8@0+ (1,0) [0|255] "" XXX
+ SG_ EspSpeedCounter : 43|4@0+ (1,0) [0|15] "" XXX
  SG_ Standstill : 149|1@0+ (1,0) [0|1] "" XXX
  SG_ VehSpdAvg : 246|15@0+ (0.015625,0) [0|511.98] "km/h" XXX
  SG_ DrvrSbltUnbuckled : 435|1@0+ (1,0) [0|1] "" XXX
  SG_ DrvrSbltBuckled : 439|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 319 ESP_ACCEL: 48 XXX
+ SG_ EspAccelChecksum : 39|8@0+ (1,0) [0|255] "" XXX
+ SG_ EspAccelCounter : 43|4@0+ (1,0) [0|15] "" XXX
  SG_ LatAccel : 55|16@0+ (0.0009765625,-32) [-32|31.999] "m/s2" XXX
  SG_ WhlSpdFR : 151|16@0+ (0.03125,0) [0|2047.97] "km/h" XXX
  SG_ WhlSpdFL : 167|16@0+ (0.0078125,0) [0|511.99] "km/h" XXX
@@ -77,11 +96,15 @@ BO_ 337 MSG_151: 12 XXX
 BO_ 343 MSG_157: 24 XXX
 
 BO_ 366 BRAKE: 48 XXX
+ SG_ BrakeChecksum : 39|8@0+ (1,0) [0|255] "" XXX
+ SG_ BrakeCounter : 43|4@0+ (1,0) [0|15] "" XXX
  SG_ BrkPdlAppd : 47|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 376 MSG_178: 20 XXX
 
 BO_ 404 GEAR: 12 XXX
+ SG_ GearChecksum : 39|8@0+ (1,0) [0|255] "" XXX
+ SG_ GearCounter : 43|4@0+ (1,0) [0|15] "" XXX
  SG_ ShftLvrPos : 59|4@0+ (1,0) [0|15] "" XXX
 
 BO_ 451 CLUSTER_SPEED: 24 XXX
@@ -89,10 +112,14 @@ BO_ 451 CLUSTER_SPEED: 24 XXX
 
 BO_ 474 ACC_STATE: 48 XXX
  SG_ AccSts : 143|3@0+ (1,0) [0|7] "" XXX
+ SG_ AccMainOn : 246|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 481 MSG_1E1: 12 XXX
 
-BO_ 497 MSG_1F1: 48 XXX
+BO_ 497 EHBS_HOLD: 48 XXX
+ SG_ EhbsHoldChecksum : 39|8@0+ (1,0) [0|255] "" XXX
+ SG_ EhbsHoldCounter : 43|4@0+ (1,0) [0|15] "" XXX
+ SG_ BrkHoldActive : 160|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 555 MSG_22B: 12 XXX
 
@@ -166,17 +193,25 @@ BO_ 2028 Diag_PhysResp_EVCC: 8 XXX
 
 BO_ 2029 Diag_PhysResp_BMS: 8 XXX
 
-CM_ "CAN FD frames tunnel classic CAN messages as chunks: 4-byte header (16-bit inner id, subid, dlc) followed by dlc data bytes, zero-padded at the end. Chunk order is fixed per address. Within each chunk data: byte 0 checksum, byte 1 low nibble rolling counter (0-14).";
-CM_ SG_ 171 StrgWhlAngRate "reads 0 while the wheel is held steady; a steady angle is echoed on bytes 30-31 (unused copy of StrgWhlAng)";
-CM_ SG_ 137 LKACmd "frozen at 0 while LKACmdSts is 0, tracks steering angle at ~16 counts/deg while stock LKA is active; angle vs torque request and scale unverified";
-CM_ SG_ 137 LKACmdChksm "CRC8 poly 0x1D, init 0x00, no reflection/xorout, over chunk data bytes 1-7 (LKACmdRC/LKACmdSts byte through byte 7)";
-CM_ SG_ 137 LKATorqueCmd "14-bit gated LKA command field, active only, does not move the wheel in highway data. Same message family as MG5 FVCM_HSC2_FrP03 (11-bit LKAReqToq torque + 14-bit LKAReqToqPV checksum): width matches the PV, but it holds ~89% of frames and ignores the counter, so it is not a counter-inclusive PV either. Torque vs PV unresolved; needs a curvy/active LKA drive";
-CM_ SG_ 318 DrvrSbltBuckled "complementary pair with DrvrSbltUnbuckled, both zero when ignition is off";
-CM_ SG_ 319 WhlSpdFR "front/rear axle assignment unverified, left/right verified via turns";
-CM_ SG_ 1019 DircnIndSwSts "stalk state, no direction; use TURN_SIGNALS for direction";
-CM_ BO_ 1808 "GWM/EVCC/BMS addresses from OBDb MG-MG4 signalset, possibly only reachable via the OBD-II port.";
-CM_ BO_ 1842 "0x732/0x733/0x734/0x756 answered the VIN query (22 F190) on bus 0; FVCM/RADAR naming assumed from the MG5 FW query config, other ECUs unidentified.";
+CM_ "CAN FD frames tunnel classic CAN messages as 12-byte chunks: a 4-byte header (16-bit inner id, subid, dlc) then up to 8 data bytes, zero-padded. In chunk 0, data byte 0 (byte 4) = CRC8 poly 0x1D init 0x00 over data bytes 1-7, and data byte 1 (byte 5) low nibble = rolling counter 0-14; the <Message>Checksum/<Message>Counter pairs are that chunk-0 pair.";
+CM_ SG_ 137 LKACmd "steering angle setpoint, same scale as StrgWhlAng; frozen at 0 while LKACmdSts is not 4. Offset is -2037.5 (hardware neutral raw 0x7F58), not -2048.";
+CM_ SG_ 137 LkaCmdChecksum "CRC8 poly 0x1D init 0x00 over data bytes 5-11.";
+CM_ SG_ 137 LKAReqToq "byte 16; not the steering command (LKACmd is the command). Role tentative.";
+CM_ SG_ 137 LKACmdPV "14-bit rolling protection value over the LKA command; 0x300 + C when active, 0x400 when idle. Not fully reverse-engineered.";
+CM_ BO_ 137 "bytes 16-23 are a second inner message (LKA torque request), protected by LKACmdPV rather than the byte-4 CRC8.";
+CM_ SG_ 171 StrgWhlAngRate "reads 0 while the wheel is held steady.";
+CM_ SG_ 318 VehSpdAvg "a second speed copy is at bytes 32-33.";
+CM_ SG_ 318 DrvrSbltBuckled "complementary to DrvrSbltUnbuckled; both 0 with ignition off.";
+CM_ SG_ 319 WhlSpdFR "0.03125 scale, coarser than the other three wheels; left/right verified via turns, front/rear not.";
+CM_ SG_ 319 LatAccel "reads -32 m/s2 when invalid.";
+CM_ SG_ 474 AccSts "1 = ACC engaged without TJA; 2 = ACC with TJA active.";
+CM_ SG_ 474 AccMainOn "ACC main switch / available latch.";
+CM_ SG_ 497 BrkHoldActive "brake-hold active; also set for manual braking, not ACC-specific.";
+CM_ SG_ 1019 DircnIndSwSts "stalk state without direction; use TURN_SIGNALS for direction.";
+CM_ BO_ 80 "bus 1 (radar domain). 16-bit checksum + rolling counters; byte 6 is a slow counter that re-seeds each ignition.";
+CM_ BO_ 1808 "GWM/EVCC/BMS addresses from the OBDb MG-MG4 signalset; possibly reachable only via the OBD-II port.";
+CM_ BO_ 1842 "ECUs that answered the VIN query (22 F190) on bus 0; FVCM/RADAR naming assumed.";
 VAL_ 137 LKACmdSts 0 "OFF" 4 "ACTIVE";
 VAL_ 404 ShftLvrPos 1 "P" 2 "R" 4 "D";
-VAL_ 474 AccSts 0 "OFF" 1 "STANDBY" 2 "ACTIVE" 4 "OVERRIDE";
+VAL_ 474 AccSts 0 "OFF" 1 "ACC_ENGAGED" 2 "ACC_AND_TJA";
 VAL_ 1019 DircnIndSwSts 0 "OFF" 1 "TAP" 2 "LATCHED";

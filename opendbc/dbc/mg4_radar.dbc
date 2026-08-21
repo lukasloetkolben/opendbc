@@ -1,0 +1,121 @@
+VERSION ""
+
+
+NS_ :
+
+BS_:
+
+BU_: RADAR ADAS
+
+BO_ 176 RADAR_OBJ_00: 64 RADAR
+ SG_ RadarChecksum : 7|16@0+ (1,0) [0|65535] "" ADAS
+ SG_ RadarCounter : 27|4@0+ (1,0) [0|15] "" ADAS
+
+BO_ 178 RADAR_OBJ_01: 64 RADAR
+ SG_ RadarChecksum : 7|16@0+ (1,0) [0|65535] "" ADAS
+ SG_ RadarCounter : 27|4@0+ (1,0) [0|15] "" ADAS
+
+BO_ 180 RADAR_OBJ_02: 64 RADAR
+ SG_ RadarChecksum : 7|16@0+ (1,0) [0|65535] "" ADAS
+ SG_ RadarCounter : 27|4@0+ (1,0) [0|15] "" ADAS
+
+BO_ 182 RADAR_OBJ_03: 64 RADAR
+ SG_ RadarChecksum : 7|16@0+ (1,0) [0|65535] "" ADAS
+ SG_ RadarCounter : 27|4@0+ (1,0) [0|15] "" ADAS
+
+BO_ 184 RADAR_OBJ_04: 64 RADAR
+ SG_ RadarChecksum : 7|16@0+ (1,0) [0|65535] "" ADAS
+ SG_ RadarCounter : 27|4@0+ (1,0) [0|15] "" ADAS
+
+BO_ 186 RADAR_OBJ_05: 64 RADAR
+ SG_ RadarChecksum : 7|16@0+ (1,0) [0|65535] "" ADAS
+ SG_ RadarCounter : 27|4@0+ (1,0) [0|15] "" ADAS
+
+BO_ 188 RADAR_OBJ_06: 64 RADAR
+ SG_ RadarChecksum : 7|16@0+ (1,0) [0|65535] "" ADAS
+ SG_ RadarCounter : 27|4@0+ (1,0) [0|15] "" ADAS
+
+BO_ 190 RADAR_OBJ_07: 64 RADAR
+ SG_ RadarChecksum : 7|16@0+ (1,0) [0|65535] "" ADAS
+ SG_ RadarCounter : 27|4@0+ (1,0) [0|15] "" ADAS
+
+BO_ 192 RADAR_OBJ_08: 64 RADAR
+ SG_ RadarChecksum : 7|16@0+ (1,0) [0|65535] "" ADAS
+ SG_ RadarCounter : 27|4@0+ (1,0) [0|15] "" ADAS
+
+BO_ 194 RADAR_OBJ_09: 64 RADAR
+ SG_ RadarChecksum : 7|16@0+ (1,0) [0|65535] "" ADAS
+ SG_ RadarCounter : 27|4@0+ (1,0) [0|15] "" ADAS
+
+BO_ 196 RADAR_OBJ_10: 64 RADAR
+ SG_ RadarChecksum : 7|16@0+ (1,0) [0|65535] "" ADAS
+ SG_ RadarCounter : 27|4@0+ (1,0) [0|15] "" ADAS
+
+BO_ 198 RADAR_OBJ_11: 64 RADAR
+ SG_ RadarChecksum : 7|16@0+ (1,0) [0|65535] "" ADAS
+ SG_ RadarCounter : 27|4@0+ (1,0) [0|15] "" ADAS
+
+BO_ 200 RADAR_OBJ_12: 64 RADAR
+ SG_ RadarChecksum : 7|16@0+ (1,0) [0|65535] "" ADAS
+ SG_ RadarCounter : 27|4@0+ (1,0) [0|15] "" ADAS
+
+BO_ 202 RADAR_OBJ_13: 64 RADAR
+ SG_ RadarChecksum : 7|16@0+ (1,0) [0|65535] "" ADAS
+ SG_ RadarCounter : 27|4@0+ (1,0) [0|15] "" ADAS
+
+BO_ 204 RADAR_OBJ_14: 64 RADAR
+ SG_ RadarChecksum : 7|16@0+ (1,0) [0|65535] "" ADAS
+ SG_ RadarCounter : 27|4@0+ (1,0) [0|15] "" ADAS
+
+BO_ 206 RADAR_OBJ_15: 64 RADAR
+ SG_ RadarChecksum : 7|16@0+ (1,0) [0|65535] "" ADAS
+ SG_ RadarCounter : 27|4@0+ (1,0) [0|15] "" ADAS
+
+BO_ 208 RADAR_OBJ_16: 64 RADAR
+ SG_ RadarChecksum : 7|16@0+ (1,0) [0|65535] "" ADAS
+ SG_ RadarCounter : 27|4@0+ (1,0) [0|15] "" ADAS
+
+BO_ 210 RADAR_OBJ_17: 64 RADAR
+ SG_ RadarChecksum : 7|16@0+ (1,0) [0|65535] "" ADAS
+ SG_ RadarCounter : 27|4@0+ (1,0) [0|15] "" ADAS
+
+BO_ 212 RADAR_OBJ_18: 64 RADAR
+ SG_ RadarChecksum : 7|16@0+ (1,0) [0|65535] "" ADAS
+ SG_ RadarCounter : 27|4@0+ (1,0) [0|15] "" ADAS
+
+BO_ 214 RADAR_OBJ_19: 64 RADAR
+ SG_ RadarChecksum : 7|16@0+ (1,0) [0|65535] "" ADAS
+ SG_ RadarCounter : 27|4@0+ (1,0) [0|15] "" ADAS
+
+BO_ 128 RADAR_STATUS_080: 16 RADAR
+
+BO_ 160 RADAR_STATUS_0a0: 16 RADAR
+
+BO_ 129 RADAR_STATUS_081: 20 RADAR
+
+BO_ 130 RADAR_STATUS_082: 20 RADAR
+
+BO_ 131 RADAR_STATUS_083: 20 RADAR
+
+BO_ 132 RADAR_STATUS_084: 20 RADAR
+
+BO_ 133 RADAR_STATUS_085: 20 RADAR
+
+BO_ 134 RADAR_STATUS_086: 20 RADAR
+
+BO_ 135 RADAR_STATUS_087: 20 RADAR
+
+BO_ 136 RADAR_STATUS_088: 20 RADAR
+
+BO_ 485 RADAR_STATUS_1e5: 48 RADAR
+ SG_ RadarChecksum : 7|16@0+ (1,0) [0|65535] "" ADAS
+ SG_ RadarCounter : 27|4@0+ (1,0) [0|15] "" ADAS
+
+BO_ 486 RADAR_STATUS_1e6: 48 RADAR
+ SG_ RadarChecksum : 7|16@0+ (1,0) [0|65535] "" ADAS
+ SG_ RadarCounter : 27|4@0+ (1,0) [0|15] "" ADAS
+
+BO_ 500 RADAR_STATUS_1f4: 16 RADAR
+
+CM_ "MG4 radar/ADAS domain, BUS 1. Reverse-engineered STRUCTURE only from logs (route 73d49d6e14131585). RADAR_OBJ_00..19 (0x0b0-0x0d6, 64B, 15Hz) are per-object radar tracks. Payload (bytes 4-61) is densely BIT-PACKED, non-byte-aligned object data (range/azimuth/velocity/RCS/valid) and is NOT decoded -- needs a controlled capture (approach a stationary object at known distances) or radar firmware to resolve fields. Framing IS verified: byte3 low nibble = rolling counter (0-15), bytes 0-1 = checksum. The camera-firmware radar.json (IDs 0x300-0x3b1 / CANFD 0x340-0x34f) does NOT match this radar -- different platform, no ID overlap.";
+CM_ SG_ 176 RadarCounter "per-frame rolling counter, verified increments 0-15";

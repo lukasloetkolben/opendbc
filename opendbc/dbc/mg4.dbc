@@ -212,6 +212,6 @@ CM_ BO_ 80 "bus 1 (radar domain). 16-bit checksum + rolling counters; byte 6 is 
 CM_ BO_ 1808 "GWM/EVCC/BMS addresses from the OBDb MG-MG4 signalset; possibly reachable only via the OBD-II port.";
 CM_ BO_ 1842 "ECUs that answered the VIN query (22 F190) on bus 0; FVCM/RADAR naming assumed.";
 VAL_ 137 LKACmdSts 0 "OFF" 4 "ACTIVE";
-VAL_ 404 ShftLvrPos 1 "P" 2 "R" 4 "D";
+VAL_ 404 ShftLvrPos 1 "P" 2 "R" 3 "N" 4 "D";
 VAL_ 474 AccSts 0 "OFF" 1 "ACC_ENGAGED" 2 "ACC_AND_TJA";
 VAL_ 1019 DircnIndSwSts 0 "OFF" 1 "TAP" 2 "LATCHED";

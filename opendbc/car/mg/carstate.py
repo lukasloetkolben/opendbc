@@ -14,10 +14,10 @@ GEAR_MAP = {
   **{i: GearShifter.drive for i in range(1, 9)},
 }
 
-# TODO: neutral not yet observed in logs
 GEAR_MAP_CANFD = {
   1: GearShifter.park,
   2: GearShifter.reverse,
+  3: GearShifter.neutral,
   4: GearShifter.drive,
 }
 

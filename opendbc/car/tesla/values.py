@@ -37,7 +37,7 @@ class TeslaCarDocsHW4(CarDocs):
 
 @dataclass
 class TeslaPlatformConfig(PlatformConfig):
-  dbc_dict: DbcDict = field(default_factory=lambda: {Bus.party: 'tesla_model3_party'})
+  dbc_dict: DbcDict = field(default_factory=lambda: {Bus.party: 'tesla_model3_party', Bus.adas: 'tesla_model3_vehicle'})
 
 
 class CAR(Platforms):
@@ -48,7 +48,7 @@ class CAR(Platforms):
       TeslaCarDocsHW4("Tesla Model 3 (with HW4) 2024-25"),
     ],
     CarSpecs(mass=1899., wheelbase=2.875, steerRatio=12.0),
-    {Bus.party: 'tesla_model3_party', Bus.radar: 'tesla_radar_continental_generated'},
+    {Bus.party: 'tesla_model3_party', Bus.radar: 'tesla_radar_continental_generated', Bus.adas: 'tesla_model3_vehicle'},
   )
   TESLA_MODEL_Y = TeslaPlatformConfig(
     [
@@ -56,7 +56,7 @@ class CAR(Platforms):
       TeslaCarDocsHW4("Tesla Model Y (with HW4) 2024-25"),
     ],
     CarSpecs(mass=2072., wheelbase=2.890, steerRatio=12.0),
-    {Bus.party: 'tesla_model3_party', Bus.radar: 'tesla_radar_continental_generated'},
+    {Bus.party: 'tesla_model3_party', Bus.radar: 'tesla_radar_continental_generated', Bus.adas: 'tesla_model3_vehicle'},
   )
   TESLA_MODEL_X = TeslaPlatformConfig(
     [TeslaCarDocsHW4("Tesla Model X (with HW4) 2024")],
@@ -125,12 +125,17 @@ class CarControllerParams:
 class TeslaSafetyFlags(IntFlag):
   LONG_CONTROL = 1
   FSD_14 = 2
+  HW4_GEN2 = 4
 
 
 class TeslaFlags(IntFlag):
   LONG_CONTROL = 1
   FSD_14 = 2
   MISSING_DAS_SETTINGS = 4
+  # 2026+ Model Y (Juniper): DAS_status moved from 0x39b to 0x399 and UI_warning (0x311) is gone
+  HW4_GEN2 = 8
+  # blinkers and the seatbelt buckle are only on the VEHICLE bus, which needs its CAN lines tapped
+  HW4_GEN2_VEHICLE_BUS = 16
 
 
 DBC = CAR.create_dbc_map()

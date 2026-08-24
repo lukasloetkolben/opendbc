@@ -6,7 +6,7 @@ from opendbc.car.structs import CarParams
 from opendbc.car.tesla.interface import CarInterface
 from opendbc.car.tesla.fingerprints import FW_VERSIONS
 from opendbc.car.tesla.radar_interface import RADAR_START_ADDR
-from opendbc.car.tesla.values import CAR, FSD_14_FW
+from opendbc.car.tesla.values import CANBUS, CAR, FSD_14_FW, TeslaFlags, TeslaSafetyFlags
 
 Ecu = CarParams.Ecu
 
@@ -93,6 +93,29 @@ class TestTeslaFingerprint(unittest.TestCase):
         fingerprint[1][RADAR_START_ADDR] = 8
       CP = CarInterface.get_params(CAR.TESLA_MODEL_3, fingerprint, [], False, False, False)
       assert CP.radarUnavailable != radar
+
+  def test_hw4_gen2_detection(self):
+    # HW4 gen2 (2026+ Model Y) moved DAS_status to 0x399
+    fingerprint = gen_empty_fingerprint()
+    CP = CarInterface.get_params(CAR.TESLA_MODEL_Y, fingerprint, [], False, False, False)
+    assert not CP.flags & TeslaFlags.HW4_GEN2
+    assert not CP.flags & TeslaFlags.HW4_GEN2_VEHICLE_BUS
+
+    fingerprint[CANBUS.autopilot_party][0x399] = 8
+    CP = CarInterface.get_params(CAR.TESLA_MODEL_Y, fingerprint, [], False, False, False)
+    assert CP.flags & TeslaFlags.HW4_GEN2
+    assert CP.safetyConfigs[0].safetyParam & TeslaSafetyFlags.HW4_GEN2
+    # DAS_settings is on the party bus here, so it's not missing
+    assert not CP.flags & TeslaFlags.MISSING_DAS_SETTINGS
+    # blinkers and the seatbelt buckle need the VEHICLE bus tapped
+    assert not CP.flags & TeslaFlags.HW4_GEN2_VEHICLE_BUS
+
+    fingerprint[CANBUS.vehicle][0x3F5] = 8
+    # the tapped VEHICLE bus carries an unrelated RADAR_START_ADDR
+    fingerprint[CANBUS.vehicle][RADAR_START_ADDR] = 8
+    CP = CarInterface.get_params(CAR.TESLA_MODEL_Y, fingerprint, [], False, False, False)
+    assert CP.flags & TeslaFlags.HW4_GEN2_VEHICLE_BUS
+    assert CP.radarUnavailable
 
   def test_no_radar_car(self):
     # Model X doesn't have radar DBC defined, should always be unavailable

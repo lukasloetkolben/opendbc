@@ -404,6 +404,11 @@ class TestTeslaFSD14StockSafety(TestTeslaStockSafety):
   SAFETY_PARAM = TeslaSafetyFlags.FSD_14
 
 
+class TestTeslaHW4Gen2StockSafety(TestTeslaStockSafety):
+  # HW4 gen2 doesn't send UI_warning, so it's dropped from the RX checks
+  SAFETY_PARAM = TeslaSafetyFlags.HW4_GEN2
+
+
 class TestTeslaLongitudinalSafety(TestTeslaSafetyBase):
   SAFETY_PARAM = TeslaSafetyFlags.LONG_CONTROL
 

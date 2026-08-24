@@ -37,6 +37,13 @@ class TeslaCarDocsHW4(CarDocs):
 
 
 @dataclass
+class TeslaCarDocsHW4Gen2(CarDocs):
+  package: str = "All"
+  car_parts: CarParts = field(default_factory=CarParts.common([CarHarness.tesla_c]))
+  footnotes: list[Enum] = field(default_factory=lambda: [Footnote.HW_TYPE, Footnote.SETUP])
+
+
+@dataclass
 class TeslaPlatformConfig(PlatformConfig):
   dbc_dict: DbcDict = field(default_factory=lambda: {Bus.party: 'tesla_model3_party', Bus.adas: 'tesla_model3_vehicle'})
 
@@ -55,6 +62,7 @@ class CAR(Platforms):
     [
       TeslaCarDocsHW3("Tesla Model Y (with HW3) 2020-24"),
       TeslaCarDocsHW4("Tesla Model Y (with HW4) 2023-25"),
+      TeslaCarDocsHW4Gen2("Tesla Model Y (with HW4) 2026"),
     ],
     CarSpecs(mass=2072., wheelbase=2.890, steerRatio=12.0),
     {Bus.party: 'tesla_model3_party', Bus.radar: 'tesla_radar_continental_generated', Bus.adas: 'tesla_model3_vehicle'},

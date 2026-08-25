@@ -73,13 +73,20 @@ class CAR(Platforms):
 
 
 FW_QUERY_CONFIG = FwQueryConfig(
-  fw_version_regex=br".+,[EYX]\d?[A-Z]*\d{3}\.\d+(?:\.\d+)?",
+  # ASCII version string (DID 0xF195, HW3/HW4), or binary application software id (DID 0xF181, HW4 gen2)
+  fw_version_regex=br"(?:.+,[EYX]\d?[A-Z]*\d{3}\.\d+(?:\.\d+)?|\x01\x01[\x00-\xff]{17})",
   requests=[
     Request(
       [StdQueries.TESTER_PRESENT_REQUEST, StdQueries.SUPPLIER_SOFTWARE_VERSION_REQUEST],
       [StdQueries.TESTER_PRESENT_RESPONSE, StdQueries.SUPPLIER_SOFTWARE_VERSION_RESPONSE],
       bus=0,
-    )
+    ),
+    # HW4 gen2 (2026+ Model Y) EPS doesn't respond to 0xF195
+    Request(
+      [StdQueries.TESTER_PRESENT_REQUEST, StdQueries.UDS_VERSION_REQUEST],
+      [StdQueries.TESTER_PRESENT_RESPONSE, StdQueries.UDS_VERSION_RESPONSE],
+      bus=0,
+    ),
   ]
 )
 

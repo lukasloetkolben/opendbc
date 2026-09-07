@@ -72,8 +72,8 @@ class CarInterface(CarInterfaceBase):
       if 0x3DC in fingerprint[0]:  # Gateway_73
         ret.flags |= VolkswagenFlags.ALT_GEAR.value
 
-      # only allow gateway harness to escalate Emergency Assist
-      ret.dashcamOnly = ret.networkLocation == NetworkLocation.fwdCamera and not docs
+      # fork: camera harness enabled, lateral control only with stock ACC longitudinal
+      ret.dashcamOnly = False
 
     else:
       # Set global MQB parameters
@@ -116,7 +116,11 @@ class CarInterface(CarInterfaceBase):
     # Global longitudinal tuning defaults, can be overridden per-vehicle
 
     if ret.flags & VolkswagenFlags.MEB:
-      ret.openpilotLongitudinalControl = True
+      # The ACC radar sits on the car side of the camera harness relay, so openpilot can only take over
+      # longitudinal on the gateway harness. The camera harness keeps stock ACC and runs lateral only.
+      ret.openpilotLongitudinalControl = ret.networkLocation == NetworkLocation.gateway or docs
+      if ret.openpilotLongitudinalControl:
+        safety_configs[0].safetyParam |= VolkswagenSafetyFlags.LONG_CONTROL.value
       ret.longitudinalActuatorDelay = 0.3
     else:
       ret.alphaLongitudinalAvailable = ret.networkLocation == NetworkLocation.gateway or docs

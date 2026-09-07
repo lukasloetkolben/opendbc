@@ -22,6 +22,7 @@ ACC_AKTIV_REGELT = 3
 ACC_OVERRIDE = 4
 
 # MEB message IDs
+MSG_GRA_ACC_01 = 0x12B
 MSG_ACC_18     = 0x14D
 MSG_KLR_01     = 0x25D
 MSG_TA_01      = 0x26B
@@ -260,7 +261,38 @@ class TestVolkswagenMebSafetyBase(common.CarSafetyTest, common.CurvatureSteering
             self.assertEqual(should_tx, self._tx(self._curvature_cmd_msg(curvature_cmd, steer_req=steer_req, power=50 if steer_req else 0)))
 
 
-class TestVolkswagenMebSafety(TestVolkswagenMebSafetyBase):
+class TestVolkswagenMebStockSafety(TestVolkswagenMebSafetyBase):
+  # Camera harness integration: the ACC radar stays on the car side of the relay, so stock keeps longitudinal
+  TX_MSGS = [[MSG_HCA_03, 0], [MSG_LDW_02, 0], [MSG_GRA_ACC_01, 0], [MSG_GRA_ACC_01, 2],
+             [MSG_KLR_01, 0], [MSG_KLR_01, 2]]
+  FWD_BLACKLISTED_ADDRS = {0: [MSG_KLR_01], 2: [MSG_HCA_03, MSG_LDW_02]}
+  RELAY_MALFUNCTION_ADDRS = {0: (MSG_HCA_03, MSG_LDW_02),
+                             2: (MSG_KLR_01,)}
+
+  def setUp(self):
+    self.packer = CANPackerSafety("vw_meb_generated")
+    self.safety = libsafety_py.libsafety
+    self.safety.set_safety_hooks(CarParams.SafetyModel.volkswagenMeb, 0)
+    self.safety.init_tests()
+
+  def test_spam_cancel_safety_check(self):
+    self.safety.set_controls_allowed(0)
+    self.assertTrue(self._tx(self._button_msg(cancel=1)))
+    self.assertFalse(self._tx(self._button_msg(resume=1)))
+    self.assertFalse(self._tx(self._button_msg(_set=1)))
+    self.safety.set_controls_allowed(1)
+    self.assertTrue(self._tx(self._button_msg(resume=1)))
+
+
+class TestVolkswagenMebGen2StockSafety(TestVolkswagenMebStockSafety):
+  def setUp(self):
+    self.packer = CANPackerSafety("vw_meb_2024_generated")
+    self.safety = libsafety_py.libsafety
+    self.safety.set_safety_hooks(CarParams.SafetyModel.volkswagenMeb, VolkswagenSafetyFlags.MEB_ALT_CRC)
+    self.safety.init_tests()
+
+
+class TestVolkswagenMebLongSafety(TestVolkswagenMebSafetyBase):
   TX_MSGS = [[MSG_HCA_03, 0], [MSG_LDW_02, 0], [MSG_ACC_19, 0], [MSG_ACC_18, 0],
              [MSG_TA_01, 0], [MSG_KLR_01, 0], [MSG_KLR_01, 2]]
   FWD_BLACKLISTED_ADDRS = {0: [MSG_KLR_01],
@@ -274,7 +306,7 @@ class TestVolkswagenMebSafety(TestVolkswagenMebSafetyBase):
   def setUp(self):
     self.packer = CANPackerSafety("vw_meb_generated")
     self.safety = libsafety_py.libsafety
-    self.safety.set_safety_hooks(CarParams.SafetyModel.volkswagenMeb, 0)
+    self.safety.set_safety_hooks(CarParams.SafetyModel.volkswagenMeb, VolkswagenSafetyFlags.LONG_CONTROL)
     self.safety.init_tests()
 
   # stock cruise controls are entirely bypassed under openpilot longitudinal control
@@ -359,11 +391,12 @@ class TestVolkswagenMebSafety(TestVolkswagenMebSafetyBase):
         self.assertEqual(send, self._tx(self._accel_msg(self.INACTIVE_ACCEL, acc_status=acc_status)))
 
 
-class TestVolkswagenMebGen2Safety(TestVolkswagenMebSafety):
+class TestVolkswagenMebGen2LongSafety(TestVolkswagenMebLongSafety):
   def setUp(self):
     self.packer = CANPackerSafety("vw_meb_2024_generated")
     self.safety = libsafety_py.libsafety
-    self.safety.set_safety_hooks(CarParams.SafetyModel.volkswagenMeb, VolkswagenSafetyFlags.MEB_ALT_CRC)
+    self.safety.set_safety_hooks(CarParams.SafetyModel.volkswagenMeb,
+                                 VolkswagenSafetyFlags.LONG_CONTROL | VolkswagenSafetyFlags.MEB_ALT_CRC)
     self.safety.init_tests()
 
 

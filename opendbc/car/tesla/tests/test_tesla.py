@@ -53,6 +53,9 @@ class TestTeslaFingerprint(unittest.TestCase):
     # Every EPS FW must parse and its platform letter must match the car it's filed under.
     for car_model, ecus in FW_VERSIONS.items():
       for fw in ecus.get((Ecu.eps, 0x730, None), []):
+        # HW4 gen2 EPS only answers the binary application software id (0xF181), which has no platform letter
+        if fw.startswith(b'\x01\x01'):
+          continue
         m = FW_RE.match(fw)
 
         assert m is not None, f"Unparsable FW: {fw}"

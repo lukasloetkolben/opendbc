@@ -71,6 +71,9 @@ BO_ 905 DAS_status2: 8 PARTY
  SG_ DAS_pmmObstacleSeverity : 10|3@1+ (1,0) [0|7] ""  aps
  SG_ DAS_accSpeedLimit : 0|10@1+ (0.4,0) [0|204.6] "mph"  aps
 
+BO_ 257 RCM_inertial1: 8 PARTY
+ SG_ RCM_yawRate : 0|16@1- (0.0001,0) [-3.2768|3.2767] "rad/s"  X
+
 BO_ 264 DI_torque: 8 PARTY
  SG_ DI_axleSpeed : 40|16@1- (0.1,0.0) [-2750|2750] "RPM"  epas3s
  SG_ DI_torqueActual : 27|13@1- (2,0) [-7500|7500] "Nm"  X

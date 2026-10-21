@@ -85,6 +85,9 @@ class CarState(CarStateBase):
 
     # HW4 gen2 doesn't send UI_warning, and moved DAS_status from 0x39b to 0x399
     if self.CP.flags & TeslaFlags.HW4_GEN2:
+      # Yaw rate from the restraint control module, positive to the left
+      ret.yawRate = cp_party.vl["RCM_inertial1"]["RCM_yawRate"]
+
       # Doors
       ret.doorOpen = cp_party.vl["VehicleStatus"]["allDoorsClosed"] == 0
 

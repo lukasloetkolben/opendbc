@@ -51,18 +51,23 @@ class CarState(CarStateBase):
     if not self.CP.openpilotLongitudinalControl:
       ret.cruiseState.speed = -1
     ret.cruiseState.available = True  # cp.vl["VDM_AdasSts"]["VDM_AdasInterfaceStatus"] == 1
-    ret.cruiseState.standstill = cp.vl["VDM_AdasSts"]["VDM_AdasVehicleHoldStatus"] == 1
 
     # ACM_Status->ACM_FaultSupervisorState normally 1, appears to go to 3 when either:
     # 1. car in park/not in drive (normal)
     # 2. something (message from another ECU) ACM relies on is faulty
     #  * ACM_FaultStatus will stay 0 since ACM itself isn't faulted
     # TODO: ACM_FaultStatus hasn't been seen high yet, but log anyway
-    ret.accFaulted = (cp_cam.vl["ACM_Status"]["ACM_FaultStatus"] == 1 or
-                      # VDM_AdasFaultStatus=Brk_Intv is the default for some reason
-                      # VDM_AdasFaultStatus=Cntr_Fault isn't fully understood, but we've seen it in the wild
-                      # VDM_AdasFaultStatus=Imps_Cmd was seen when sending it rapidly changing ACC enable commands, or when ACC command drops out
-                      cp.vl["VDM_AdasSts"]["VDM_AdasFaultStatus"] in (2, 3))  # 2=Cntr_Fault, 3=Imps_Cmd
+    ret.accFaulted = cp_cam.vl["ACM_Status"]["ACM_FaultStatus"] == 1
+
+    if self.CP.flags & RivianFlags.NO_VDM_ADAS_STS:
+      # TODO: find VDM fault status, VDM_AdasSts likely moved to 0x161 with an unknown layout
+      ret.cruiseState.standstill = cp_cam.vl["ACM_AdasSts"]["ACM_AdasSts_VehicleHoldStatus"] == 2
+    else:
+      ret.cruiseState.standstill = cp.vl["VDM_AdasSts"]["VDM_AdasVehicleHoldStatus"] == 1
+      # VDM_AdasFaultStatus=Brk_Intv is the default for some reason
+      # VDM_AdasFaultStatus=Cntr_Fault isn't fully understood, but we've seen it in the wild
+      # VDM_AdasFaultStatus=Imps_Cmd was seen when sending it rapidly changing ACC enable commands, or when ACC command drops out
+      ret.accFaulted |= cp.vl["VDM_AdasSts"]["VDM_AdasFaultStatus"] in (2, 3)  # 2=Cntr_Fault, 3=Imps_Cmd
 
     # Gear
     ret.gearShifter = GEAR_MAP.get(int(cp.vl["VDM_PropStatus"]["VDM_Prndl_Status"]), GearShifter.unknown)
@@ -91,8 +96,10 @@ class CarState(CarStateBase):
     if not (self.CP.flags & RivianFlags.GEN2):
       self.sccm_wheel_touch = copy.copy(cp.vl["SCCM_WheelTouch"])
     # This message can lag and send two messages at once, make sure we forward all of them
-    adas_status_msgs = cp.vl_all["VDM_AdasSts"]
-    self.vdm_adas_status = [dict(zip(adas_status_msgs, vals, strict=True)) for vals in zip(*adas_status_msgs.values(), strict=True)]
+    self.vdm_adas_status = []
+    if not (self.CP.flags & RivianFlags.NO_VDM_ADAS_STS):
+      adas_status_msgs = cp.vl_all["VDM_AdasSts"]
+      self.vdm_adas_status = [dict(zip(adas_status_msgs, vals, strict=True)) for vals in zip(*adas_status_msgs.values(), strict=True)]
 
     return ret
 

@@ -44,6 +44,12 @@ BO_ 64 SAS_Status: 8 SAS
  SG_ SAS_Status_AngleSpeedSafe : 39|14@0- (0.0078125,0) [-50|50] "rad/s" ACM,EPAS_P,ESP,RCM,VDM
  SG_ SAS_StatusQ : 41|2@0+ (1,0) [0|3] "" ACM,EPAS_P,ESP,RCM,VDM
 
+BO_ 130 ACM_AdasSts: 8 ACM
+ SG_ ACM_AdasSts_Checksum : 7|8@0+ (1,0) [0|255] "" VDM
+ SG_ ACM_AdasSts_Counter : 11|4@0+ (1,0) [0|15] "" VDM
+ SG_ ACM_AdasSts_InterfaceStatus : 15|4@0+ (1,0) [0|15] "" VDM
+ SG_ ACM_AdasSts_VehicleHoldStatus : 23|3@0+ (1,0) [0|7] "" VDM
+
 BO_ 256 ACM_Status: 8 ACM
  SG_ ACM_Status_Checksum : 7|8@0+ (1,0) [0|255] "-" EPAS_P,VDM
  SG_ ACM_Status_Counter : 11|4@0+ (1,0) [0|15] "-" EPAS_P,VDM
@@ -805,6 +811,8 @@ CM_ SG_ 912 EPAS_InternalSasQ "Steering angle sensor validity status";
 CM_ SG_ 1640 OCS_Checksum "Checksum signal for frame";
 VAL_ 64 SAS_Status_Calibrated 0 "SAS_Status_Calibrated_Not_Calibrated" 1 "SAS_Status_Calibrated_Calibrated";
 VAL_ 64 SAS_StatusQ 0 "SAS_Status_UndefinedDataACCur" 1 "SAS_Status_TmpUnDefinedData" 2 "SAS_Status_DataACCurrentNotWithinSpecification" 3 "SAS_Status_ACCurrentData";
+VAL_ 130 ACM_AdasSts_InterfaceStatus 1 "Off" 4 "Active";
+VAL_ 130 ACM_AdasSts_VehicleHoldStatus 1 "NotHold" 2 "Hold";
 VAL_ 256 ACM_FeatureStatus 0 "ACM_FeatureStatus_Standby" 1 "ACM_FeatureStatus_Acc" 2 "ACM_FeatureStatus_Hwp" 3 "ACM_FeatureStatus_Uf" 4 "ACM_FeatureStatus_Faulted";
 VAL_ 256 ACM_FaultStatus 0 "ACM_FaultStatus_NoFault" 1 "ACM_FaultStatus_Faulted" 7 "ACM_FaultStatus_Sna";
 VAL_ 256 ACM_FaultSupervisorState 0 "Nominal_Operation" 1 "SS_1" 2 "SS_2" 3 "SS_3" 4 "SS_4" 5 "SS_5" 6 "SS_6" 7 "Reserved";

@@ -21,6 +21,10 @@ class CarInterface(CarInterfaceBase):
     if 0x321 not in fingerprint[0]:
       ret.flags |= RivianFlags.GEN2.value
 
+    # 2026+ dropped VDM_AdasSts, which also means stock ACC can't be canceled
+    if 0x162 not in fingerprint[0]:
+      ret.flags |= RivianFlags.NO_VDM_ADAS_STS.value
+
     ret.steerActuatorDelay = 0.15
     ret.steerLimitTimer = 0.4
     CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)

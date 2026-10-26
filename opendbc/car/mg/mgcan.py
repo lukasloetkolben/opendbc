@@ -11,6 +11,30 @@ def mg4_lka_checksum(dat: bytes) -> int:
   return crc
 
 
+# MG4 LKA_CMD (0x089): 24-byte angle command. Verified against route 73d49d6e14131585/00000026:
+#   byte 4  = CRC8(0x1D, init 0) over bytes [5:12]        (5000/5000 frames)
+#   byte 5  = state<<4 | counter   (state 4 = active, counter cycles 0..14)
+#   bytes 6-7 = steering wheel angle, big-endian, raw = angle_deg*16 + 32600  (neutral 0x7F58)
+#   bytes 16-18 = LKAReqToq + LKACmdPV, copied live from the original sender (the camera); the EPS
+#                 appears not to validate the PV (steering test accepted CRC + counter alone).
+def create_mg4_lka_steering(counter, angle_deg, active, lka_req_toq, lka_cmd_pv, bus):
+  dat = bytearray(24)
+  dat[0:4] = b"\x02\x09\x07\x08"                      # first block header (const)
+  dat[5] = ((0x4 if active else 0x0) << 4) | (counter & 0xF)
+  raw_angle = int(round(angle_deg * 16)) + 32600
+  raw_angle = max(0, min(0xFFFF, raw_angle))
+  dat[6] = (raw_angle >> 8) & 0xFF
+  dat[7] = raw_angle & 0xFF
+  dat[8:12] = b"\x80\x1f\xff\xff"                     # observed constant
+  dat[12:16] = b"\x02\x09\x11\x08"                    # second block header (const)
+  dat[16] = int(lka_req_toq) & 0xFF                   # byte 16, copied from the camera
+  dat[17] = (int(lka_cmd_pv) >> 6) & 0xFF             # byte 17, copied from the camera
+  dat[18] = (int(lka_cmd_pv) & 0x3F) << 2             # byte 18, copied (low 2 bits always 0)
+  # bytes 19-23 stay 0
+  dat[4] = mg4_lka_checksum(dat[5:12])
+  return 0x089, bytes(dat), bus
+
+
 def calc_checksum(values):
   lka_req_toq = values['LKAReqToqHSC2'] + 0x400
   lka_req_toq_sts = values['LKAReqToqStsHSC2']

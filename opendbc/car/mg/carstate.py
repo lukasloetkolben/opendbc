@@ -23,6 +23,12 @@ GEAR_MAP_CANFD = {
 
 
 class CarState(CarStateBase):
+  def __init__(self, CP):
+    super().__init__(CP)
+    # bytes 16-18 of the camera's LKA_CMD (0x089), replayed in our own command (idle defaults)
+    self.lka_req_toq = 0x80
+    self.lka_cmd_pv = 0x400
+
   def update(self, can_parsers) -> structs.CarState:
     if self.CP.flags & MgFlags.CANFD:
       return self.update_canfd(can_parsers)
@@ -79,7 +85,12 @@ class CarState(CarStateBase):
 
   def update_canfd(self, can_parsers) -> structs.CarState:
     cp = can_parsers[Bus.pt]
+    cp_cam = can_parsers[Bus.cam]
     ret = structs.CarState()
+
+    # Copy bytes 16-18 of the camera's LKA_CMD (0x089) so the carcontroller can replay them.
+    self.lka_req_toq = int(cp_cam.vl["LKA_CMD"]["LKAReqToq"])
+    self.lka_cmd_pv = int(cp_cam.vl["LKA_CMD"]["LKACmdPV"])
 
     # Vehicle speed
     self.parse_wheel_speeds(ret,
@@ -137,6 +148,7 @@ class CarState(CarStateBase):
     if CP.flags & MgFlags.CANFD:
       return {
         Bus.pt: CANParser(DBC[CP.carFingerprint][Bus.pt], [], 0),
+        Bus.cam: CANParser(DBC[CP.carFingerprint][Bus.pt], [], 2),
       }
 
     return {

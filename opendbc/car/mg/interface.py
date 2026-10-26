@@ -25,9 +25,14 @@ class CarInterface(CarInterfaceBase):
       ret.safetyConfigs = [get_safety_config(structs.CarParams.SafetyModel.mg)]
 
     ret.steerActuatorDelay = 0.3
-    CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
 
-    ret.steerControlType = structs.CarParams.SteerControlType.torque
+    if candidate == CAR.MG_4_EV:
+      # LKA_CMD (0x089) is a steering-wheel-angle setpoint
+      ret.steerControlType = structs.CarParams.SteerControlType.angle
+    else:
+      CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
+      ret.steerControlType = structs.CarParams.SteerControlType.torque
+
     ret.radarUnavailable = True
     ret.alphaLongitudinalAvailable = False
 

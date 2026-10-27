@@ -2,12 +2,17 @@
 // CANParser.update/can_valid/bus_timeout from parser.py; the Python wrapper
 // owns the vl/vl_all/ts_nanos dicts and this core writes into them.
 
+mod capnp;
 mod checksum;
+mod frames;
 
 use std::collections::{HashMap, VecDeque};
+use std::hash::{BuildHasherDefault, Hasher};
 
 use pyo3::prelude::*;
 use pyo3::types::{PyByteArray, PyBytes, PyDict, PyFloat, PyList, PySet, PyString, PyTuple};
+
+use frames::CanFrames;
 
 const MAX_BAD_COUNTER: u32 = 5;
 const CAN_INVALID_CNT: u32 = 5;
@@ -73,6 +78,26 @@ struct MessageState {
   vl_all_linked: bool,
   all_vals_dirty: bool,
 }
+
+// CAN addresses are small ints, SipHash is overkill for the per-frame lookup
+#[derive(Default)]
+struct AddrHasher(u64);
+
+impl Hasher for AddrHasher {
+  fn finish(&self) -> u64 {
+    self.0
+  }
+  fn write(&mut self, bytes: &[u8]) {
+    for &b in bytes {
+      self.0 = (self.0 << 8 | b as u64).wrapping_mul(0x9E37_79B9_7F4A_7C15);
+    }
+  }
+  fn write_u32(&mut self, v: u32) {
+    self.0 = (v as u64).wrapping_mul(0x9E37_79B9_7F4A_7C15);
+  }
+}
+
+type AddrMap = HashMap<u32, usize, BuildHasherDefault<AddrHasher>>;
 
 fn py_hex(v: i128) -> String {
   if v < 0 { format!("-0x{:x}", -v) } else { format!("0x{v:x}") }
@@ -187,7 +212,7 @@ struct ParserCore {
   bus: i64,
   log: PyObject,
   states: Vec<MessageState>,
-  index: HashMap<u32, usize>,
+  index: AddrMap,
   #[pyo3(get, set)]
   can_invalid_cnt: u32,
   #[pyo3(get, set)]
@@ -211,7 +236,7 @@ impl ParserCore {
       bus,
       log,
       states: Vec::new(),
-      index: HashMap::new(),
+      index: AddrMap::default(),
       can_invalid_cnt: CAN_INVALID_CNT,
       last_nonempty_nanos: 0,
       last_update_nanos: 0,
@@ -283,6 +308,34 @@ impl ParserCore {
     }
 
     let updated = PySet::empty(py)?;
+
+    // fast path: frames decoded in Rust by decode_can_events
+    if let Ok(cf) = strings.downcast::<CanFrames>() {
+      let cf = cf.get();
+      for e in &cf.entries {
+        let mut bus_empty = true;
+        for f in &cf.frames[e.frames.clone()] {
+          if f.src as i64 != self.bus {
+            continue;
+          }
+          bus_empty = false;
+          let Some(&idx) = self.index.get(&f.address) else { continue };
+          let dat = &cf.data[f.dat.clone()];
+          if dat.len() > 64 {
+            continue;
+          }
+          if self.states[idx].parse(py, &self.log, e.nanos, dat)? {
+            updated.add(f.address)?;
+          }
+        }
+        if !bus_empty {
+          self.last_nonempty_nanos = e.nanos;
+        }
+        self.last_update_nanos = e.nanos;
+      }
+      return Ok(updated);
+    }
+
     let entries = if strings.len()? > 0 && !{
       let first = item(strings, 0)?;
       first.is_instance_of::<PyList>() || first.is_instance_of::<PyTuple>()
@@ -370,5 +423,7 @@ impl ParserCore {
 
 #[pymodule]
 fn _parser_rs(m: &Bound<'_, PyModule>) -> PyResult<()> {
-  m.add_class::<ParserCore>()
+  m.add_class::<ParserCore>()?;
+  m.add_class::<CanFrames>()?;
+  m.add_function(wrap_pyfunction!(frames::decode_can_events, m)?)
 }

@@ -1,0 +1,11 @@
+import sys
+import platform
+
+Import('env')
+
+# Rust core for CANParser, see rust/
+ext = 'dylib' if platform.system() == 'Darwin' else 'so'
+rust = Dir('rust').abspath
+srcs = Glob('rust/src/*.rs') + ['rust/Cargo.toml', 'rust/Cargo.lock', 'rust/build.rs']
+env.Command('_parser_rs.so', srcs,
+            f'cd {rust} && PYO3_PYTHON={sys.executable} cargo build --release --locked && cp target/release/lib_parser_rs.{ext} $TARGET.abspath')

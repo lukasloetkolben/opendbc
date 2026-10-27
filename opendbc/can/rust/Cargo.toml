@@ -1,0 +1,18 @@
+[package]
+name = "parser_rs"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "_parser_rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.23.5", features = ["extension-module", "abi3-py311"] }
+
+[build-dependencies]
+pyo3-build-config = "0.23.5"
+
+[profile.release]
+lto = true
+codegen-units = 1

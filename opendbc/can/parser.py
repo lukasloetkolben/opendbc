@@ -110,7 +110,7 @@ class VLDict(dict):
     return super().__getitem__(key)
 
 
-class CANParser:
+class PyCANParser:
   def __init__(self, dbc_name: str, messages: list[tuple[str | int, int]], bus: int):
     self.dbc_name: str = dbc_name
     self.bus: int = bus
@@ -170,7 +170,10 @@ class CANParser:
       freq = 1
     state.timeout_threshold = (1_000_000_000 / freq) * 10
 
-    self.message_states[msg.address] = state
+    self._add_state(state)
+
+  def _add_state(self, state: MessageState) -> None:
+    self.message_states[state.address] = state
 
   @property
   def bus_timeout(self) -> bool:
@@ -236,6 +239,55 @@ class CANParser:
       self._last_update_nanos = t
 
     return updated_addrs
+
+
+class CANParser(PyCANParser):
+  """PyCANParser with message state and update() in Rust, see opendbc/can/rust"""
+
+  def __init__(self, dbc_name: str, messages: list[tuple[str | int, int]], bus: int):
+    # imported here so opendbc.can imports before the extension is built (SConscripts import opendbc)
+    from opendbc.can._parser_rs import ParserCore
+    self._core = ParserCore(bus, carlog.warning)
+    super().__init__(dbc_name, messages, bus)
+
+  def _add_state(self, state: MessageState) -> None:
+    self._core.add_message(state.address, state.name, state.signals, state.ignore_alive, state.frequency, state.timeout_threshold,
+                           dict.__getitem__(self.vl, state.address), self.vl_all[state.address], self.ts_nanos[state.address])
+
+  @property
+  def can_invalid_cnt(self) -> int:
+    return self._core.can_invalid_cnt
+
+  @can_invalid_cnt.setter
+  def can_invalid_cnt(self, v: int) -> None:
+    self._core.can_invalid_cnt = v
+
+  @property
+  def last_nonempty_nanos(self) -> int:
+    return self._core.last_nonempty_nanos
+
+  @last_nonempty_nanos.setter
+  def last_nonempty_nanos(self, v: int) -> None:
+    self._core.last_nonempty_nanos = v
+
+  @property
+  def _last_update_nanos(self) -> int:
+    return self._core.last_update_nanos
+
+  @_last_update_nanos.setter
+  def _last_update_nanos(self, v: int) -> None:
+    self._core.last_update_nanos = v
+
+  @property
+  def bus_timeout(self) -> bool:
+    return self._core.bus_timeout()
+
+  @property
+  def can_valid(self) -> bool:
+    return self._core.can_valid()
+
+  def update(self, strings, sendcan: bool = False):
+    return self._core.update(strings)
 
 
 class CANDefine:

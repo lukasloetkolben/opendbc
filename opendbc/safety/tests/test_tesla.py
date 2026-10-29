@@ -48,6 +48,8 @@ class TestTeslaSafetyBase(common.CarSafetyTest, common.AngleSteeringSafetyTest, 
   MIN_ACCEL = -3.48
   INACTIVE_ACCEL = 0.0
 
+  HW4_GEN2 = False  # lateral limits with HW4_GEN2_STEER_RATIO
+
   cnt_angle_cmd = 0
 
   def _get_steer_cmd_angle_max(self, speed):
@@ -55,7 +57,7 @@ class TestTeslaSafetyBase(common.CarSafetyTest, common.AngleSteeringSafetyTest, 
 
   def setUp(self):
     super().setUp()
-    self.VM = VehicleModel(get_safety_CP())
+    self.VM = VehicleModel(get_safety_CP(self.HW4_GEN2))
     self.define = CANDefine(self.DBC)
     self.acc_states = {d: v for v, d in self.define.dv["DAS_control"]["DAS_accState"].items()}
     self.autopark_states = {d: v for v, d in self.define.dv["DI_state"]["DI_autoparkState"].items()}
@@ -384,8 +386,9 @@ class TestTeslaStockSafety(TestTeslaSafetyBase):
 
 
 class TestTeslaHW4Gen2StockSafety(TestTeslaStockSafety):
-  # HW4 gen2 doesn't send UI_warning, so it's dropped from the RX checks
+  # HW4 gen2 doesn't send UI_warning, so it's dropped from the RX checks, and its lateral limits use steer ratio 14
   SAFETY_PARAM = TeslaSafetyFlags.HW4_GEN2
+  HW4_GEN2 = True
 
 
 class TestTeslaLongitudinalSafety(TestTeslaSafetyBase):

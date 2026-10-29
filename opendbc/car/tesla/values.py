@@ -116,6 +116,10 @@ class CarControllerParams:
   JERK_LIMIT_MIN = -4.9  # m/s^3, ACC faults at 5.0
 
 
+# 2026+ Model Y, fit to the RCM yaw rate at 18-78 km/h steady state
+HW4_GEN2_STEER_RATIO = 14.0
+
+
 class TeslaSafetyFlags(IntFlag):
   LONG_CONTROL = 1
   HW4_GEN2 = 4

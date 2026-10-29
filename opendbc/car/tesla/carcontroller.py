@@ -4,15 +4,18 @@ from opendbc.car import Bus
 from opendbc.car.lateral import apply_steer_angle_limits_vm
 from opendbc.car.interfaces import CarControllerBase
 from opendbc.car.tesla.teslacan import TeslaCAN
-from opendbc.car.tesla.values import CarControllerParams
+from opendbc.car.tesla.values import HW4_GEN2_STEER_RATIO, CarControllerParams, TeslaFlags
 from opendbc.car.vehicle_model import VehicleModel
 
 
-def get_safety_CP():
+def get_safety_CP(hw4_gen2=False):
   # We use the TESLA_MODEL_Y platform for lateral limiting to match safety
   # A Model 3 at 40 m/s using the Model Y limits sees a <0.3% difference in max angle (from curvature factor)
   from opendbc.car.tesla.interface import CarInterface
-  return CarInterface.get_non_essential_params("TESLA_MODEL_Y")
+  CP = CarInterface.get_non_essential_params("TESLA_MODEL_Y")
+  if hw4_gen2:
+    CP.steerRatio = HW4_GEN2_STEER_RATIO
+  return CP
 
 
 class CarController(CarControllerBase):
@@ -23,7 +26,7 @@ class CarController(CarControllerBase):
     self.tesla_can = TeslaCAN(CP, self.packer)
 
     # Vehicle model used for lateral limiting
-    self.VM = VehicleModel(get_safety_CP())
+    self.VM = VehicleModel(get_safety_CP(bool(CP.flags & TeslaFlags.HW4_GEN2)))
 
   def update(self, CC, CS, now_nanos):
     actuators = CC.actuators

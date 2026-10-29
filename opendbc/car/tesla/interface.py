@@ -2,7 +2,7 @@ from opendbc.car import Bus, get_safety_config, structs
 from opendbc.car.interfaces import CarInterfaceBase
 from opendbc.car.tesla.carcontroller import CarController
 from opendbc.car.tesla.carstate import CarState
-from opendbc.car.tesla.values import TeslaSafetyFlags, TeslaFlags, CANBUS, CAR, DBC
+from opendbc.car.tesla.values import HW4_GEN2_STEER_RATIO, TeslaSafetyFlags, TeslaFlags, CANBUS, CAR, DBC
 from opendbc.car.tesla.radar_interface import RadarInterface, RADAR_START_ADDR
 
 
@@ -29,6 +29,7 @@ class CarInterface(CarInterfaceBase):
     if 0x399 in fingerprint[CANBUS.autopilot_party]:
       ret.flags |= TeslaFlags.HW4_GEN2.value
       ret.safetyConfigs[0].safetyParam |= TeslaSafetyFlags.HW4_GEN2.value
+      ret.steerRatio = HW4_GEN2_STEER_RATIO
 
       # VCFRONT_lighting (blinkers) and SeatBeltStatus are only on the VEHICLE bus
       if 0x3F5 in fingerprint[CANBUS.vehicle]:

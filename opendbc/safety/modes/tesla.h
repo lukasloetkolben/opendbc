@@ -17,6 +17,7 @@
   {.msg = {{0x311, 0, 7, 10U, .max_counter = 15U, .ignore_quality_flag = true}, { 0 }, { 0 }}},   /* UI_warning (blinkers, buckle switch & doors) */ \
 
 static bool tesla_longitudinal = false;
+static bool tesla_hw4_gen2 = false;
 static bool tesla_stock_aeb = false;
 
 // Only rising edges while controls are not allowed are considered for these systems:
@@ -215,6 +216,13 @@ static bool tesla_tx_hook(const CANPacket_t *msg) {
     .wheelbase = 2.89,
   };
 
+  // NOTE: based off TESLA_MODEL_Y with HW4_GEN2_STEER_RATIO to match openpilot, the 2026+ Model Y
+  const AngleSteeringParams TESLA_HW4_GEN2_STEERING_PARAMS = {
+    .slip_factor = -0.0005803744645408156,  // calc_slip_factor(VM)
+    .steer_ratio = 14.,
+    .wheelbase = 2.89,
+  };
+
   const LongitudinalLimits TESLA_LONG_LIMITS = {
     .max_accel = 425,       // 2 m/s^2
     .min_accel = 288,       // -3.48 m/s^2
@@ -237,7 +245,8 @@ static bool tesla_tx_hook(const CANPacket_t *msg) {
     int steer_control_type = msg->data[2] >> 5;  // DAS_steeringControlType
     bool steer_control_enabled = steer_control_type == 1;  // ANGLE_CONTROL
 
-    if (steer_angle_cmd_checks_vm(desired_angle, steer_control_enabled, TESLA_STEERING_LIMITS, TESLA_STEERING_PARAMS)) {
+    const AngleSteeringParams steering_params = tesla_hw4_gen2 ? TESLA_HW4_GEN2_STEERING_PARAMS : TESLA_STEERING_PARAMS;
+    if (steer_angle_cmd_checks_vm(desired_angle, steer_control_enabled, TESLA_STEERING_LIMITS, steering_params)) {
       violation = true;
     }
 
@@ -338,7 +347,7 @@ static safety_config tesla_init(uint16_t param) {
   };
 
   const uint16_t TESLA_FLAG_HW4_GEN2 = 4;
-  const bool tesla_hw4_gen2 = GET_FLAG(param, TESLA_FLAG_HW4_GEN2);
+  tesla_hw4_gen2 = GET_FLAG(param, TESLA_FLAG_HW4_GEN2);
 
 #ifdef ALLOW_DEBUG
   const uint16_t TESLA_FLAG_LONGITUDINAL_CONTROL = 1;

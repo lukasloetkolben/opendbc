@@ -73,11 +73,13 @@ class TestTeslaFingerprint(unittest.TestCase):
     CP = CarInterface.get_params(CAR.TESLA_MODEL_Y, fingerprint, [], False, False, False)
     assert not CP.flags & TeslaFlags.HW4_GEN2
     assert not CP.flags & TeslaFlags.HW4_GEN2_VEHICLE_BUS
+    assert CP.steerRatio == 12.0
 
     fingerprint[CANBUS.autopilot_party][0x399] = 8
     CP = CarInterface.get_params(CAR.TESLA_MODEL_Y, fingerprint, [], False, False, False)
     assert CP.flags & TeslaFlags.HW4_GEN2
     assert CP.safetyConfigs[0].safetyParam & TeslaSafetyFlags.HW4_GEN2
+    assert CP.steerRatio == 14.0
     # DAS_settings is on the party bus here, so it's not missing
     assert not CP.flags & TeslaFlags.MISSING_DAS_SETTINGS
     # blinkers and the seatbelt buckle need the VEHICLE bus tapped

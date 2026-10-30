@@ -30,7 +30,7 @@ class CarInterface(CarInterfaceBase):
       ret.flags |= TeslaFlags.HW4_GEN2.value
       ret.safetyConfigs[0].safetyParam |= TeslaSafetyFlags.HW4_GEN2.value
 
-      # VCFRONT_lighting (blinkers) and SeatBeltStatus are only on the VEHICLE bus
+      # VCFRONT_lighting (blinkers) and VCFRONT_vehicleStatus (seatbelt) are only on the VEHICLE bus
       if 0x3F5 in fingerprint[CANBUS.vehicle]:
         ret.flags |= TeslaFlags.HW4_GEN2_VEHICLE_BUS.value
 

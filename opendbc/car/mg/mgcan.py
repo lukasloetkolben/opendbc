@@ -15,9 +15,9 @@ def mg4_lka_checksum(dat: bytes) -> int:
 #   byte 4  = CRC8(0x1D, init 0) over bytes [5:12]        (5000/5000 frames)
 #   byte 5  = state<<4 | counter   (state 4 = active, counter cycles 0..14)
 #   bytes 6-7 = steering wheel angle, big-endian, raw = angle_deg*16 + 32600  (neutral 0x7F58)
-#   bytes 16-18 = LKAReqToq + LKACmdPV, copied live from the original sender (the camera); the EPS
-#                 appears not to validate the PV (steering test accepted CRC + counter alone).
-def create_mg4_lka_steering(counter, angle_deg, active, lka_req_toq, lka_cmd_pv, bus):
+#   bytes 16-18 = two packed 11-bit torque request fields. DBC values use offset-binary
+#                 decoding (raw - 1024); route 73d49d6e14131585/00000024/13 commonly has +150/-150.
+def create_mg4_lka_steering(counter, angle_deg, active, torque_a, torque_b, bus):
   dat = bytearray(24)
   dat[0:4] = b"\x02\x09\x07\x08"                      # first block header (const)
   dat[5] = ((0x4 if active else 0x0) << 4) | (counter & 0xF)
@@ -27,9 +27,10 @@ def create_mg4_lka_steering(counter, angle_deg, active, lka_req_toq, lka_cmd_pv,
   dat[7] = raw_angle & 0xFF
   dat[8:12] = b"\x80\x1f\xff\xff"                     # observed constant
   dat[12:16] = b"\x02\x09\x11\x08"                    # second block header (const)
-  dat[16] = int(lka_req_toq) & 0xFF                   # byte 16, copied from the camera
-  dat[17] = (int(lka_cmd_pv) >> 6) & 0xFF             # byte 17, copied from the camera
-  dat[18] = (int(lka_cmd_pv) & 0x3F) << 2             # byte 18, copied (low 2 bits always 0)
+  torque_a_raw = max(0, min(0x7FF, int(torque_a) + 1024))
+  torque_b_raw = max(0, min(0x7FF, int(torque_b) + 1024))
+  packed_torque = (torque_a_raw << 13) | (torque_b_raw << 2)
+  dat[16:19] = packed_torque.to_bytes(3, "big")
   # bytes 19-23 stay 0
   dat[4] = mg4_lka_checksum(dat[5:12])
   return 0x089, bytes(dat), bus

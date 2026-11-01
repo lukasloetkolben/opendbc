@@ -41,21 +41,22 @@ class CarController(CarControllerBase):
 
   def update_mg4(self, CC, CS, now_nanos):
     # MG4: angle-based LKA_CMD (0x089) at 100Hz. The steering angle setpoint (bytes 6-7) is ours;
-    # the counter + CRC8 are recomputed; bytes 16-18 (LKAReqToq + LKACmdPV) are copied live from the
-    # camera's own 0x089 (see CarState), on the hypothesis that the EPS does not validate the PV.
+    # the counter + CRC8 are recomputed. Route 73d49d6e14131585/00000024/13 commonly requests
+    # +150/-150 in the two 11-bit fields; use those requested torques while lateral control is active.
     actuators = CC.actuators
     can_sends = []
     P = CarControllerParams
 
     if self.frame % P.MG4_STEER_STEP == 0:
+      active = CC.latActive
       apply_angle = apply_std_steer_angle_limits(actuators.steeringAngleDeg, self.apply_angle_last,
                                                  CS.out.vEgoRaw, CS.out.steeringAngleDeg,
-                                                 CC.latActive, P.MG4_ANGLE_LIMITS)
+                                                 active, P.MG4_ANGLE_LIMITS)
       self.apply_angle_last = apply_angle
 
       counter = (self.frame // P.MG4_STEER_STEP) % 15  # camera cycles 0..14
-      can_sends.append(create_mg4_lka_steering(counter, apply_angle, CC.latActive,
-                                               CS.lka_req_toq, CS.lka_cmd_pv, 0))
+      can_sends.append(create_mg4_lka_steering(counter, apply_angle, active,
+                                               150 if active else 0, -150 if active else 0, 0))
 
     new_actuators = actuators.as_builder()
     new_actuators.steeringAngleDeg = self.apply_angle_last

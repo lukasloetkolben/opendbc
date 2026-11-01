@@ -53,8 +53,8 @@ BO_ 137 LKA_CMD: 24 XXX
  SG_ LkaCmdCounter : 43|4@0+ (1,0) [0|15] "" XXX
  SG_ LKACmdSts : 47|4@0+ (1,0) [0|15] "" XXX
  SG_ LKACmd : 55|16@0+ (0.0625,-2037.5) [-2037.5|2058.44] "deg" XXX
- SG_ LKAReqToq : 135|8@0+ (1,0) [0|255] "" XXX
- SG_ LKACmdPV : 143|14@0+ (1,0) [0|16383] "" XXX
+ SG_ LKAReqToqA : 135|11@0+ (1,-1024) [-1024|1023] "raw" XXX
+ SG_ LKAReqToqB : 140|11@0+ (1,-1024) [-1024|1023] "raw" XXX
 
 BO_ 165 BRAKE_PRESSURE: 12 XXX
  SG_ BrakePressureChecksum : 39|8@0+ (1,0) [0|255] "" XXX
@@ -197,9 +197,9 @@ BO_ 2029 Diag_PhysResp_BMS: 8 XXX
 CM_ "CAN FD frames tunnel classic CAN messages as 12-byte chunks: a 4-byte header (16-bit inner id, subid, dlc) then up to 8 data bytes, zero-padded. In chunk 0, data byte 0 (byte 4) = CRC8 poly 0x1D init 0x00 over data bytes 1-7, and data byte 1 (byte 5) low nibble = rolling counter 0-14; the <Message>Checksum/<Message>Counter pairs are that chunk-0 pair.";
 CM_ SG_ 137 LKACmd "steering angle setpoint, same scale as StrgWhlAng; frozen at 0 while LKACmdSts is not 4. Offset is -2037.5 (hardware neutral raw 0x7F58), not -2048.";
 CM_ SG_ 137 LkaCmdChecksum "CRC8 poly 0x1D init 0x00 over data bytes 5-11.";
-CM_ SG_ 137 LKAReqToq "byte 16; not the steering command (LKACmd is the command). Role tentative.";
-CM_ SG_ 137 LKACmdPV "14-bit rolling protection value over the LKA command; 0x300 + C when active, 0x400 when idle. Not fully reverse-engineered.";
-CM_ BO_ 137 "bytes 16-23 are a second inner message (LKA torque request), protected by LKACmdPV rather than the byte-4 CRC8.";
+CM_ SG_ 137 LKAReqToqA "First packed 11-bit requested-torque field in bytes 16-18; offset-binary interpretation (raw - 1024) inferred from route 73d49d6e14131585/00000024/13.";
+CM_ SG_ 137 LKAReqToqB "Second packed 11-bit requested-torque field in bytes 16-18; offset-binary interpretation (raw - 1024) inferred from route 73d49d6e14131585/00000024/13.";
+CM_ BO_ 137 "Bytes 16-18 encode two packed 11-bit requested-torque fields followed by two zero bits (AAAAAAAA AAABBBBB BBBBBB00). Route 73d49d6e14131585/00000024/13 has 12,000 frames with LKACmdSts=4 and commonly has decoded requests +150/-150.";
 CM_ SG_ 171 StrgWhlAngRate "reads 0 while the wheel is held steady.";
 CM_ SG_ 318 VehSpdAvg "a second speed copy is at bytes 32-33.";
 CM_ SG_ 318 DrvrSbltBuckled "complementary to DrvrSbltUnbuckled; both 0 with ignition off.";

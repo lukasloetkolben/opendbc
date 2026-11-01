@@ -4,8 +4,7 @@ from opendbc.car.mg.carcontroller import CarController
 from opendbc.car.mg.carstate import CarState
 from opendbc.car.mg.values import CAR
 
-# allOutput passthrough: relay open, panda forwards bus 0 <-> bus 2 (see safety/modes/defaults.h)
-ALLOUTPUT_PARAM_PASSTHROUGH = 1
+MG_PARAM_CANFD = 1
 
 
 class CarInterface(CarInterfaceBase):
@@ -18,8 +17,7 @@ class CarInterface(CarInterfaceBase):
 
     if candidate == CAR.MG_4_EV:
       ret.dashcamOnly = False
-      # passthrough mode for reverse-engineering: split the camera and car buses
-      ret.safetyConfigs = [get_safety_config(structs.CarParams.SafetyModel.allOutput, ALLOUTPUT_PARAM_PASSTHROUGH)]
+      ret.safetyConfigs = [get_safety_config(structs.CarParams.SafetyModel.mg, MG_PARAM_CANFD)]
     else:
       ret.dashcamOnly = True
       ret.safetyConfigs = [get_safety_config(structs.CarParams.SafetyModel.mg)]

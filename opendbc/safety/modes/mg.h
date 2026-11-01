@@ -4,7 +4,72 @@
 
 static uint8_t mg_crc_lut[256];
 
+// MG4 CAN FD angle steering, selected by safetyParam bit 0. MG5 retains torque steering.
+const uint16_t MG_PARAM_CANFD = 1U;
+static bool mg_canfd = false;
+
+static uint32_t mg4_checksum(const CANPacket_t *msg) {
+  uint8_t crc = 0U;
+  for (int i = 5; i < 12; i++) {
+    crc = mg_crc_lut[crc ^ msg->data[i]];
+  }
+  return crc;
+}
+
+static void mg4_rx_hook(const CANPacket_t *msg) {
+  if (msg_matches(msg, 0xABU, 0U)) {
+    update_sample(&angle_meas, (int)((msg->data[6] << 8) | msg->data[7]) - 32768);
+  }
+  if (msg_matches(msg, 0x13EU, 0U)) {
+    unsigned int raw = ((msg->data[30] & 0x7FU) << 8) | msg->data[31];
+    vehicle_moving = raw > 6U;
+    UPDATE_VEHICLE_SPEED(((float)raw / 64.0f) * KPH_TO_MS);
+  }
+  if (msg_matches(msg, 0x46U, 0U)) {
+    brake_pressed = GET_BIT(msg, 237U);
+    gas_pressed = msg->data[30] != 0U;
+  }
+  if (msg_matches(msg, 0x1DAU, 2U)) {
+    unsigned int state = msg->data[17] >> 5;
+    pcm_cruise_check((state >= 1U) && (state <= 4U));
+  }
+}
+
+static bool mg4_tx_hook(const CANPacket_t *msg) {
+  const AngleSteeringLimits MG4_LIMITS = {
+    .max_angle = 1440,
+    .angle_deg_to_can = 16,
+    .frequency = 100U,
+    .angle_rate_up_lookup = {{0., 5., 25.}, {2.5, 1.5, 0.4}},
+    .angle_rate_down_lookup = {{0., 5., 25.}, {5.0, 2.0, 0.8}},
+  };
+  int angle = (int)((msg->data[6] << 8) | msg->data[7]) - 32600;
+  unsigned int state = msg->data[5] >> 4;
+  bool active = state == 4U;
+  int torque_a = (int)((msg->data[16] << 3) | (msg->data[17] >> 5)) - 1024;
+  int torque_b = (int)(((msg->data[17] & 0x1FU) << 6) | (msg->data[18] >> 2)) - 1024;
+  bool valid = (state == 0U) || active;
+  valid &= (msg->data[5] & 0xFU) < 15U;
+  valid &= msg->data[4] == mg4_checksum(msg);
+  valid &= (msg->data[0] == 2U) && (msg->data[1] == 9U) && (msg->data[2] == 7U) && (msg->data[3] == 8U);
+  valid &= (msg->data[8] == 0x80U) && (msg->data[9] == 0x1FU) && (msg->data[10] == 0xFFU) && (msg->data[11] == 0xFFU);
+  valid &= (msg->data[12] == 2U) && (msg->data[13] == 9U) && (msg->data[14] == 0x11U) && (msg->data[15] == 8U);
+  valid &= (msg->data[18] & 3U) == 0U;
+  for (int i = 19; i < 24; i++) {
+    valid &= msg->data[i] == 0U;
+  }
+  // Bound both directional requests independently; inactive commands must request zero torque.
+  valid &= !safety_max_limit_check(torque_a, active ? 150 : 0, 0);
+  valid &= !safety_max_limit_check(torque_b, 0, active ? -150 : 0);
+  bool violation = steer_angle_cmd_checks(angle, active, MG4_LIMITS);
+  violation |= safety_max_limit_check(angle, MG4_LIMITS.max_angle, -MG4_LIMITS.max_angle);
+  return valid && !violation;
+}
+
 static uint32_t mg_get_checksum(const CANPacket_t *msg) {
+  if (mg_canfd) {
+    return msg->data[4];
+  }
   uint32_t checksum = msg->data[7];
   if (msg->addr == 0x1ecU) {
     checksum = ((msg->data[2] & 0x7FU) << 8) | msg->data[3];
@@ -13,6 +78,9 @@ static uint32_t mg_get_checksum(const CANPacket_t *msg) {
 }
 
 static uint32_t mg_compute_checksum(const CANPacket_t *msg) {
+  if (mg_canfd) {
+    return mg4_checksum(msg);
+  }
   uint32_t checksum;
   if (msg->addr == 0x1ecU) {
     uint32_t torque = ((msg->data[0] & 0x7U) << 8) | msg->data[1];
@@ -52,6 +120,10 @@ static uint8_t mg_get_counter(const CANPacket_t *msg) {
 }
 
 static void mg_rx_hook(const CANPacket_t *msg) {
+  if (mg_canfd) {
+    mg4_rx_hook(msg);
+    return;
+  }
   // Vehicle speed
   if (msg_matches(msg, 0x23cU, 0U)) {
     float speed = (((msg->data[2] & 0x7FU) << 8) | msg->data[3]) * 0.015625;
@@ -85,6 +157,9 @@ static void mg_rx_hook(const CANPacket_t *msg) {
 }
 
 static bool mg_tx_hook(const CANPacket_t *msg) {
+  if (mg_canfd) {
+    return mg4_tx_hook(msg);
+  }
   const TorqueSteeringLimits MG_STEERING_LIMITS = {
     .max_torque = 300,
     .max_rate_up = 6,
@@ -102,9 +177,21 @@ static bool mg_tx_hook(const CANPacket_t *msg) {
 }
 
 static safety_config mg_init(uint16_t param) {
-  SAFETY_UNUSED(param);
+  mg_canfd = GET_FLAG(param, MG_PARAM_CANFD);
 
   gen_crc_lookup_table_8(0x1DU, mg_crc_lut);
+
+  if (mg_canfd) {
+    static const CanMsg MG4_TX_MSGS[] = {{0x89, 0, 24, .check_relay = true}};
+    // Only chunk-0 checksums are known. Counters are not yet validated; ACC_STATE has no known CRC.
+    static RxCheck mg4_rx_checks[] = {
+      {.msg = {{0xAB, 0, 48, .frequency = 100U, .ignore_counter = true, .ignore_quality_flag = true}, {0}, {0}}},
+      {.msg = {{0x13E, 0, 64, .frequency = 50U, .ignore_counter = true, .ignore_quality_flag = true}, {0}, {0}}},
+      {.msg = {{0x46, 0, 48, .frequency = 100U, .ignore_counter = true, .ignore_quality_flag = true}, {0}, {0}}},
+      {.msg = {{0x1DA, 2, 48, .frequency = 50U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, {0}, {0}}},
+    };
+    return BUILD_SAFETY_CFG(mg4_rx_checks, MG4_TX_MSGS);
+  }
 
   static const CanMsg MG_TX_MSGS[] = {{0x1fd, 0, 8, .check_relay = true}};
 

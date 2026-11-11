@@ -1,6 +1,8 @@
 import copy
 import unittest
 from opendbc.can import CANPacker, CANParser
+from opendbc.can.dbc import DBC
+from opendbc.car.mg.mgcan import mg4_checksum
 
 
 class TestCanChecksums(unittest.TestCase):
@@ -555,3 +557,18 @@ class TestCanChecksums(unittest.TestCase):
       b'\x9b\x3e\x2b\x10\x00\x00\x22\x81',
       b'\x72\x3f\x2b\x10\x00\x00\x22\x81',
     ])
+
+  def test_mg4_checksum(self):
+    # MG4 contained PDUs (route 73d49d6e14131585/00000099), placed at the PDU offset of the message's CHECKSUM
+    dbc = DBC("mg4")
+    for msg_name, addr, pdus in (
+      ("STEER_ANGLE", 0xAB, ["031003084b0b807001007fc6", "03100308c50c807001007fc6", "03100308980d807001007fc6"]),
+      ("GAS_PEDAL", 0x46, ["00010008ac4e002140007fff", "00010008b040002140007ffe", "00010008ed41002140007ffe"]),
+    ):
+      sig = dbc.name_to_msg[msg_name].sigs["CHECKSUM"]
+      offset = sig.start_bit // 8 - 4
+      for pdu in pdus:
+        dat = bytearray(48)
+        dat[offset:offset + 12] = bytes.fromhex(pdu)
+        with self.subTest(msg=msg_name, pdu=pdu):
+          assert mg4_checksum(addr, sig, dat) == dat[sig.start_bit // 8]

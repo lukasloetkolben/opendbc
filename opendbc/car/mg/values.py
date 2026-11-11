@@ -1,8 +1,13 @@
 from dataclasses import dataclass, field
+from enum import IntFlag
 
 from opendbc.car import Bus, CarSpecs, DbcDict, PlatformConfig, Platforms
 from opendbc.car.docs_definitions import CarHarness, CarDocs, CarParts
 from opendbc.car.fw_query_definitions import FwQueryConfig, Request, StdQueries
+
+
+class MgFlags(IntFlag):
+  CANFD = 1
 
 
 @dataclass
@@ -17,9 +22,16 @@ class MgPlatformConfig(PlatformConfig):
 
 
 class CAR(Platforms):
+  MG_4_EV = MgPlatformConfig(
+    [MgCarDocs("MG4 EV 2022-25")],
+    CarSpecs(wheelbase=2.705, steerRatio=15.3),
+    {Bus.pt: 'mg4'},
+    flags=MgFlags.CANFD,
+  )
   MG_5_EV = MgPlatformConfig([MgCarDocs("MG 5 EV 2021")], CarSpecs(wheelbase=2.66, steerRatio=15.8))
 
 
+# TODO: the MG4 does not answer this query, it is fingerprinted on CAN
 FW_QUERY_CONFIG = FwQueryConfig(
   fw_version_regex=br"\x10[\x00-\xff]{3}\x01",
   requests=[
@@ -31,6 +43,7 @@ FW_QUERY_CONFIG = FwQueryConfig(
   ],
 )
 
+
 class CarControllerParams:
   STEER_STEP = 2  # FVCM_HSC2_FrP03 message frequency 50Hz
   STEER_MAX = 300
@@ -39,6 +52,10 @@ class CarControllerParams:
   STEER_DRIVER_ALLOWANCE = 100  # allowed driver torque before start limiting
   STEER_DRIVER_MULTIPLIER = 2  # weight driver torque
   STEER_DRIVER_FACTOR = 100
+
+  MG4_DRIVER_TORQUE_THRESHOLD = 10  # raw counts
+
+  MG4_GAS_OVERRIDE_PCT = 5.0  # %, light pressure stays in the one-pedal regen zone
 
   def __init__(self, CP):
     pass

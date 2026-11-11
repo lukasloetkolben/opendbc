@@ -1,7 +1,7 @@
 from opendbc.can.parser import CANParser
 from opendbc.car import Bus, structs
 from opendbc.car.interfaces import CarStateBase
-from opendbc.car.mg.values import DBC
+from opendbc.car.mg.values import DBC, MgFlags, CarControllerParams
 from opendbc.car.common.conversions import Conversions as CV
 
 GearShifter = structs.CarState.GearShifter
@@ -14,9 +14,18 @@ GEAR_MAP = {
   **{i: GearShifter.drive for i in range(1, 9)},
 }
 
+GEAR_MAP_CANFD = {
+  1: GearShifter.park,
+  2: GearShifter.reverse,
+  3: GearShifter.neutral,
+  4: GearShifter.drive,
+}
 
 class CarState(CarStateBase):
   def update(self, can_parsers) -> structs.CarState:
+    if self.CP.flags & MgFlags.CANFD:
+      return self.update_canfd(can_parsers)
+
     cp = can_parsers[Bus.pt]
     cp_cam = can_parsers[Bus.cam]
     ret = structs.CarState()
@@ -67,8 +76,66 @@ class CarState(CarStateBase):
 
     return ret
 
+  def update_canfd(self, can_parsers) -> structs.CarState:
+    cp = can_parsers[Bus.pt]
+    cp_cam = can_parsers[Bus.cam]
+    ret = structs.CarState()
+
+    # Vehicle speed
+    ret.vEgoRaw = cp.vl["ESP_SPEED"]["VehSpdAvg"] * CV.KPH_TO_MS
+    ret.vEgo, ret.aEgo = self.update_speed_kf(ret.vEgoRaw)
+    ret.vEgoCluster = cp.vl["CLUSTER_SPEED"]["VehSpdDisplay"] * CV.KPH_TO_MS
+    # ESP_SPEED.Standstill is a creep flag, not a stopped car
+    ret.standstill = cp.vl["ESP_SPEED"]["VehSpdAvg"] < 0.1
+
+    # Gas pedal
+    ret.gasPressed = cp.vl["GAS_PEDAL"]["GasPdlPos"] > CarControllerParams.MG4_GAS_OVERRIDE_PCT
+
+    # Brake pedal
+    ret.brakePressed = cp.vl["GAS_PEDAL"]["BrkPdlSw"] == 1
+
+    # Steering wheel
+    ret.steeringAngleDeg = cp.vl["STEER_ANGLE"]["StrgWhlAng"]
+    ret.steeringRateDeg = cp.vl["STEER_ANGLE"]["StrgWhlAngRate"]
+    ret.steeringTorque = cp.vl["TURN_SIGNALS"]["DriverTorque"]
+    ret.steeringPressed = self.update_steering_pressed(abs(ret.steeringTorque) > CarControllerParams.MG4_DRIVER_TORQUE_THRESHOLD, 5)
+
+    # TODO: find fault signals
+
+    # Cruise state
+    acc_sts = cp_cam.vl["ACC_STATE"]["AccSts"]
+    ret.cruiseState.standstill = False
+    ret.cruiseState.enabled = acc_sts in (1, 2, 3, 4)  # engaged, standby, override
+    ret.cruiseState.available = acc_sts != 0
+    acc_cmd = cp_cam.vl["ACC_CMD"]
+    ret.cruiseState.speed = (acc_cmd["AccSetSpeedHalf"] + acc_cmd["AccSetSpeedOdd"]) * CV.KPH_TO_MS
+
+    # Gear
+    ret.gearShifter = GEAR_MAP_CANFD.get(int(cp.vl["GEAR"]["ShftLvrPos"]), GearShifter.unknown)
+
+    # Blinkers
+    ret.leftBlinker, ret.rightBlinker = self.update_blinker_from_lamp(50, cp.vl["TURN_SIGNALS"]["TurnIndLeft"] == 1,
+                                                                      cp.vl["TURN_SIGNALS"]["TurnIndRight"] == 1)
+
+    # Seatbelt
+    ret.seatbeltUnlatched = cp.vl["ESP_SPEED"]["DrvrSbltUnbuckled"] == 1
+
+    # Doors
+    ret.doorOpen = any([cp.vl["DOORS"]["DrvrDoorOpen"],
+                        cp.vl["DOORS"]["FrontPsngDoorOpen"],
+                        cp.vl["DOORS"]["RearLeftDoorOpen"],
+                        cp.vl["DOORS"]["RearRightDoorOpen"]])
+
+    return ret
+
   @staticmethod
   def get_can_parsers(CP):
+    if CP.flags & MgFlags.CANFD:
+      return {
+        Bus.pt: CANParser(DBC[CP.carFingerprint][Bus.pt], [], 0),
+        Bus.cam: CANParser(DBC[CP.carFingerprint][Bus.pt], [], 2),
+      }
+
     return {
       Bus.pt: CANParser(DBC[CP.carFingerprint][Bus.pt], [], 0),
       Bus.cam: CANParser(DBC[CP.carFingerprint][Bus.pt], [], 2),

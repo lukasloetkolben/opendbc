@@ -8,6 +8,7 @@
 
 bool ignition_can = false;
 uint32_t ignition_can_cnt = 0U;
+bool ignition_can_only = false;   // the harness ignition line is not trustworthy on this car (MG4): use CAN only
 
 void ignition_can_hook(const CANPacket_t *msg) {
   // GM exception
@@ -50,6 +51,14 @@ void ignition_can_hook(const CANPacket_t *msg) {
   if (msg_matches(msg, 0x9EU, 0U, 8U)) {
     ignition_can = (msg->data[0] >> 5) == 0x6U;
     ignition_can_cnt = 0U;
+  }
+
+  // MG4 exception: the harness ignition line stays high with the car off, so ignition is the presence of
+  // ESP_SPEED (0x13E, bus 0, 64 bytes, 50 Hz), which the car only sends while on
+  if (msg_matches(msg, 0x13EU, 0U, 64U)) {
+    ignition_can = true;
+    ignition_can_cnt = 0U;
+    ignition_can_only = true;
   }
 
   // Volkswagen MEB exception

@@ -43,3 +43,15 @@ def mg_checksum(address: int, sig, d: bytearray) -> int:
   for byte in d[:-1]:
     crc = CRC8J1850[crc ^ byte]
   return crc ^ 0xFF
+
+
+def mg4_crc(dat: bytes | bytearray, start: int) -> int:
+  # MG4 contained PDUs are [header 4][CRC][7 data]: CRC8 SAE J1850, init 0, over the 7 bytes after the CRC byte
+  crc = 0
+  for byte in dat[start + 1:start + 8]:
+    crc = CRC8J1850[crc ^ byte]
+  return crc
+
+
+def mg4_checksum(address: int, sig, d: bytearray) -> int:
+  return mg4_crc(d, sig.start_bit // 8)

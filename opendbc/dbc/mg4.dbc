@@ -1,0 +1,193 @@
+VERSION ""
+
+
+NS_ :
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_: XXX
+
+BO_ 70 GAS_PEDAL: 48 XXX
+ SG_ CHECKSUM : 231|8@0+ (1,0) [0|255] "" XXX
+ SG_ ROLLING_COUNTER : 235|4@0+ (1,0) [0|14] "" XXX
+ SG_ BrkPdlSw : 237|1@0+ (1,0) [0|1] "" XXX
+ SG_ GasPdlPos : 247|8@0+ (0.392157,0) [0|100] "%" XXX
+ SG_ GasPdlPos2 : 271|8@0+ (0.392157,0) [0|100] "%" XXX
+
+BO_ 137 LKA_CMD: 24 XXX
+ SG_ PDU_HEADER_0 : 7|32@0+ (1,0) [0|4294967295] "" XXX
+ SG_ CHECKSUM : 39|8@0+ (1,0) [0|255] "" XXX
+ SG_ ROLLING_COUNTER : 43|4@0+ (1,0) [0|14] "" XXX
+ SG_ LKACmdSts : 47|4@0+ (1,0) [0|15] "" XXX
+ SG_ LKACmd : 55|16@0+ (0.0625,-2037.5) [-2037.5|2058.44] "deg" XXX
+ SG_ LKAReqToqA : 135|11@0+ (1,-1024) [-1024|1023] "raw" XXX
+ SG_ LKAReqToqB : 140|11@0+ (1,-1024) [-1024|1023] "raw" XXX
+ SG_ SET_ME_X801FFFFF : 71|32@0+ (1,0) [0|4294967295] "" XXX
+ SG_ PDU_HEADER_1 : 103|32@0+ (1,0) [0|4294967295] "" XXX
+
+BO_ 165 BRAKE_PRESSURE: 12 XXX
+ SG_ CHECKSUM : 39|8@0+ (1,0) [0|255] "" XXX
+ SG_ ROLLING_COUNTER : 43|4@0+ (1,0) [0|14] "" XXX
+ SG_ BrkPdlDrvrAppdPrs : 79|8@0+ (75,0) [0|19125] "kPa" XXX
+
+BO_ 171 STEER_ANGLE: 48 XXX
+ SG_ CHECKSUM : 39|8@0+ (1,0) [0|255] "" XXX
+ SG_ ROLLING_COUNTER : 43|4@0+ (1,0) [0|14] "" XXX
+ SG_ StrgWhlAng : 55|16@0+ (0.0625,-2048) [-2048|2047.94] "deg" XXX
+ SG_ AccActive : 71|1@0+ (1,0) [0|1] "" XXX
+ SG_ StrgWhlAngRate : 263|16@0+ (0.0625,-2048) [-2048|2047.94] "deg/s" XXX
+
+BO_ 192 TURN_SIGNALS: 24 XXX
+ SG_ CHECKSUM : 39|8@0+ (1,0) [0|255] "" XXX
+ SG_ ROLLING_COUNTER : 43|4@0+ (1,0) [0|14] "" XXX
+ SG_ TurnIndRight : 134|1@0+ (1,0) [0|1] "" XXX
+ SG_ TurnIndLeft : 135|1@0+ (1,0) [0|1] "" XXX
+ SG_ DriverTorque : 55|8@0+ (1,-128) [-128|127] "" XXX
+
+BO_ 318 ESP_SPEED: 64 XXX
+ SG_ CHECKSUM : 231|8@0+ (1,0) [0|255] "" XXX
+ SG_ ROLLING_COUNTER : 235|4@0+ (1,0) [0|14] "" XXX
+ SG_ Standstill : 149|1@0+ (1,0) [0|1] "" XXX
+ SG_ VehSpdAvg : 246|15@0+ (0.015625,0) [0|511.98] "km/h" XXX
+ SG_ DrvrSbltUnbuckled : 435|1@0+ (1,0) [0|1] "" XXX
+ SG_ DrvrSbltBuckled : 439|1@0+ (1,0) [0|1] "" XXX
+
+BO_ 319 ESP_ACCEL: 48 XXX
+ SG_ CHECKSUM : 39|8@0+ (1,0) [0|255] "" XXX
+ SG_ ROLLING_COUNTER : 43|4@0+ (1,0) [0|14] "" XXX
+ SG_ LatAccel : 55|12@0- (0.015625,0) [-32|31.984] "m/s2" XXX
+ SG_ YawRate : 59|12@0- (0.0625,0) [-128|127.9375] "deg/s" XXX
+ SG_ WhlSpdFR : 151|16@0+ (0.03125,0) [0|2047.97] "km/h" XXX
+ SG_ WhlSpdFL : 167|16@0+ (0.0078125,0) [0|511.99] "km/h" XXX
+ SG_ WhlSpdRR : 343|16@0+ (0.0078125,0) [0|511.99] "km/h" XXX
+ SG_ WhlSpdRL : 359|16@0+ (0.0078125,0) [0|511.99] "km/h" XXX
+
+BO_ 366 ACC_CMD: 48 XXX
+ SG_ CHECKSUM : 39|8@0+ (1,0) [0|255] "" XXX
+ SG_ ROLLING_COUNTER : 43|4@0+ (1,0) [0|14] "" XXX
+ SG_ AccCmdMode : 47|4@0+ (1,0) [0|15] "" XXX
+ SG_ AccDecelReq : 54|1@0+ (1,0) [0|1] "" XXX
+ SG_ AccAccelReq : 63|8@0+ (0.0386,-7.0136) [-7.0136|2.8294] "m/s2" XXX
+ SG_ AccSetSpeedHalf : 231|8@0+ (2,0) [0|510] "km/h" XXX
+ SG_ AccSetSpeedOdd : 239|1@0+ (1,0) [0|1] "km/h" XXX
+ SG_ AccLeadDetected : 232|1@0+ (1,0) [0|1] "" XXX
+ SG_ AccGapBars : 243|2@0+ (1,0) [0|3] "" XXX
+ SG_ AccTorqueAct : 372|1@0+ (1,0) [0|1] "" XXX
+ SG_ AccTorqueReq : 383|8@0+ (1,0) [0|255] "" XXX
+ SG_ CHECKSUM_TORQUE : 327|8@0+ (1,0) [0|255] "" XXX
+ SG_ Raw00 : 7|32@0+ (1,0) [0|4294967295] "" XXX
+ SG_ Raw01 : 39|32@0+ (1,0) [0|4294967295] "" XXX
+ SG_ Raw02 : 71|32@0+ (1,0) [0|4294967295] "" XXX
+ SG_ Raw03 : 103|32@0+ (1,0) [0|4294967295] "" XXX
+ SG_ Raw04 : 135|32@0+ (1,0) [0|4294967295] "" XXX
+ SG_ Raw05 : 167|32@0+ (1,0) [0|4294967295] "" XXX
+ SG_ Raw06 : 199|32@0+ (1,0) [0|4294967295] "" XXX
+ SG_ Raw07 : 231|32@0+ (1,0) [0|4294967295] "" XXX
+ SG_ Raw08 : 263|32@0+ (1,0) [0|4294967295] "" XXX
+ SG_ Raw09 : 295|32@0+ (1,0) [0|4294967295] "" XXX
+ SG_ Raw10 : 327|32@0+ (1,0) [0|4294967295] "" XXX
+ SG_ Raw11 : 359|32@0+ (1,0) [0|4294967295] "" XXX
+
+BO_ 404 GEAR: 12 XXX
+ SG_ CHECKSUM : 39|8@0+ (1,0) [0|255] "" XXX
+ SG_ ROLLING_COUNTER : 43|4@0+ (1,0) [0|14] "" XXX
+ SG_ ShftLvrPos : 59|4@0+ (1,0) [0|15] "" XXX
+
+BO_ 451 CLUSTER_SPEED: 24 XXX
+ SG_ VehSpdDisplay : 55|8@0+ (1,0) [0|255] "km/h" XXX
+
+BO_ 474 ACC_STATE: 48 XXX
+ SG_ AccSts : 143|3@0+ (1,0) [0|7] "" XXX
+ SG_ AccMainOn : 246|1@0+ (1,0) [0|1] "" XXX
+ SG_ HandsOnWarnLvl : 237|2@0+ (1,0) [0|3] "" XXX
+ SG_ Raw00 : 7|32@0+ (1,0) [0|4294967295] "" XXX
+ SG_ Raw01 : 39|32@0+ (1,0) [0|4294967295] "" XXX
+ SG_ Raw02 : 71|32@0+ (1,0) [0|4294967295] "" XXX
+ SG_ Raw03 : 103|32@0+ (1,0) [0|4294967295] "" XXX
+ SG_ Raw04 : 135|32@0+ (1,0) [0|4294967295] "" XXX
+ SG_ Raw05 : 167|32@0+ (1,0) [0|4294967295] "" XXX
+ SG_ Raw06 : 199|32@0+ (1,0) [0|4294967295] "" XXX
+ SG_ Raw07 : 231|32@0+ (1,0) [0|4294967295] "" XXX
+ SG_ Raw08 : 263|32@0+ (1,0) [0|4294967295] "" XXX
+ SG_ Raw09 : 295|32@0+ (1,0) [0|4294967295] "" XXX
+ SG_ Raw10 : 327|32@0+ (1,0) [0|4294967295] "" XXX
+ SG_ Raw11 : 359|32@0+ (1,0) [0|4294967295] "" XXX
+
+BO_ 481 CRUISE_BUTTONS: 12 XXX
+ SG_ PDU_HEADER : 7|32@0+ (1,0) [0|4294967295] "" XXX
+ SG_ CHECKSUM : 39|8@0+ (1,0) [0|255] "" XXX
+ SG_ ROLLING_COUNTER : 43|4@0+ (1,0) [0|14] "" XXX
+ SG_ BtnSet : 45|1@0+ (1,0) [0|1] "" XXX
+ SG_ BtnGapRight : 44|1@0+ (1,0) [0|1] "" XXX
+ SG_ BtnUp : 63|1@0+ (1,0) [0|1] "" XXX
+ SG_ BtnDown : 50|1@0+ (1,0) [0|1] "" XXX
+ SG_ BtnClick : 51|1@0+ (1,0) [0|1] "" XXX
+ SG_ BtnGapLeft : 54|1@0+ (1,0) [0|1] "" XXX
+ SG_ SET_ME_X8000FFFF : 71|32@0+ (1,0) [0|4294967295] "" XXX
+
+BO_ 497 EHBS_HOLD: 48 XXX
+ SG_ CHECKSUM : 135|8@0+ (1,0) [0|255] "" XXX
+ SG_ ROLLING_COUNTER : 139|4@0+ (1,0) [0|14] "" XXX
+ SG_ BrkHoldActive : 160|1@0+ (1,0) [0|1] "" XXX
+
+BO_ 812 DOORS: 48 XXX
+ SG_ FrontPsngDoorOpen : 332|1@0+ (1,0) [0|1] "" XXX
+ SG_ DrvrDoorOpen : 334|1@0+ (1,0) [0|1] "" XXX
+ SG_ TrunkOpen : 342|1@0+ (1,0) [0|1] "" XXX
+ SG_ RearRightDoorOpen : 368|1@0+ (1,0) [0|1] "" XXX
+ SG_ RearLeftDoorOpen : 370|1@0+ (1,0) [0|1] "" XXX
+
+BO_ 857 RADAR_OBJ: 48 XXX
+ SG_ LeadDist : 39|16@0+ (0.00390625,0) [0|255] "m" XXX
+ SG_ LeadVrel : 55|16@0+ (0.00390625,-128) [-128|127] "m/s" XXX
+ SG_ LeadStatus : 95|8@0+ (1,0) [0|255] "" XXX
+
+BO_ 1019 BCM: 24 XXX
+ SG_ DircnIndSwSts : 139|2@0+ (1,0) [0|3] "" XXX
+
+CM_ "CAN FD frames are AUTOSAR containers of 12-byte PDUs. Protected PDUs carry a CRC8 J1850 in PDU byte 0 and a 0-14 counter in PDU byte 1; CHECKSUM and ROLLING_COUNTER are those of the PDU with the signals. The counter is not named COUNTER because the senders repeat and skip values.";
+CM_ SG_ 137 LKACmd "neutral raw 0x7F58";
+CM_ SG_ 137 LKAReqToqA "EPS torque limit to the left";
+CM_ SG_ 137 LKAReqToqB "EPS torque limit to the right";
+CM_ SG_ 192 DriverTorque "raw counts, left positive";
+CM_ SG_ 319 WhlSpdFR "coarser than the other wheels";
+CM_ SG_ 319 YawRate "left positive";
+CM_ BO_ 366 "the PDU at byte 24 has no CRC. GAS_PEDAL and ESP_ACCEL echo the executed regime, so the radar cancels its ACC if openpilot overrides it while engaged.";
+CM_ SG_ 366 AccAccelReq "followed in the decel regime";
+CM_ SG_ 366 AccTorqueReq "followed in the torque regime, 160 = no drive torque";
+CM_ SG_ 366 AccSetSpeedHalf "set speed = AccSetSpeedHalf + AccSetSpeedOdd";
+CM_ BO_ 474 "Raw00..Raw11 carry the whole frame so it can be forwarded";
+CM_ SG_ 474 HandsOnWarnLvl "1 = OK";
+VAL_ 137 LKACmdSts 0 "OFF" 4 "ACTIVE";
+VAL_ 404 ShftLvrPos 1 "P" 2 "R" 3 "N" 4 "D";
+VAL_ 474 AccSts 0 "OFF" 1 "ACC_ENGAGED" 2 "ACC_AND_TJA";
+VAL_ 366 AccCmdMode 2 "PASSIVE" 4 "REGULATING" 5 "RESUME" 6 "GAS_OVERRIDE" 8 "BRAKING" 10 "HOLD" 14 "CANCEL";
+VAL_ 1019 DircnIndSwSts 0 "OFF" 1 "TAP" 2 "LATCHED";

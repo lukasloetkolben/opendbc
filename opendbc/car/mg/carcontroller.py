@@ -3,7 +3,7 @@ from opendbc.car import Bus
 from opendbc.car.lateral import apply_driver_steer_torque_limits
 from opendbc.car.interfaces import CarControllerBase
 from opendbc.car.mg.mgcan import create_lka_steering
-from opendbc.car.mg.values import CarControllerParams
+from opendbc.car.mg.values import CarControllerParams, MgFlags
 
 
 class CarController(CarControllerBase):
@@ -14,6 +14,11 @@ class CarController(CarControllerBase):
     self.apply_torque_last = 0
 
   def update(self, CC, CS, now_nanos):
+    if self.CP.flags & MgFlags.CANFD:
+      # MG4: dashcam only, nothing is sent
+      self.frame += 1
+      return CC.actuators.as_builder(), []
+
     actuators = CC.actuators
     can_sends = []
 

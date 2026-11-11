@@ -25,7 +25,7 @@ class CAR(Platforms):
   MG_4_EV = MgPlatformConfig(
     [MgCarDocs("MG4 EV 2022-25")],
     CarSpecs(wheelbase=2.705, steerRatio=15.3),
-    {Bus.pt: 'mg4'},
+    {Bus.pt: 'mg4', Bus.radar: 'mg4_radar_generated'},
     flags=MgFlags.CANFD,
   )
   MG_5_EV = MgPlatformConfig([MgCarDocs("MG 5 EV 2021")], CarSpecs(wheelbase=2.66, steerRatio=15.8))

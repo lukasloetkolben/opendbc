@@ -4,6 +4,7 @@ from enum import IntFlag
 from opendbc.car import Bus, CarSpecs, DbcDict, PlatformConfig, Platforms
 from opendbc.car.docs_definitions import CarHarness, CarDocs, CarParts
 from opendbc.car.fw_query_definitions import FwQueryConfig, Request, StdQueries
+from opendbc.car.lateral import AngleSteeringLimits
 
 
 class MgFlags(IntFlag):
@@ -53,7 +54,16 @@ class CarControllerParams:
   STEER_DRIVER_MULTIPLIER = 2  # weight driver torque
   STEER_DRIVER_FACTOR = 100
 
+  # MG4: angle steering, rate limits in deg per frame
+  MG4_STEER_STEP = 1
+  MG4_ANGLE_LIMITS = AngleSteeringLimits(
+    90.0,  # STEER_ANGLE_MAX (deg at the wheel)
+    ([0., 5., 25.], [2.5, 1.5, 0.4]),   # ANGLE_RATE_LIMIT_UP
+    ([0., 5., 25.], [5.0, 2.0, 0.8]),   # ANGLE_RATE_LIMIT_DOWN
+  )
   MG4_DRIVER_TORQUE_THRESHOLD = 10  # raw counts
+
+  MG4_STEER_AUTHORITY = 200  # EPS torque limit per side in LKA_CMD
 
   MG4_GAS_OVERRIDE_PCT = 5.0  # %, light pressure stays in the one-pedal regen zone
 

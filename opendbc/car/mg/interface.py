@@ -5,6 +5,8 @@ from opendbc.car.mg.carstate import CarState
 from opendbc.car.mg.radar_interface import RadarInterface
 from opendbc.car.mg.values import CAR
 
+MG_PARAM_CANFD = 1
+
 
 class CarInterface(CarInterfaceBase):
   CarState = CarState
@@ -14,16 +16,15 @@ class CarInterface(CarInterfaceBase):
   @staticmethod
   def _get_params(ret: structs.CarParams, candidate, fingerprint, car_fw, alpha_long, is_release, docs) -> structs.CarParams:
     ret.brand = "mg"
-    ret.dashcamOnly = True
+    ret.steerActuatorDelay = 0.3
 
     if candidate == CAR.MG_4_EV:
-      ret.safetyConfigs = [get_safety_config(structs.CarParams.SafetyModel.noOutput)]
+      ret.steerControlType = structs.CarParams.SteerControlType.angle
+      ret.safetyConfigs = [get_safety_config(structs.CarParams.SafetyModel.mg, MG_PARAM_CANFD)]
     else:
+      ret.dashcamOnly = True
       ret.radarUnavailable = True
       ret.safetyConfigs = [get_safety_config(structs.CarParams.SafetyModel.mg)]
-
-    ret.steerActuatorDelay = 0.3
-    CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
-    ret.steerControlType = structs.CarParams.SteerControlType.torque
+      CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
 
     return ret

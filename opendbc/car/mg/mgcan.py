@@ -1,5 +1,31 @@
 from opendbc.car.crc import CRC8J1850
 
+# LKA_CMD: angle setpoint and the EPS torque limit to the left (A) and right (B)
+def create_mg4_lka_steering(counter, angle_deg, active, authority_left, authority_right, bus):
+  dat = bytearray(24)
+  dat[0:4] = b"\x02\x09\x07\x08"                      # first block header (const)
+  dat[5] = ((0x4 if active else 0x0) << 4) | (counter & 0xF)
+  raw_angle = int(round(angle_deg * 16)) + 32600
+  raw_angle = max(0, min(0xFFFF, raw_angle))
+  dat[6] = (raw_angle >> 8) & 0xFF
+  dat[7] = raw_angle & 0xFF
+  dat[8:12] = b"\x80\x1f\xff\xff"                     # observed constant
+  dat[12:16] = b"\x02\x09\x11\x08"                    # second block header (const)
+  a_raw = max(0, min(0x7FF, int(authority_left) + 1024))
+  b_raw = max(0, min(0x7FF, int(authority_right) + 1024))
+  packed = (a_raw << 13) | (b_raw << 2)
+  dat[16:19] = packed.to_bytes(3, "big")
+  # bytes 19-23 stay 0
+  dat[4] = mg4_crc(dat, 4)
+  return 0x089, bytes(dat), bus
+
+
+# ACC_STATE with the hands-on warning level forced to OK
+def create_mg4_acc_state(base: bytes, bus: int):
+  dat = bytearray(base[:48])
+  dat[29] = (dat[29] & ~0x30) | 0x10
+  return 0x1DA, bytes(dat), bus
+
 
 def calc_checksum(values):
   lka_req_toq = values['LKAReqToqHSC2'] + 0x400

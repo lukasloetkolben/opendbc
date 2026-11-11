@@ -21,7 +21,17 @@ GEAR_MAP_CANFD = {
   4: GearShifter.drive,
 }
 
+def raw_frame(vl, length: int) -> bytes:
+  # the Raw00.. signals are 32-bit big-endian words covering the whole frame
+  return b"".join(int(vl[f"Raw{i:02d}"]).to_bytes(4, "big") for i in range(length // 4))
+
+
 class CarState(CarStateBase):
+  def __init__(self, CP):
+    super().__init__(CP)
+    self.acc_state_raw: bytes | None = None
+    self.acc_state_new = 0
+
   def update(self, can_parsers) -> structs.CarState:
     if self.CP.flags & MgFlags.CANFD:
       return self.update_canfd(can_parsers)
@@ -81,12 +91,16 @@ class CarState(CarStateBase):
     cp_cam = can_parsers[Bus.cam]
     ret = structs.CarState()
 
+    self.acc_state_raw = raw_frame(cp_cam.vl["ACC_STATE"], 48)
+    self.acc_state_new = len(cp_cam.vl_all["ACC_STATE"]["Raw00"])
+
     # Vehicle speed
     ret.vEgoRaw = cp.vl["ESP_SPEED"]["VehSpdAvg"] * CV.KPH_TO_MS
     ret.vEgo, ret.aEgo = self.update_speed_kf(ret.vEgoRaw)
     ret.vEgoCluster = cp.vl["CLUSTER_SPEED"]["VehSpdDisplay"] * CV.KPH_TO_MS
     # ESP_SPEED.Standstill is a creep flag, not a stopped car
     ret.standstill = cp.vl["ESP_SPEED"]["VehSpdAvg"] < 0.1
+    ret.yawRate = cp.vl["ESP_ACCEL"]["YawRate"] * CV.DEG_TO_RAD
 
     # Gas pedal
     ret.gasPressed = cp.vl["GAS_PEDAL"]["GasPdlPos"] > CarControllerParams.MG4_GAS_OVERRIDE_PCT

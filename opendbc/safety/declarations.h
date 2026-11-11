@@ -273,6 +273,8 @@ typedef enum {
 
 typedef enum {HONDA_NIDEC, HONDA_BOSCH} HondaHw;
 
+#define MG4_ACC_CMD_LEN 48U
+
 // for safety modes with curvature steering control
 typedef struct {
   int desired_last;
@@ -336,6 +338,9 @@ typedef struct {
 
   uint8_t hyundai_last_button_interaction;  // button messages since the user pressed an enable button
 
+  uint8_t mg4_acc_state[MG4_ACC_CMD_LEN];                // last radar ACC_STATE frame: the forwarded copy must match it
+  bool mg4_acc_state_seen;
+
   bool tesla_stock_aeb;
   // Only rising edges while controls are not allowed are considered for these systems:
   // TODO: Only LKAS (non-emergency) is currently supported since we've only seen it
@@ -381,6 +386,8 @@ typedef struct {
   bool hyundai_legacy;
   bool hyundai_canfd_alt_buttons;
   bool hyundai_canfd_lka_steer_msg_alt;
+
+  bool mg_canfd;
 
   bool nissan_alt_eps;
 

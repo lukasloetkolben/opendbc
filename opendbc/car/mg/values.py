@@ -55,7 +55,6 @@ class CarControllerParams:
   STEER_DRIVER_FACTOR = 100
 
   # MG4: angle steering, rate limits in deg per frame
-  MG4_STEER_STEP = 1
   MG4_ANGLE_LIMITS = AngleSteeringLimits(
     90.0,  # STEER_ANGLE_MAX (deg at the wheel)
     ([0., 5., 25.], [2.5, 1.5, 0.4]),   # ANGLE_RATE_LIMIT_UP
@@ -65,7 +64,26 @@ class CarControllerParams:
 
   MG4_STEER_AUTHORITY = 200  # EPS torque limit per side in LKA_CMD
 
+  MG4_ACCEL_MAX = 1.0    # m/s2
+  MG4_ACCEL_MIN = -3.48  # m/s2, ISO 15622 limit -3.5 after AccAccelReq quantization
   MG4_GAS_OVERRIDE_PCT = 5.0  # %, light pressure stays in the one-pedal regen zone
+
+  # ACC_CMD torque regime: AccTorqueReq with a speed-dependent zero, the floor is no drive torque
+  MG4_TORQUE_PER_COUNT = 0.028         # m/s2
+  MG4_ACCEL_HYST_GAP = 0.028           # m/s2, one AccTorqueReq count
+  MG4_TORQUE_ZERO_BP = [35., 60., 82., 110.]    # km/h
+  MG4_TORQUE_ZERO_V = [164., 166., 168., 171.]  # AccTorqueReq giving ~0 m/s2 on the flat
+  MG4_TORQUE_FLOOR = 160
+  MG4_TORQUE_MAX = 215
+  MG4_COAST_ACCEL_MIN = -0.3           # m/s2, lowest request the torque regime can do (floor 160)
+
+  # ACC_CMD decel regime: AccAccelReq sets the braking
+  MG4_BRAKE_ENTER = -0.4   # m/s2
+  MG4_BRAKE_EXIT = -0.2    # m/s2
+
+  # stop-and-go: hold (mode 10) at standstill, then a resume pulse (mode 5)
+  MG4_HOLD_SPEED = 0.25 / 3.6        # m/s
+  MG4_RESUME_FRAMES = 25             # ACC_CMD frames (0.5 s)
 
   def __init__(self, CP):
     pass

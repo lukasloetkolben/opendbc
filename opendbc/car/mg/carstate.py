@@ -1,3 +1,5 @@
+import copy
+
 from opendbc.can.parser import CANParser
 from opendbc.car import Bus, structs
 from opendbc.car.interfaces import CarStateBase
@@ -5,6 +7,7 @@ from opendbc.car.mg.values import DBC, MgFlags, CarControllerParams
 from opendbc.car.common.conversions import Conversions as CV
 
 GearShifter = structs.CarState.GearShifter
+ButtonType = structs.CarState.ButtonEvent.Type
 
 GEAR_MAP = {
   0: GearShifter.unknown,
@@ -21,16 +24,27 @@ GEAR_MAP_CANFD = {
   4: GearShifter.drive,
 }
 
-def raw_frame(vl, length: int) -> bytes:
-  # the Raw00.. signals are 32-bit big-endian words covering the whole frame
-  return b"".join(int(vl[f"Raw{i:02d}"]).to_bytes(4, "big") for i in range(length // 4))
+MG4_BUTTONS = {
+  "BtnUp": ButtonType.accelCruise,
+  "BtnDown": ButtonType.decelCruise,
+  "BtnClick": ButtonType.setCruise,
+  "BtnGapRight": ButtonType.gapAdjustCruise,
+  "BtnGapLeft": ButtonType.gapAdjustCruise,
+}
 
 
 class CarState(CarStateBase):
   def __init__(self, CP):
     super().__init__(CP)
-    self.acc_state_raw: bytes | None = None
+    self.acc_cmd = {}
+    self.acc_cmd_new = 0
+    self.acc_state = {}
     self.acc_state_new = 0
+    self.buttons_counter = 0
+    self.buttons_new = 0
+    self.button_prev = dict.fromkeys(MG4_BUTTONS, 0)
+    self.set_prev = 0
+    self.openpilot_enabled = False  # set by the car controller, SET is a toggle
 
   def update(self, can_parsers) -> structs.CarState:
     if self.CP.flags & MgFlags.CANFD:
@@ -91,7 +105,9 @@ class CarState(CarStateBase):
     cp_cam = can_parsers[Bus.cam]
     ret = structs.CarState()
 
-    self.acc_state_raw = raw_frame(cp_cam.vl["ACC_STATE"], 48)
+    self.acc_cmd = copy.copy(cp_cam.vl["ACC_CMD"])
+    self.acc_cmd_new = len(cp_cam.vl_all["ACC_CMD"]["Raw00"])
+    self.acc_state = copy.copy(cp_cam.vl["ACC_STATE"])
     self.acc_state_new = len(cp_cam.vl_all["ACC_STATE"]["Raw00"])
 
     # Vehicle speed
@@ -119,10 +135,17 @@ class CarState(CarStateBase):
     # Cruise state
     acc_sts = cp_cam.vl["ACC_STATE"]["AccSts"]
     ret.cruiseState.standstill = False
-    ret.cruiseState.enabled = acc_sts in (1, 2, 3, 4)  # engaged, standby, override
-    ret.cruiseState.available = acc_sts != 0
-    acc_cmd = cp_cam.vl["ACC_CMD"]
-    ret.cruiseState.speed = (acc_cmd["AccSetSpeedHalf"] + acc_cmd["AccSetSpeedOdd"]) * CV.KPH_TO_MS
+    if self.CP.openpilotLongitudinalControl:
+      # the stock ACC is kept off, openpilot engages on the buttons
+      ret.cruiseState.available = True
+      ret.cruiseState.enabled = False
+      ret.buttonEvents = self.update_cruise_buttons(cp.vl["CRUISE_BUTTONS"])
+      self.buttons_new = len(cp.vl_all["CRUISE_BUTTONS"]["ROLLING_COUNTER"])
+    else:
+      ret.cruiseState.enabled = acc_sts in (1, 2, 3, 4)  # engaged, standby, override
+      ret.cruiseState.available = acc_sts != 0
+      acc_cmd = cp_cam.vl["ACC_CMD"]
+      ret.cruiseState.speed = (acc_cmd["AccSetSpeedHalf"] + acc_cmd["AccSetSpeedOdd"]) * CV.KPH_TO_MS
 
     # Gear
     ret.gearShifter = GEAR_MAP_CANFD.get(int(cp.vl["GEAR"]["ShftLvrPos"]), GearShifter.unknown)
@@ -141,6 +164,27 @@ class CarState(CarStateBase):
                         cp.vl["DOORS"]["RearRightDoorOpen"]])
 
     return ret
+
+  def update_cruise_buttons(self, buttons) -> list[structs.CarState.ButtonEvent]:
+    self.buttons_counter = int(buttons["ROLLING_COUNTER"])
+    events = []
+    for name, button_type in MG4_BUTTONS.items():
+      cur = int(buttons[name])
+      # down and click only act while engaged
+      if name in ("BtnDown", "BtnClick") and not self.openpilot_enabled:
+        cur = 0
+      if cur != self.button_prev[name]:
+        events.append(structs.CarState.ButtonEvent(pressed=bool(cur), type=button_type))
+      self.button_prev[name] = cur
+
+    # SET toggles: a release engages at the current speed or cancels
+    set_cur = int(buttons["BtnSet"])
+    if self.set_prev and not set_cur:
+      button_type = ButtonType.cancel if self.openpilot_enabled else ButtonType.decelCruise
+      events.append(structs.CarState.ButtonEvent(pressed=True, type=button_type))
+      events.append(structs.CarState.ButtonEvent(pressed=False, type=button_type))
+    self.set_prev = set_cur
+    return events
 
   @staticmethod
   def get_can_parsers(CP):

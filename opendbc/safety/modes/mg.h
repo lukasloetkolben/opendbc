@@ -25,6 +25,8 @@ static const uint8_t mg_crc_lut[256] = {
 
 // MG4 CAN FD angle steering, selected by safetyParam bit 0. MG5 retains torque steering.
 const uint16_t MG_PARAM_CANFD = 1U;
+// MG4 openpilot longitudinal, selected by safetyParam bit 1. The stock ACC is kept off by blocking its buttons.
+const uint16_t MG_PARAM_LONGITUDINAL = 2U;
 
 // LKA_CMD torque limit per side
 #define MG4_AUTHORITY_MAX 200
@@ -34,11 +36,26 @@ static int mg4_pdu_offset(const CANPacket_t *msg) {
   return ((msg->addr == 0x46U) || (msg->addr == 0x13EU)) ? 24 : 0;
 }
 
+// checked on AccAccelReq (byte 7) in 0.001 m/s2, same scaling as the DBC
+static const LongitudinalLimits MG4_LONG_LIMITS = {
+  .max_accel = 1500,
+  .min_accel = -3500,
+  .inactive_accel = 0,
+};
+
 static uint32_t mg4_checksum(const CANPacket_t *msg) {
   int offset = mg4_pdu_offset(msg);
   uint8_t crc = 0U;
   for (int i = offset + 5; i < (offset + 12); i++) {
     crc = mg_crc_lut[crc ^ msg->data[i]];
+  }
+  return crc;
+}
+
+static uint8_t mg4_subframe_crc(const uint8_t *data) {
+  uint8_t crc = 0U;
+  for (int i = 0; i < 7; i++) {
+    crc = mg_crc_lut[crc ^ data[i]];
   }
   return crc;
 }
@@ -61,9 +78,80 @@ static void mg4_rx_hook(const CANPacket_t *msg) {
       safety.mg4_acc_state[i] = msg->data[i];
     }
     safety.mg4_acc_state_seen = true;
-    unsigned int state = msg->data[17] >> 5;
-    pcm_cruise_check((state >= 1U) && (state <= 4U));
+    if (!safety_setup.mg4_longitudinal) {
+      unsigned int state = msg->data[17] >> 5;
+      pcm_cruise_check((state >= 1U) && (state <= 4U));
+    }
   }
+  if (msg_matches(msg, 0x16EU, 2U)) {
+    for (int i = 0; i < (int)MG4_ACC_CMD_LEN; i++) {
+      safety.mg4_acc_ring[safety.mg4_acc_ring_idx][i] = msg->data[i];
+    }
+    safety.mg4_acc_ring_idx = (safety.mg4_acc_ring_idx + 1U) % MG4_ACC_RING;
+    if (safety.mg4_acc_ring_n < MG4_ACC_RING) {
+      safety.mg4_acc_ring_n++;
+    }
+  }
+  if (safety_setup.mg4_longitudinal && msg_matches(msg, 0x1E1U, 0U)) {
+    // SET release toggles, up release engages
+    uint8_t buttons = (uint8_t)(((msg->data[5] >> 5) & 1U) | (((msg->data[7] >> 7) & 1U) << 1));
+    uint8_t released = (uint8_t)(safety.mg4_buttons_prev & (uint8_t)~buttons);
+    if ((released & 1U) != 0U) {
+      safety.controls_allowed = !safety.controls_allowed;
+    } else if ((released & 2U) != 0U) {
+      safety.controls_allowed = true;
+    } else {
+    }
+    safety.mg4_buttons_prev = buttons;
+  }
+}
+
+static bool mg4_acc_cmd_passthrough(const CANPacket_t *msg) {
+  // the radar's own frame, except for the cluster bytes 28-30
+  bool same = false;
+  for (unsigned int i = 0U; (i < safety.mg4_acc_ring_n) && !same; i++) {
+    bool eq = true;
+    for (unsigned int j = 0U; (j < MG4_ACC_CMD_LEN) && eq; j++) {
+      if ((j != 28U) && (j != 29U) && (j != 30U)) {
+        eq = safety.mg4_acc_ring[i][j] == msg->data[j];
+      }
+    }
+    same = eq;
+  }
+  return same;
+}
+
+static bool mg4_acc_cmd_tx_hook(const CANPacket_t *msg) {
+  bool valid = safety_setup.mg4_longitudinal && (GET_LEN(msg) == MG4_ACC_CMD_LEN);
+  if (valid && !mg4_acc_cmd_passthrough(msg)) {
+    unsigned int mode = msg->data[5] >> 4;
+    bool decel_req = GET_BIT(msg, 54U);
+    bool torque_act = GET_BIT(msg, 372U);
+    unsigned int accel_byte = msg->data[7];
+    unsigned int torque_byte = msg->data[47];
+    int desired_accel = (((int)accel_byte * 386) - 70136) / 10;
+
+    // anything but the radar's own frame is actuation
+    bool violation = !safety.controls_allowed || longitudinal_accel_checks(desired_accel, MG4_LONG_LIMITS);
+    violation |= (torque_byte < 160U) || (torque_byte > 215U);
+    violation |= msg->data[4] != mg4_subframe_crc(&msg->data[5]);
+    violation |= msg->data[40] != mg4_subframe_crc(&msg->data[41]);
+
+    // hold (mode 10) only at standstill, resume pulse (mode 5) only below 3 km/h
+    bool hold_frame = (mode == 10U) && !safety.vehicle_moving && (accel_byte == 130U) && (torque_byte == 160U) && decel_req && !torque_act;
+    bool resume_frame = (mode == 5U) && (safety.vehicle_speed.max < (int)(3.0f * KPH_TO_MS * VEHICLE_SPEED_FACTOR)) && !decel_req &&
+                        torque_act && (torque_byte <= 171U) && (accel_byte >= 165U) && (accel_byte <= 191U);
+    if (!hold_frame && !resume_frame) {
+      violation |= mode != 4U;   // only "regulating" may be synthesised
+      if (decel_req) {
+        violation |= torque_act || (torque_byte != 160U) || (accel_byte > 185U);
+      } else {
+        violation |= !torque_act || (accel_byte < 165U);   // torque regime: never in brake territory
+      }
+    }
+    valid = !violation;
+  }
+  return valid;
 }
 
 static bool mg4_tx_hook(const CANPacket_t *msg) {
@@ -99,6 +187,10 @@ static bool mg4_tx_hook(const CANPacket_t *msg) {
     valid &= !violation;
   }
 
+  if (msg->addr == 0x16EU) {
+    valid = mg4_acc_cmd_tx_hook(msg);
+  }
+
   if (msg->addr == 0x1DAU) {
     // the radar's ACC_STATE with the hands-on warning forced to OK
     valid = safety.mg4_acc_state_seen && (GET_LEN(msg) == MG4_ACC_CMD_LEN);
@@ -106,6 +198,13 @@ static bool mg4_tx_hook(const CANPacket_t *msg) {
       uint8_t expected = (i == 29) ? (uint8_t)((safety.mg4_acc_state[i] & 0xCFU) | 0x10U) : safety.mg4_acc_state[i];
       valid = msg->data[i] == expected;
     }
+  }
+
+  if (msg->addr == 0x1E1U) {
+    // CRUISE_BUTTONS re-sent to the radar: every button must be clear
+    valid = safety_setup.mg4_longitudinal && (GET_LEN(msg) == 12U);
+    valid &= ((msg->data[5] & 0xF0U) == 0U) && (msg->data[6] == 0U) && (msg->data[7] == 0U) && ((msg->data[8] & 0x7FU) == 0U);
+    valid &= msg->data[4] == mg4_checksum(msg);
   }
 
   return valid;
@@ -223,11 +322,18 @@ static bool mg_tx_hook(const CANPacket_t *msg) {
 
 static safety_config mg_init(uint16_t param) {
   safety_setup.mg_canfd = GET_FLAG(param, MG_PARAM_CANFD);
+  safety_setup.mg4_longitudinal = safety_setup.mg_canfd && GET_FLAG(param, MG_PARAM_LONGITUDINAL);
 
   if (safety_setup.mg_canfd) {
     static const CanMsg MG4_TX_MSGS[] = {
       {0x89, 0, 24, .check_relay = true},
       {0x1DA, 0, 48, .check_relay = true},
+    };
+    static const CanMsg MG4_LONG_TX_MSGS[] = {
+      {0x89, 0, 24, .check_relay = true},
+      {0x1DA, 0, 48, .check_relay = true},
+      {0x16E, 0, 48, .check_relay = true},
+      {0x1E1, 2, 12, .check_relay = true},
     };
     // counters are not checked, the senders repeat and skip values
     static const RxCheck mg4_rx_checks[] = {
@@ -236,6 +342,17 @@ static safety_config mg_init(uint16_t param) {
       {.msg = {{0x46, 0, 48, .frequency = 100U, .ignore_counter = true, .ignore_quality_flag = true}, {0}, {0}}},
       {.msg = {{0x1DA, 2, 48, .frequency = 50U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, {0}, {0}}},
     };
+    static const RxCheck mg4_long_rx_checks[] = {
+      {.msg = {{0xAB, 0, 48, .frequency = 100U, .ignore_counter = true, .ignore_quality_flag = true}, {0}, {0}}},
+      {.msg = {{0x13E, 0, 64, .frequency = 50U, .ignore_counter = true, .ignore_quality_flag = true}, {0}, {0}}},
+      {.msg = {{0x46, 0, 48, .frequency = 100U, .ignore_counter = true, .ignore_quality_flag = true}, {0}, {0}}},
+      {.msg = {{0x1DA, 2, 48, .frequency = 50U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, {0}, {0}}},
+      {.msg = {{0x16E, 2, 48, .frequency = 50U, .ignore_counter = true, .ignore_quality_flag = true}, {0}, {0}}},
+      {.msg = {{0x1E1, 0, 12, .frequency = 20U, .ignore_counter = true, .ignore_quality_flag = true}, {0}, {0}}},
+    };
+    if (safety_setup.mg4_longitudinal) {
+      return BUILD_SAFETY_CFG(mg4_long_rx_checks, MG4_LONG_TX_MSGS);
+    }
     return BUILD_SAFETY_CFG(mg4_rx_checks, MG4_TX_MSGS);
   }
 

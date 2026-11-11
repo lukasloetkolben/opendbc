@@ -274,6 +274,7 @@ typedef enum {
 typedef enum {HONDA_NIDEC, HONDA_BOSCH} HondaHw;
 
 #define MG4_ACC_CMD_LEN 48U
+#define MG4_ACC_RING 4U
 
 // for safety modes with curvature steering control
 typedef struct {
@@ -338,8 +339,12 @@ typedef struct {
 
   uint8_t hyundai_last_button_interaction;  // button messages since the user pressed an enable button
 
+  uint8_t mg4_acc_ring[MG4_ACC_RING][MG4_ACC_CMD_LEN];  // last radar ACC_CMD frames: a pass-through must match one
+  uint8_t mg4_acc_ring_idx;
+  uint8_t mg4_acc_ring_n;
   uint8_t mg4_acc_state[MG4_ACC_CMD_LEN];                // last radar ACC_STATE frame: the forwarded copy must match it
   bool mg4_acc_state_seen;
+  uint8_t mg4_buttons_prev;
 
   bool tesla_stock_aeb;
   // Only rising edges while controls are not allowed are considered for these systems:
@@ -388,6 +393,7 @@ typedef struct {
   bool hyundai_canfd_lka_steer_msg_alt;
 
   bool mg_canfd;
+  bool mg4_longitudinal;
 
   bool nissan_alt_eps;
 
